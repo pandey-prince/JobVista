@@ -14,6 +14,7 @@ import AdminJobs from "./components/admin/AdminJobs";
 import PostJob from './components/admin/PostJob'
 import Applicants from './components/admin/Applicants'
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import { Analytics } from "@vercel/analytics/react"
 
 
 const appRouter = createBrowserRouter([
@@ -77,6 +78,7 @@ function App() {
   return (
     <div className='mx-2'>
       <RouterProvider router={appRouter} />
+      <Analytics />
     </div>
   )
 }
