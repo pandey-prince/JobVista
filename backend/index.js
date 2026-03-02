@@ -14,10 +14,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// const corsOption = {
-//     origin : "http://localhost:5173"
-// }
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);
@@ -30,7 +33,7 @@ app.get("/home", (req, res) => {
     success: true,
   });
 });
-const PORT = 3000 || process.env.PORT;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   connectDB();
   console.log(`server is listening at ${PORT}`);

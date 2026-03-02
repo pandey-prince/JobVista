@@ -1,4 +1,4 @@
-import { User } from "../models/user.model.js ";
+import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 export const register = async (req, res) => {
@@ -33,6 +33,11 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+      error: error,
+    });
   }
 };
 
@@ -83,13 +88,15 @@ export const login = async (req, res) => {
     return res
       .status(200)
       .cookie("token", token, {
-        maxAge: 1 * 24 * 60 * 60 * 100,
-        httpsOnly: true,
-        sameSite: "strict",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+        maxAge: 1 * 24 * 60 * 60 * 1000,
       })
       .json({
         message: `Welcome back ${user.fullname}`,
         success: true,
+        user,
       });
   } catch (error) {
     console.log(error);
@@ -98,6 +105,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    console.log("request came here");
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
       message: "Logged out successfully",
       success: true,
@@ -134,9 +142,9 @@ export const updateProfile = async (req, res) => {
     //updating data
     user.fullname = fullname;
     user.email = email;
-    (user.phoneNumber = phoneNumber),
+    ((user.phoneNumber = phoneNumber),
       (user.profile.bio = bio),
-      (user.profile.skills = skills);
+      (user.profile.skills = skills));
 
     //remove comes here later
 
