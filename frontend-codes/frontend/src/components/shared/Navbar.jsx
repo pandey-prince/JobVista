@@ -2,8 +2,8 @@ import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { LogOut, User2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Home, LogOut, User2 } from "lucide-react";
+import { Link, redirect, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constant";
@@ -24,7 +24,7 @@ const Navbar = () => {
       if (res.data.success) {
         dispatch(setUser(null));
         navigate("/");
-        toast.success(res.data.message);
+        toast.success("Successfully Signout");
       }
     } catch (error) {
       console.log(error);
@@ -34,7 +34,12 @@ const Navbar = () => {
   return (
     <div className="bg-white">
       <div className="flex items-center justify-between mx-auto max-w-7xl h-16">
-        <div>
+        <div
+          onClick={() => {
+            navigate("/");
+          }}
+          className="cursor-pointer"
+        >
           <h1 className="text-2xl font-bold">
             Job<span className="text-[#F83002]">Vista</span>
           </h1>
