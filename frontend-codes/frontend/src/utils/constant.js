@@ -1,5 +1,4 @@
-export const USER_API_END_POINT = import.meta.env.VITE_USER_API_END_POINT;
-export const JOB_API_END_POINT = import.meta.env.VITE_JOB_API_END_POINT;
-export const APPLICATION_API_END_POINT = import.meta.env
-  .VITE_APPLICATION_API_END_POINT;
-export const COMPANY_API_END_POINT = import.meta.env.VITE_COMPANY_API_END_POINT;
+export const USER_API_END_POINT = process.env.USER_API_END_POINT;
+export const JOB_API_END_POINT = process.env.JOB_API_END_POINT;
+export const APPLICATION_API_END_POINT = process.env.APPLICATION_API_END_POINT;
+export const COMPANY_API_END_POINT = process.env.COMPANY_API_END_POINT;

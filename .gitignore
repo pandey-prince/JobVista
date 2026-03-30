@@ -1,0 +1,65 @@
+# ==============================
+# Node Modules
+# ==============================
+node_modules/
+*/node_modules/
+
+# ==============================
+# Environment Files
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Logs
+# ==============================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==============================
+# OS Files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Build Folders
+# ==============================
+dist/
+build/
+coverage/
+
+# ==============================
+# Vite / React
+# ==============================
+.vite/
+*.local
+
+# ==============================
+# Render / Deployment
+# ==============================
+.render
+.vercel
+
+# ==============================
+# IDE Files
+# ==============================
+.vscode/
+.idea/
+
+# ==============================
+# Temporary Files
+# ==============================
+tmp/
+temp/
+
+# ==============================
+# Package Lock (Optional – Usually Keep It)
+# ==============================
+# If you want to ignore lock files (not recommended):
+# package-lock.json
+# yarn.lock
