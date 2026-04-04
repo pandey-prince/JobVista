@@ -140,14 +140,14 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
       expiresIn: "1d",
     });
 
     const cookieOptions = {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     };
@@ -178,9 +178,8 @@ export const logout = async (req, res) => {
     console.log("request came to logout");
     const cookieOptions = {
       httpOnly: true,
-      secure: false,
-      // secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     };
     return res.status(200).clearCookie("token", cookieOptions).json({
