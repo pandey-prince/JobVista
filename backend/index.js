@@ -17,7 +17,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "https://job-vista-eta.vercel.app",
+    origin: ["https://job-vista-eta.vercel.app", "http://localhost:5173"],
     credentials: true,
   }),
 );
