@@ -64,6 +64,10 @@ const PostJob = () => {
             <Navbar />
             <div className='flex items-center justify-center w-screen my-5'>
                 <form onSubmit = {submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
+                    <div className='mb-5'>
+                        <h1 className='font-bold text-2xl'>Post Job</h1>
+                        <p className='text-sm text-gray-500'>Add clear role details so candidates can quickly decide if the job matches them.</p>
+                    </div>
                     <div className='grid grid-cols-2 gap-2'>
                         <div>
                             <Label>Title</Label>
@@ -136,7 +140,7 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>No of Postion</Label>
+                            <Label>No. of Positions</Label>
                             <Input
                                 type="number"
                                 name="position"
@@ -168,10 +172,10 @@ const PostJob = () => {
                         }
                     </div> 
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Post New Job</Button>
+                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Post Job</Button>
                     }
                     {
-                        companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company first, before posting a jobs</p>
+                        companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company first before posting a job.</p>
                     }
                 </form>
             </div>

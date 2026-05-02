@@ -1,57 +1,66 @@
-import React, { useEffect, useState } from 'react'
-import { RadioGroup, RadioGroupItem } from './ui/radio-group'
+import React from 'react'
 import { Label } from './ui/label'
-import { useDispatch } from 'react-redux'
-import { setSearchedQuery } from '@/redux/jobSlice'
+import { Button } from './ui/button'
 
-const fitlerData = [
+const filterData = [
     {
-        fitlerType: "Location",
-        array: ["Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
+        key: "locations",
+        filterType: "Location",
+        array: ["Remote", "Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
     },
     {
-        fitlerType: "Industry",
-        array: ["Frontend Developer", "Backend Developer", "FullStack Developer"]
+        key: "roles",
+        filterType: "Role",
+        array: ["Frontend Developer", "Backend Developer", "FullStack Developer", "React", "Node", "Python"]
     },
     {
-        fitlerType: "Salary",
-        array: ["0-40k", "42-1lakh", "1lakh to 5lakh"]
+        key: "jobTypes",
+        filterType: "Job Type",
+        array: ["Full Time", "Part Time", "Contractor", "Intern", "Remote"]
     },
 ]
 
-const FilterCard = () => {
-    const [selectedValue, setSelectedValue] = useState('');
-    const dispatch = useDispatch();
-    const changeHandler = (value) => {
-        setSelectedValue(value);
+const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {
+    const changeHandler = (groupKey, value) => {
+        const currentValues = selectedFilters[groupKey] || [];
+        const nextValues = currentValues.includes(value)
+            ? currentValues.filter((item) => item !== value)
+            : [...currentValues, value];
+
+        onFilterChange({ ...selectedFilters, [groupKey]: nextValues });
     }
-    useEffect(()=>{
-        dispatch(setSearchedQuery(selectedValue));
-    },[selectedValue]);
+
     return (
         <div className='w-full bg-white p-3 rounded-md'>
-            <h1 className='font-bold text-lg'>Filter Jobs</h1>
+            <div className='flex items-center justify-between gap-2'>
+                <h1 className='font-bold text-lg'>Filter Jobs</h1>
+                <Button type="button" variant="link" className="px-0 text-sm" onClick={onClear}>Clear</Button>
+            </div>
             <hr className='mt-3' />
-            <RadioGroup value={selectedValue} onValueChange={changeHandler}>
-                {
-                    fitlerData.map((data, index) => (
-                        <div>
-                            <h1 className='font-bold text-lg'>{data.fitlerType}</h1>
-                            {
-                                data.array.map((item, idx) => {
-                                    const itemId = `id${index}-${idx}`
-                                    return (
-                                        <div className='flex items-center space-x-2 my-2'>
-                                            <RadioGroupItem value={item} id={itemId} />
-                                            <Label htmlFor={itemId}>{item}</Label>
-                                        </div>
-                                    )
-                                })
-                            }
-                        </div>
-                    ))
-                }
-            </RadioGroup>
+            {
+                filterData.map((data, index) => (
+                    <div key={data.key} className='mt-4'>
+                        <h1 className='font-bold text-base'>{data.filterType}</h1>
+                        {
+                            data.array.map((item, idx) => {
+                                const itemId = `id${index}-${idx}`
+                                return (
+                                    <div key={item} className='flex items-center space-x-2 my-2'>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedFilters[data.key]?.includes(item) || false}
+                                            id={itemId}
+                                            onChange={() => changeHandler(data.key, item)}
+                                            className='h-4 w-4 accent-[#6A38C2] cursor-pointer'
+                                        />
+                                        <Label htmlFor={itemId} className="cursor-pointer">{item}</Label>
+                                    </div>
+                                )
+                            })
+                        }
+                    </div>
+                ))
+            }
         </div>
     )
 }
