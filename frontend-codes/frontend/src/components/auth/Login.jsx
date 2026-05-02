@@ -56,9 +56,9 @@ const Login = () => {
     return (
         <div>
             <Navbar />
-            <div className='flex items-center justify-center max-w-7xl mx-auto'>
-                <form onSubmit={submitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
-                    <h1 className='font-bold text-xl mb-5'>Login</h1>
+            <div className='mx-auto flex max-w-7xl items-center justify-center px-4 sm:px-6'>
+                <form onSubmit={submitHandler} className='my-10 w-full max-w-md rounded-md border border-gray-200 p-4 sm:p-6'>
+                    <h1 className='mb-5 text-xl font-bold'>Login</h1>
                     <div className='my-2'>
                         <Label>Email</Label>
                         <Input
@@ -80,8 +80,8 @@ const Login = () => {
                             placeholder="********"
                         />
                     </div>
-                    <div className='flex items-center justify-between'>
-                        <RadioGroup className="flex items-center gap-4 my-5">
+                    <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                        <RadioGroup className="my-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                             <div className="flex items-center space-x-2">
                                 <Input
                                     type="radio"
@@ -107,7 +107,7 @@ const Login = () => {
                         </RadioGroup>
                     </div>
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
+                        loading ? <Button className="my-4 w-full"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="my-4 w-full">Login</Button>
                     }
                     <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link></span>
                 </form>

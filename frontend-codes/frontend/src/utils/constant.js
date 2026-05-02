@@ -11,3 +11,6 @@ export const APPLICATION_API_END_POINT = import.meta.env
 export const COMPANY_API_END_POINT = import.meta.env.VITE_COMPANY_API_END_POINT;
 
 //"http://localhost:8000/api/v1/company";
+export const CHATBOT_API_END_POINT =
+  import.meta.env.VITE_CHATBOT_API_END_POINT ||
+  USER_API_END_POINT?.replace("/user", "/chatbot");

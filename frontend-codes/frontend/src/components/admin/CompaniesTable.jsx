@@ -8,11 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { Avatar, AvatarImage ,AvatarFallback} from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Edit2, MoreHorizontal } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import CompanyLogo from "../CompanyLogo";
 
 const CompaniesTable = () => {
   const { companies, searchCompanyByText } = useSelector(
@@ -50,10 +50,7 @@ const CompaniesTable = () => {
           {filterCompany?.map((company) => (
             <TableRow key={company._id}>
               <TableCell>
-                <Avatar>
-                  <AvatarImage src={company.logo} />
-                  <AvatarFallback>{company.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <CompanyLogo company={company} className="h-10 w-10" />
               </TableCell>
               <TableCell>{company.name}</TableCell>
               <TableCell>

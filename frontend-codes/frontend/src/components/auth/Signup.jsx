@@ -9,7 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constant";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "@/redux/authSlice";
+import { setLoading, setUser } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
 
 const Signup = () => {
@@ -33,7 +33,7 @@ const Signup = () => {
   };
   const submitHandler = async (e) => {
     e.preventDefault();
-    const formData = new FormData(); //formdata object
+    const formData = new FormData();
     formData.append("fullname", input.fullname);
     formData.append("email", input.email);
     formData.append("phoneNumber", input.phoneNumber);
@@ -47,10 +47,11 @@ const Signup = () => {
       dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        //withCredentials: true,
+        withCredentials: true,
       });
       if (res.data.success) {
-        navigate("/login");
+        dispatch(setUser(res.data.user));
+        navigate(input.role === "student" ? "/profile/setup" : "/");
         toast.success(res.data.message);
       }
     } catch (error) {
@@ -69,12 +70,12 @@ const Signup = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex items-center justify-center max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl items-center justify-center px-4 sm:px-6">
         <form
           onSubmit={submitHandler}
-          className="w-1/2 border border-gray-200 rounded-md p-4 my-10"
+          className="my-10 w-full max-w-xl rounded-md border border-gray-200 p-4 sm:p-6"
         >
-          <h1 className="font-bold text-xl mb-5">Sign Up</h1>
+          <h1 className="mb-5 text-xl font-bold">Sign Up</h1>
           <div className="my-2">
             <Label>Full Name</Label>
             <Input
@@ -115,8 +116,8 @@ const Signup = () => {
               placeholder="**********"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <RadioGroup className="flex items-center gap-4 my-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <RadioGroup className="my-1 flex flex-col gap-3 sm:my-5 sm:flex-row sm:items-center sm:gap-4">
               <div className="flex items-center space-x-2">
                 <Input
                   type="radio"
@@ -140,7 +141,7 @@ const Signup = () => {
                 <Label htmlFor="r2">Recruiter</Label>
               </div>
             </RadioGroup>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-col gap-2 sm:w-auto">
               <Label>Profile</Label>
               <Input
                 accept="image/*"
@@ -151,12 +152,11 @@ const Signup = () => {
             </div>
           </div>
           {loading ? (
-            <Button className="w-full my-4">
-              {" "}
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait{" "}
+            <Button className="my-4 w-full">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
             </Button>
           ) : (
-            <Button type="submit" className="w-full my-4">
+            <Button type="submit" className="my-4 w-full">
               Signup
             </Button>
           )}

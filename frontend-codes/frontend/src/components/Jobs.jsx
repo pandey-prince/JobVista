@@ -1,38 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "./shared/Navbar";
 import FilterCard from "./FilterCard";
 import Job from "./Job";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
+import useGetAllJobs from "@/hooks/useGetAllJobs";
+import { emptyJobFilters, filterJobs } from "@/utils/jobFilters";
 
 const Jobs = () => {
+  useGetAllJobs();
   const { allJobs = [], searchedQuery } = useSelector((store) => store.job);
+  const [selectedFilters, setSelectedFilters] = useState(emptyJobFilters);
 
-  const filteredJobs = searchedQuery
-    ? allJobs.filter(
-        (job) =>
-          job?.title?.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job?.description
-            ?.toLowerCase()
-            .includes(searchedQuery.toLowerCase()) ||
-          job?.location?.toLowerCase().includes(searchedQuery.toLowerCase()),
-      )
-    : allJobs;
+  const filteredJobs = filterJobs(allJobs, searchedQuery, selectedFilters);
 
   return (
     <div>
       <Navbar />
-      <div className="max-w-7xl mx-auto mt-5">
-        <div className="flex gap-5">
-          <div className="w-1/5">
-            <FilterCard />
+      <div className="mx-auto mt-5 max-w-7xl px-4 sm:px-6">
+        <div className="mb-5">
+          <h1 className="text-2xl font-bold">Find Jobs</h1>
+          <p className="text-sm text-gray-500">
+            Browse JobVista jobs and remote openings from trusted external sources.
+          </p>
+        </div>
+        <div className="flex flex-col gap-5 lg:flex-row">
+          <div className="w-full lg:w-72 lg:shrink-0">
+            <FilterCard
+              selectedFilters={selectedFilters}
+              onFilterChange={setSelectedFilters}
+              onClear={() => setSelectedFilters(emptyJobFilters)}
+            />
           </div>
 
           {filteredJobs.length === 0 ? (
-            <span>Job not found</span>
+            <div className="flex-1 rounded-md border border-dashed border-gray-300 bg-white p-10 text-center">
+              <h2 className="text-lg font-semibold">No jobs match your filters</h2>
+              <p className="mt-2 text-sm text-gray-500">Try removing one filter or searching another role.</p>
+            </div>
           ) : (
-            <div className="flex-1 h-[88vh] overflow-y-auto pb-5">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="flex-1 pb-5 lg:h-[88vh] lg:overflow-y-auto">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredJobs.map((job) => (
                   <motion.div
                     key={job._id}

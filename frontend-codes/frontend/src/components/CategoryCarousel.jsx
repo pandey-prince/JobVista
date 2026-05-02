@@ -18,7 +18,7 @@ const CategoryCarousel = () => {
     const navigate = useNavigate();
     const searchJobHandler = (query) => {
         dispatch(setSearchedQuery(query));
-        navigate("/browse");
+        navigate("/jobs");
     }
 
     return (
@@ -27,7 +27,7 @@ const CategoryCarousel = () => {
                 <CarouselContent>
                     {
                         category.map((cat, index) => (
-                            <CarouselItem className="md:basis-1/2 lg-basis-1/3">
+                            <CarouselItem key={cat} className="md:basis-1/2 lg-basis-1/3">
                                 <Button onClick={()=>searchJobHandler(cat)} variant="outline" className="rounded-full">{cat}</Button>
                             </CarouselItem>
                         ))

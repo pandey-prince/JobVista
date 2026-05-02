@@ -21,13 +21,17 @@ const AdminJobs = () => {
     <div>
       <Navbar />
       <div className='max-w-6xl mx-auto my-10'>
+        <div className='mb-6'>
+          <h1 className='font-bold text-2xl'>Recruiter Dashboard</h1>
+          <p className='text-sm text-gray-500'>Post jobs, manage openings, and review applicants from one place.</p>
+        </div>
         <div className='flex items-center justify-between my-5'>
           <Input
             className="w-fit"
             placeholder="Filter by name, role"
             onChange={(e) => setInput(e.target.value)}
           />
-          <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button>
+          <Button onClick={() => navigate("/admin/jobs/create")}>Post Job</Button>
         </div>
         <AdminJobsTable />
       </div>

@@ -6,6 +6,7 @@ import Home from './components/Home'
 import Jobs from './components/Jobs'
 import Browse from './components/Browse'
 import Profile from './components/Profile'
+import ProfileSetup from './components/ProfileSetup'
 import JobDescription from './components/JobDescription'
 import Companies from './components/admin/Companies'
 import CompanyCreate from './components/admin/CompanyCreate'
@@ -14,6 +15,7 @@ import AdminJobs from "./components/admin/AdminJobs";
 import PostJob from './components/admin/PostJob'
 import Applicants from './components/admin/Applicants'
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import JobMateChatbot from './components/JobMateChatbot'
 
 
 const appRouter = createBrowserRouter([
@@ -44,6 +46,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile />
+  },
+  {
+    path: "/profile/setup",
+    element: <ProfileSetup />
   },
   // admin ke liye yha se start hoga
   {
@@ -77,6 +83,7 @@ function App() {
   return (
     <div className='mx-2'>
       <RouterProvider router={appRouter} />
+      <JobMateChatbot />
     </div>
   )
 }

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import Navbar from './shared/Navbar'
-import { Avatar, AvatarImage } from './ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
-import { Contact, Mail, Pen } from 'lucide-react'
+import { Briefcase, Contact, GraduationCap, Link as LinkIcon, Mail, MapPin, Pen } from 'lucide-react'
 import { Badge } from './ui/badge'
 import { Label } from './ui/label'
 import AppliedJobTable from './AppliedJobTable'
@@ -10,58 +10,104 @@ import UpdateProfileDialog from './UpdateProfileDialog'
 import { useSelector } from 'react-redux'
 import useGetAppliedJobs from '@/hooks/useGetAppliedJobs'
 
-// const skills = ["Html", "Css", "Javascript", "Reactjs"]
-const isResume = true;
-
 const Profile = () => {
     useGetAppliedJobs();
     const [open, setOpen] = useState(false);
     const {user} = useSelector(store=>store.auth);
+    const profileInitial = user?.fullname?.charAt(0)?.toUpperCase() || "U";
 
     return (
         <div>
             <Navbar />
-            <div className='max-w-4xl mx-auto bg-white border border-gray-200 rounded-2xl my-5 p-8'>
-                <div className='flex justify-between'>
-                    <div className='flex items-center gap-4'>
-                        <Avatar className="h-24 w-24">
-                            <AvatarImage src="https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg" alt="profile" />
+            <div className='mx-auto my-5 max-w-4xl rounded-2xl border border-gray-200 bg-white p-5 sm:p-8'>
+                <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+                    <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center'>
+                        <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
+                            <AvatarImage src={user?.profile?.profilePhoto} alt={user?.fullname || "profile"} />
+                            <AvatarFallback className="bg-[#f3edff] font-bold text-[#6A38C2]">
+                                {profileInitial}
+                            </AvatarFallback>
                         </Avatar>
-                        <div>
-                            <h1 className='font-medium text-xl'>{user?.fullname}</h1>
-                            <p>{user?.profile?.bio}</p>
+                        <div className='min-w-0'>
+                            <h1 className='text-xl font-medium'>{user?.fullname}</h1>
+                            <p className='break-words text-sm text-gray-600 sm:text-base'>{user?.profile?.bio}</p>
                         </div>
                     </div>
-                    <Button onClick={() => setOpen(true)} className="text-right" variant="outline"><Pen /></Button>
+                    <Button onClick={() => setOpen(true)} className="self-start text-right" variant="outline"><Pen /></Button>
                 </div>
                 <div className='my-5'>
-                    <div className='flex items-center gap-3 my-2'>
-                        <Mail />
-                        <span>{user?.email}</span>
+                    <div className='my-2 flex items-start gap-3'>
+                        <Mail className='mt-1 h-4 w-4 shrink-0' />
+                        <span className='break-all'>{user?.email}</span>
                     </div>
-                    <div className='flex items-center gap-3 my-2'>
-                        <Contact />
-                        <span>{user?.phoneNumber}</span>
+                    <div className='my-2 flex items-start gap-3'>
+                        <Contact className='mt-1 h-4 w-4 shrink-0' />
+                        <span className='break-words'>{user?.phoneNumber}</span>
                     </div>
+                    {user?.profile?.location && (
+                        <div className='my-2 flex items-start gap-3'>
+                            <MapPin className='mt-1 h-4 w-4 shrink-0' />
+                            <span className='break-words'>{user?.profile?.location}</span>
+                        </div>
+                    )}
+                </div>
+                <div className='my-5'>
+                    <h1 className='flex items-center gap-2 font-semibold'><GraduationCap /> Education</h1>
+                    <p className='mt-2 text-sm text-gray-700'>
+                        {[user?.profile?.college, user?.profile?.degree, user?.profile?.branch, user?.profile?.graduationYear]
+                            .filter(Boolean)
+                            .join(" - ") || "NA"}
+                    </p>
+                    {user?.profile?.cgpa && <p className='text-sm text-gray-700'>CGPA: {user.profile.cgpa}</p>}
                 </div>
                 <div className='my-5'>
                     <h1>Skills</h1>
-                    <div className='flex items-center gap-1'>
+                    <div className='flex flex-wrap items-center gap-1'>
                         {
-                            user?.profile?.skills.length !== 0 ? user?.profile?.skills.map((item, index) => <Badge key={index}>{item}</Badge>) : <span>NA</span>
+                            user?.profile?.skills?.length ? user.profile.skills.map((item, index) => <Badge key={index}>{item}</Badge>) : <span>NA</span>
                         }
                     </div>
+                </div>
+                <div className='my-5'>
+                    <h1>Preferred Roles</h1>
+                    <div className='flex flex-wrap items-center gap-1'>
+                        {
+                            user?.profile?.preferredJobRoles?.length ? user.profile.preferredJobRoles.map((item, index) => <Badge key={index} variant="outline">{item}</Badge>) : <span>NA</span>
+                        }
+                    </div>
+                </div>
+                <div className='my-5 grid gap-4 md:grid-cols-3'>
+                    {user?.profile?.portfolio && <a className='flex items-center gap-2 break-all text-blue-500 hover:underline' href={user.profile.portfolio} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> Portfolio</a>}
+                    {user?.profile?.linkedin && <a className='flex items-center gap-2 break-all text-blue-500 hover:underline' href={user.profile.linkedin} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> LinkedIn</a>}
+                    {user?.profile?.github && <a className='flex items-center gap-2 break-all text-blue-500 hover:underline' href={user.profile.github} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> GitHub</a>}
+                </div>
+                <div className='my-5'>
+                    <h1 className='flex items-center gap-2 font-semibold'><Briefcase /> Experience</h1>
+                    {user?.profile?.experience?.length ? user.profile.experience.map((item, index) => (
+                        <p key={index} className='mt-2 text-sm text-gray-700'>{[item.title, item.company, item.duration, item.description].filter(Boolean).join(" - ")}</p>
+                    )) : <span>NA</span>}
+                </div>
+                <div className='my-5'>
+                    <h1 className='font-semibold'>Internships</h1>
+                    {user?.profile?.internships?.length ? user.profile.internships.map((item, index) => (
+                        <p key={index} className='mt-2 text-sm text-gray-700'>{[item.title, item.company, item.duration, item.description].filter(Boolean).join(" - ")}</p>
+                    )) : <span>NA</span>}
+                </div>
+                <div className='my-5'>
+                    <h1 className='font-semibold'>Projects</h1>
+                    {user?.profile?.projects?.length ? user.profile.projects.map((item, index) => (
+                        <p key={index} className='mt-2 text-sm text-gray-700'>{[item.title, item.link, item.description].filter(Boolean).join(" - ")}</p>
+                    )) : <span>NA</span>}
                 </div>
                 <div className='grid w-full max-w-sm items-center gap-1.5'>
                     <Label className="text-md font-bold">Resume</Label>
                     {
-                        isResume ? <a target='blank' href={user?.profile?.resume} className='text-blue-500 w-full hover:underline cursor-pointer'>{user?.profile?.resumeOriginalName}</a> : <span>NA</span>
+                        user?.profile?.resume ? <a target='blank' href={user?.profile?.resume} className='w-full cursor-pointer break-all text-blue-500 hover:underline'>{user?.profile?.resumeOriginalName || "View Resume"}</a> : <span>NA</span>
                     }
                 </div>
             </div>
-            <div className='max-w-4xl mx-auto bg-white rounded-2xl'>
-                <h1 className='font-bold text-lg my-5'>Applied Jobs</h1>
-                {/* Applied Job Table   */}
+            <div className='mx-auto max-w-4xl rounded-2xl bg-white px-2 sm:px-0'>
+                <h1 className='my-5 text-lg font-bold'>Applied Jobs</h1>
                 <AppliedJobTable />
             </div>
             <UpdateProfileDialog open={open} setOpen={setOpen}/>
