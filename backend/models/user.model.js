@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      rquired: true,
+      required: true,
     },
     role: {
       type: String,
@@ -27,6 +27,41 @@ const userSchema = new mongoose.Schema(
     profile: {
       bio: { type: String },
       skills: [{ type: String }],
+      college: { type: String },
+      degree: { type: String },
+      branch: { type: String },
+      graduationYear: { type: String },
+      cgpa: { type: String },
+      location: { type: String },
+      experience: [
+        {
+          title: { type: String },
+          company: { type: String },
+          duration: { type: String },
+          description: { type: String },
+        },
+      ],
+      internships: [
+        {
+          title: { type: String },
+          company: { type: String },
+          duration: { type: String },
+          description: { type: String },
+        },
+      ],
+      projects: [
+        {
+          title: { type: String },
+          link: { type: String },
+          description: { type: String },
+        },
+      ],
+      portfolio: { type: String },
+      linkedin: { type: String },
+      github: { type: String },
+      preferredJobRoles: [{ type: String }],
+      profileCompletionSkipped: { type: Boolean, default: false },
+      profileCompletedAt: { type: Date },
       resume: { type: String },
       resumeOriginalName: { type: String },
       company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
