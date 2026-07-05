@@ -1,0 +1,38 @@
+# Render Blueprint — https://dashboard.render.com
+# Connect repo: pandey-prince/JobVista → New Blueprint → use this file
+# Set secret env vars in Render dashboard after first deploy.
+
+services:
+  - type: web
+    name: jobvista-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /home
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://job-vista-eta.vercel.app
+      - key: SCRAPE_ENABLED
+        value: true
+      - key: SCRAPE_ON_BOOT
+        value: false
+      - key: SCRAPE_CRON_SCHEDULE
+        value: 0 */6 * * *
+      - key: MAX_JOBS_PER_SOURCE
+        value: 15
+      - key: SCRAPE_DELAY_MS
+        value: 1500
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: true
+      - key: SKIP_PUPPETEER_SCRAPERS
+        value: true
+      - key: MONGO_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
