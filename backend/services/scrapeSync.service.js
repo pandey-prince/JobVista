@@ -9,7 +9,27 @@ const SCRAPE_DELAY_MS = Number(process.env.SCRAPE_DELAY_MS || 1500);
 const PUPPETEER_DELAY_MS = Number(process.env.PUPPETEER_DELAY_MS || 3000);
 const MAX_JOBS_PER_SOURCE = Number(process.env.MAX_JOBS_PER_SOURCE || 15);
 
+const shouldSkipPuppeteer = () =>
+  process.env.SKIP_PUPPETEER_SCRAPERS === "true" ||
+  process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD === "true";
+
 export const syncSource = async (source) => {
+  if (
+    shouldSkipPuppeteer() &&
+    (source.scraperType === "auto-puppeteer" || source.scraperType === "puppeteer")
+  ) {
+    return {
+      sourceId: source._id,
+      sourceName: source.name,
+      success: true,
+      skipped: true,
+      reason: "Puppeteer scrapers disabled on this host",
+      newJobsCount: 0,
+      updatedJobsCount: 0,
+      removedJobsCount: 0,
+    };
+  }
+
   if (!source.isActive || source.scraperType === "unsupported") {
     return {
       sourceId: source._id,
