@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "node scripts/api-test.js",
+    "test:api": "node scripts/api-test.js",
+    "test:integration": "node scripts/integration-test.js"
   },
   "keywords": [],
   "author": "",
@@ -13,13 +16,17 @@
   "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
-    "multer": "^2.1.0"
+    "multer": "^2.1.0",
+    "node-cron": "^4.5.0",
+    "puppeteer": "^25.3.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

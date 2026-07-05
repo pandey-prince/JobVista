@@ -6,7 +6,8 @@ import CompanyLogo from './CompanyLogo'
 const LatestJobCards = ({job}) => {
     const navigate = useNavigate();
     const openJob = () => {
-        if (job?.external && job?.applicationLink) {
+        const isScrapedJob = String(job?._id || "").startsWith("scraped-");
+        if (job?.external && job?.applicationLink && !isScrapedJob) {
             window.open(job.applicationLink, "_blank", "noopener,noreferrer");
             return;
         }
@@ -23,7 +24,10 @@ const LatestJobCards = ({job}) => {
                 </div>
             </div>
             <div>
-                <h1 className='font-bold text-lg my-2'>{job?.title}</h1>
+                <div className='flex items-center gap-2'>
+                    <h1 className='font-bold text-lg my-2'>{job?.title}</h1>
+                    {job?.isNew && <Badge className='text-orange-700 font-bold' variant="ghost">New</Badge>}
+                </div>
                 <p className='text-sm text-gray-600 line-clamp-3'>{job?.description}</p>
             </div>
             <div className='flex items-center gap-2 mt-4'>

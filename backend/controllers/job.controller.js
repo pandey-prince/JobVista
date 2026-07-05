@@ -1,4 +1,6 @@
 import { Job } from "../models/job.model.js";
+import { getScrapedJobsForList } from "./scrapedJob.controller.js";
+import { filterItJobs } from "../utils/itJobFilter.js";
 
 const stripHtml = (value = "") => value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
@@ -92,24 +94,41 @@ const mapArbeitnowJob = (job) => ({
   applicationLink: job.url,
 });
 
+const REMOTIVE_IT_CATEGORIES = [
+  "software-dev",
+  "devops-sysadmin",
+  "data",
+  "qa",
+];
+
 const fetchRemotiveJobs = async (keyword = "") => {
   try {
-    const url = new URL("https://remotive.com/api/remote-jobs");
-    if (keyword) {
-      url.searchParams.set("search", keyword);
-    }
+    const requests = REMOTIVE_IT_CATEGORIES.map(async (category) => {
+      const url = new URL("https://remotive.com/api/remote-jobs");
+      url.searchParams.set("category", category);
+      if (keyword) {
+        url.searchParams.set("search", keyword);
+      }
 
-    const response = await fetch(url);
-    if (!response.ok) return [];
+      const response = await fetch(url);
+      if (!response.ok) return [];
 
-    const data = await response.json();
-    return Array.isArray(data.jobs)
-      ? data.jobs
-          .filter(isDemoFriendlyJob)
-          .filter((job) => matchesExternalKeyword(job, keyword))
-          .slice(0, 10)
-          .map(mapRemotiveJob)
-      : [];
+      const data = await response.json();
+      return Array.isArray(data.jobs) ? data.jobs : [];
+    });
+
+    const results = await Promise.all(requests);
+    const uniqueJobs = new Map();
+
+    results.flat().forEach((job) => {
+      if (isDemoFriendlyJob(job) && matchesExternalKeyword(job, keyword)) {
+        uniqueJobs.set(job.id, job);
+      }
+    });
+
+    return filterItJobs([...uniqueJobs.values()])
+      .slice(0, 10)
+      .map(mapRemotiveJob);
   } catch (error) {
     return [];
   }
@@ -123,9 +142,9 @@ const fetchArbeitnowJobs = async (keyword = "") => {
     const data = await response.json();
     const query = keyword.toLowerCase();
     return Array.isArray(data.data)
-      ? data.data
-          .filter(isDemoFriendlyJob)
-          .filter((job) => matchesExternalKeyword(job, query))
+      ? filterItJobs(
+          data.data.filter(isDemoFriendlyJob).filter((job) => matchesExternalKeyword(job, query))
+        )
           .slice(0, 8)
           .map(mapArbeitnowJob)
       : [];
@@ -222,8 +241,10 @@ export const getAllJobs = async (req, res) => {
       });
     }
 
+    const itJobs = filterItJobs(jobs);
     const externalJobs = includeExternal ? await fetchExternalJobs(keyword) : [];
-    const mergedJobs = sortJobsByDate([...jobs, ...externalJobs]);
+    const scrapedJobs = includeExternal ? await getScrapedJobsForList(keyword) : [];
+    const mergedJobs = sortJobsByDate([...itJobs, ...scrapedJobs, ...externalJobs]);
 
     res.status(200).json({
       jobs: mergedJobs,
@@ -247,7 +268,7 @@ export const getJobById = async (req, res) => {
     }
 
     const job = await Job.findById(jobId).populate("company");
-    if (!job) {
+    if (!job || !filterItJobs([job]).length) {
       return res.status(404).json({
         message: "Job not found",
         success: false,

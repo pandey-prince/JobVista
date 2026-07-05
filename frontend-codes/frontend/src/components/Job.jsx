@@ -17,7 +17,8 @@ const Job = ({job}) => {
     }
 
     const openDetails = () => {
-        if (job?.external && job?.applicationLink) {
+        const isScrapedJob = String(job?._id || "").startsWith("scraped-");
+        if (job?.external && job?.applicationLink && !isScrapedJob) {
             window.open(job.applicationLink, "_blank", "noopener,noreferrer");
             return;
         }
@@ -45,6 +46,7 @@ const Job = ({job}) => {
             <div>
                 <div className='flex items-center gap-2'>
                     <h1 className='font-bold text-lg my-2'>{job?.title}</h1>
+                    {job?.isNew && <Badge className='text-orange-700 font-bold' variant="ghost">New</Badge>}
                     {job?.external && <Badge className='text-green-700 font-bold' variant="ghost">{job.externalSource}</Badge>}
                 </div>
                 <p className='text-sm text-gray-600 line-clamp-3'>{job?.description}</p>
@@ -55,7 +57,7 @@ const Job = ({job}) => {
                 <Badge className={'text-[#7209b7] font-bold'} variant="ghost">{salaryText}</Badge>
             </div>
             <div className='flex items-center gap-4 mt-4'>
-                <Button onClick={openDetails} variant="outline">{job?.external ? "View Source" : "Details"}</Button>
+                <Button onClick={openDetails} variant="outline">{job?.external && !String(job?._id || "").startsWith("scraped-") ? "View Source" : "Details"}</Button>
                 <Button className="bg-[#7209b7]">Save For Later</Button>
             </div>
         </div>

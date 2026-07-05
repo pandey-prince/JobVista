@@ -4,7 +4,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from "@/utils/constant";
+import { APPLICATION_API_END_POINT, JOB_API_END_POINT, SCRAPED_JOB_API_END_POINT } from "@/utils/constant";
 import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -45,6 +45,8 @@ const JobDescription = () => {
 
   const params = useParams();
   const jobId = params.id;
+  const isScrapedJob = String(jobId || "").startsWith("scraped-");
+  const scrapedJobId = isScrapedJob ? jobId.replace("scraped-", "") : jobId;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -52,6 +54,12 @@ const JobDescription = () => {
     if (!singleJob?.requirements?.length) return [];
     return singleJob.requirements.filter(Boolean);
   }, [singleJob]);
+
+  const applyOnCompanySite = () => {
+    if (singleJob?.applicationLink) {
+      window.open(singleJob.applicationLink, "_blank", "noopener,noreferrer");
+    }
+  };
 
   const applyJobHandler = async () => {
     if (!user) {
@@ -87,18 +95,24 @@ const JobDescription = () => {
     const fetchSingleJob = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`, {
+        const endpoint = isScrapedJob
+          ? `${SCRAPED_JOB_API_END_POINT}/${scrapedJobId}`
+          : `${JOB_API_END_POINT}/get/${jobId}`;
+
+        const res = await axios.get(endpoint, {
           withCredentials: true,
         });
 
         if (res.data.success) {
           dispatch(setSingleJob(res.data.job));
-          setIsApplied(
-            res.data.job.applications?.some(
-              (application) =>
-                application.applicant === user?._id || application.applicant?._id === user?._id,
-            ) || false,
-          );
+          if (!isScrapedJob) {
+            setIsApplied(
+              res.data.job.applications?.some(
+                (application) =>
+                  application.applicant === user?._id || application.applicant?._id === user?._id,
+              ) || false,
+            );
+          }
         }
       } catch (error) {
         toast.error(error.response?.data?.message || "Unable to load job details");
@@ -108,7 +122,7 @@ const JobDescription = () => {
     };
 
     fetchSingleJob();
-  }, [jobId, dispatch, user?._id]);
+  }, [jobId, scrapedJobId, isScrapedJob, dispatch, user?._id]);
 
   if (loading) {
     return (
@@ -149,6 +163,12 @@ const JobDescription = () => {
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="font-bold text-3xl">{singleJob.title}</h1>
                   <Badge variant="outline">{singleJob.jobType}</Badge>
+                  {singleJob.isNew && <Badge className="text-orange-700 font-bold" variant="ghost">New</Badge>}
+                  {isScrapedJob && (
+                    <Badge className="text-green-700 font-bold" variant="ghost">
+                      {singleJob.externalSource || singleJob.sourceName}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-gray-600 mt-2">
                   {singleJob?.company?.name || "JobVista Company"} - {singleJob.location}
@@ -167,16 +187,25 @@ const JobDescription = () => {
               </div>
             </div>
 
-            <Button
-              onClick={applyJobHandler}
-              disabled={isApplied || applying}
-              className={`rounded-lg min-w-36 ${
-                isApplied ? "bg-gray-600 cursor-not-allowed" : "bg-[#7209b7] hover:bg-[#5f32ad]"
-              }`}
-            >
-              {applying && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {isApplied ? "Already Applied" : "Apply Now"}
-            </Button>
+            {isScrapedJob ? (
+              <Button
+                onClick={applyOnCompanySite}
+                className="rounded-lg min-w-36 bg-[#7209b7] hover:bg-[#5f32ad]"
+              >
+                Apply on {singleJob?.company?.name || "company"} site
+              </Button>
+            ) : (
+              <Button
+                onClick={applyJobHandler}
+                disabled={isApplied || applying}
+                className={`rounded-lg min-w-36 ${
+                  isApplied ? "bg-gray-600 cursor-not-allowed" : "bg-[#7209b7] hover:bg-[#5f32ad]"
+                }`}
+              >
+                {applying && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {isApplied ? "Already Applied" : "Apply Now"}
+              </Button>
+            )}
           </div>
         </section>
 
@@ -252,9 +281,13 @@ const JobDescription = () => {
             </div>
 
             <div className="bg-[#f7f4ff] border border-[#e4d8ff] rounded-lg p-5">
-              <h2 className="font-bold text-lg">Need help applying?</h2>
+              <h2 className="font-bold text-lg">
+                {isScrapedJob ? "Sourced listing" : "Need help applying?"}
+              </h2>
               <p className="text-sm text-gray-600 mt-2">
-                Ask JobMate to improve your resume, write a cover letter, or prepare interview answers for this role.
+                {isScrapedJob
+                  ? `This role was synced from ${singleJob.sourceName || singleJob.externalSource || "a company career page"}. Last seen ${formatDate(singleJob.lastSeenAt || singleJob.createdAt)}.`
+                  : "Ask JobMate to improve your resume, write a cover letter, or prepare interview answers for this role."}
               </p>
             </div>
           </aside>
