@@ -1,0 +1,75 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: jobvista-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jobvista-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      MONGO_URI: mongodb://mongo:27017/jobvista
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      FRONTEND_URL: http://localhost:3000
+      SCRAPE_ENABLED: ${SCRAPE_ENABLED:-true}
+      SCRAPE_ON_BOOT: ${SCRAPE_ON_BOOT:-false}
+      SCRAPE_CRON_SCHEDULE: ${SCRAPE_CRON_SCHEDULE:-0 */6 * * *}
+      MAX_JOBS_PER_SOURCE: ${MAX_JOBS_PER_SOURCE:-15}
+      SCRAPE_DELAY_MS: ${SCRAPE_DELAY_MS:-1500}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/home"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend-codes/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_USER_API_END_POINT: http://localhost:8000/api/v1/user
+        VITE_JOB_API_END_POINT: http://localhost:8000/api/v1/job
+        VITE_APPLICATION_API_END_POINT: http://localhost:8000/api/v1/application
+        VITE_COMPANY_API_END_POINT: http://localhost:8000/api/v1/company
+        VITE_SCRAPED_JOB_API_END_POINT: http://localhost:8000/api/v1/scraped-jobs
+        VITE_CAREER_SOURCE_API_END_POINT: http://localhost:8000/api/v1/career-sources
+        VITE_CHATBOT_API_END_POINT: http://localhost:8000/api/v1/chatbot
+    container_name: jobvista-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  mongo_data:

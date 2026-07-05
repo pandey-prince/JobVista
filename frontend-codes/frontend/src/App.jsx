@@ -14,6 +14,8 @@ import CompanySetup from './components/admin/CompanySetup'
 import AdminJobs from "./components/admin/AdminJobs";
 import PostJob from './components/admin/PostJob'
 import Applicants from './components/admin/Applicants'
+import ScrapeSources from './components/admin/ScrapeSources'
+import CompanyLists from './components/CompanyLists'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import JobMateChatbot from './components/JobMateChatbot'
 
@@ -51,6 +53,10 @@ const appRouter = createBrowserRouter([
     path: "/profile/setup",
     element: <ProfileSetup />
   },
+  {
+    path: "/my-companies",
+    element: <CompanyLists />
+  },
   // admin ke liye yha se start hoga
   {
     path:"/admin/companies",
@@ -75,6 +81,10 @@ const appRouter = createBrowserRouter([
   {
     path:"/admin/jobs/:id/applicants",
     element:<ProtectedRoute><Applicants/></ProtectedRoute> 
+  },
+  {
+    path:"/admin/scrape-sources",
+    element:<ProtectedRoute><ScrapeSources/></ProtectedRoute>
   },
 
 ])
