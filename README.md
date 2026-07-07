@@ -22,7 +22,9 @@ A modern job portal platform connecting job seekers with employers, featuring jo
 ## Features
 
 - **Job Listings**: Browse and search through available job opportunities
-- **User Authentication**: Secure login for job seekers and employers
+- **JobMate AI Assistant**: A Gemini-powered career assistant for guidance and job Q&A
+- **External Job Aggregation**: Pulls live remote IT roles from external sources (Remotive, Arbeitnow) alongside recruiter-posted jobs
+- **User Authentication**: Secure JWT login with student and recruiter roles
 - **Application Management**: Apply to jobs and track application status
 - **Employer Dashboard**: Post and manage job listings
 - **Advanced Search**: Filter jobs by location, category, salary, and more
@@ -77,7 +79,14 @@ npm install
    - Create `.env` file in the backend directory
    - Add database connection string, JWT secret, and other configurations
 
-5. Start the development servers:
+5. (Optional) Seed demo data so the job board is populated with sample IT openings:
+```bash
+cd backend
+npm run seed
+```
+This creates a demo recruiter, a few companies, and ~15 realistic IT jobs. It reads `MONGO_URI` from your environment/`.env` and is safe to run multiple times (it only replaces its own demo jobs).
+
+6. Start the development servers:
 
 Backend:
 ```bash

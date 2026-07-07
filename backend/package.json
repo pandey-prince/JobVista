@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
+    "seed": "node scripts/seed-demo-jobs.js",
     "test": "node scripts/api-test.js",
     "test:api": "node scripts/api-test.js",
     "test:integration": "node scripts/integration-test.js"
