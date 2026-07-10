@@ -71,10 +71,11 @@ const Jobs = () => {
             </div>
           ) : (
             <div className="flex-1 pb-5">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {jobs.map((job) => (
                   <motion.div
                     key={job._id}
+                    className="w-full"
                     initial={{ opacity: 0, x: 100 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}

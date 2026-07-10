@@ -388,7 +388,7 @@ const CompanyLists = () => {
                 {watchlistJobs.length > 0 && (
                   <section>
                     <h2 className="mb-4 text-lg font-semibold">Latest IT jobs from your watchlist</h2>
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid items-start gap-4 md:grid-cols-2">
                       {watchlistJobs.map((job) => (
                         <Job key={job._id} job={job} />
                       ))}
