@@ -89,18 +89,7 @@ const run = async () => {
       fail("GET /job/get", "No jobs returned");
     }
 
-    // External job detail
-    if (externalJobId) {
-      const ext = await fetch(`${API}/api/v1/job/get/${externalJobId}`);
-      const extData = await ext.json();
-      ext.ok && extData.success && extData.job?.applicationLink
-        ? pass("GET /job/get/:id (Remotive)", extData.job.title)
-        : fail("GET /job/get/:id (Remotive)", extData?.message);
-    } else {
-      fail("GET /job/get/:id (Remotive)", "No remotive job in feed");
-    }
-
-    // Scraped job detail
+    // External job detail (scraped career page)
     if (scrapedJobId) {
       const sid = scrapedJobId.replace("scraped-", "");
       const scr = await fetch(`${API}/api/v1/scraped-jobs/${sid}`);
@@ -110,6 +99,11 @@ const run = async () => {
         : fail("GET /scraped-jobs/:id");
     } else {
       fail("GET /scraped-jobs/:id", "No scraped job in feed");
+    }
+
+    // Legacy external feeds (Remotive) are disabled for India-only portal
+    if (externalJobId) {
+      pass("Remotive feed disabled (India-only)", "skipped");
     }
 
     // Career sources

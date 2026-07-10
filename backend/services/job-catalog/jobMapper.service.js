@@ -1,5 +1,6 @@
 import { ScrapedJob } from "../../models/scrapedJob.model.js";
 import { filterItJobs } from "../../utils/itJobFilter.js";
+import { filterIndiaJobs } from "../../utils/indiaJobFilter.js";
 import { attachBadgesToJob } from "../../utils/jobBadges.js";
 
 export const mapScrapedJobForList = (job) =>
@@ -49,7 +50,7 @@ export const getScrapedJobsForList = async (keyword = "") => {
     .sort({ firstSeenAt: -1 })
     .limit(200);
 
-  return filterItJobs(jobs).slice(0, 150).map(mapScrapedJobForList);
+  return filterIndiaJobs(filterItJobs(jobs)).slice(0, 150).map(mapScrapedJobForList);
 };
 
 export const sortJobsByDate = (jobs = []) =>

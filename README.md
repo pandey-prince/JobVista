@@ -1,6 +1,6 @@
 # JobVista
 
-A job portal for IT roles in India — internal recruiter postings, scraped company career pages (100 sources), and live Remotive/Arbeitnow feeds.
+A job portal for IT roles in India — internal recruiter postings, scraped company career pages (100 sources). Only India-relevant roles are shown.
 
 ## Live
 
@@ -18,7 +18,7 @@ A job portal for IT roles in India — internal recruiter postings, scraped comp
 ## Features
 
 - Student & recruiter auth (JWT cookies)
-- Merged job feed: internal + scraped + Remotive + Arbeitnow
+- Merged job feed: internal + scraped (India IT roles only)
 - **JobMate AI Assistant:** Gemini-powered career assistant (optional `GEMINI_API_KEY`)
 - 100 Indian company career sources (Greenhouse, Lever, Workday, TCS, etc.)
 - Student job seeker tools: save jobs, email alerts, watchlist instant alerts, application kanban, resume match score

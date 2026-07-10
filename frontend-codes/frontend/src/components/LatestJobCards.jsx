@@ -1,28 +1,19 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Badge } from './ui/badge'
-import { useNavigate } from 'react-router-dom'
 import CompanyLogo from './CompanyLogo'
 import JobFreshnessBadges from './shared/JobFreshnessBadges'
+import JobQuickView from '@/features/job-detail/JobQuickView'
 import { getJobBadges } from '@/utils/jobBadges'
 
 const LatestJobCards = ({job}) => {
-    const navigate = useNavigate();
+    const [quickViewOpen, setQuickViewOpen] = useState(false);
     const badges = getJobBadges(job);
-
-    const openJob = () => {
-        const isScrapedJob = String(job?._id || "").startsWith("scraped-");
-        if (job?.external && job?.applicationLink && !isScrapedJob) {
-            window.open(job.applicationLink, "_blank", "noopener,noreferrer");
-            return;
-        }
-        navigate(`/description/${job._id}`);
-    }
-
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
 
     return (
+        <>
         <div
-            onClick={openJob}
+            onClick={() => setQuickViewOpen(true)}
             className='cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md'
         >
             <div className='flex items-center justify-between gap-2'>
@@ -48,6 +39,9 @@ const LatestJobCards = ({job}) => {
                 <Badge className='font-semibold text-[#7209b7]' variant="ghost">{salaryText}</Badge>
             </div>
         </div>
+
+        <JobQuickView job={job} open={quickViewOpen} onOpenChange={setQuickViewOpen} />
+        </>
     )
 }
 

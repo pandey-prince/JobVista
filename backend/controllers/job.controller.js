@@ -1,12 +1,12 @@
 import { Job } from "../models/job.model.js";
 import {
   fetchExternalJobById,
-  fetchExternalJobs,
   getScrapedJobsForList,
   isExternalJobId,
   sortJobsByDate,
 } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
+import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import { attachBadgesToJob } from "../utils/jobBadges.js";
 
 export const postJob = async (req, res) => {
@@ -72,7 +72,6 @@ export const postJob = async (req, res) => {
 export const getAllJobs = async (req, res) => {
   try {
     const keyword = req.query.keyword || "";
-    const includeExternal = req.query.includeExternal !== "false";
 
     const jobs = await Job.find({
       $or: [
@@ -82,15 +81,16 @@ export const getAllJobs = async (req, res) => {
       ],
     }).populate("company");
 
-    const itJobs = filterItJobs(jobs).map((job) =>
-      attachBadgesToJob(job, {
-        sourceType: "recruiter",
-        sourceLabel: "JobVista",
-      }),
+    const itJobs = filterIndiaJobs(
+      filterItJobs(jobs).map((job) =>
+        attachBadgesToJob(job, {
+          sourceType: "recruiter",
+          sourceLabel: "JobVista",
+        }),
+      ),
     );
-    const externalJobs = includeExternal ? await fetchExternalJobs(keyword) : [];
-    const scrapedJobs = includeExternal ? await getScrapedJobsForList(keyword) : [];
-    const mergedJobs = sortJobsByDate([...itJobs, ...scrapedJobs, ...externalJobs]);
+    const scrapedJobs = await getScrapedJobsForList(keyword);
+    const mergedJobs = sortJobsByDate([...itJobs, ...scrapedJobs]);
 
     res.status(200).json({
       jobs: mergedJobs,
