@@ -5,6 +5,7 @@ import { Bookmark, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import Pagination from "@/components/shared/Pagination";
+import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
 
 const SAVED_JOBS_PAGE_SIZE = 9;
 
@@ -50,11 +51,11 @@ const SavedJobs = () => {
           </div>
         ) : (
           <>
-            <div className="mt-8 grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <JobMasonryGrid className="mt-8">
               {pagedJobs.map((entry) => (
                 <Job key={entry.jobKey} job={entry.job} />
               ))}
-            </div>
+            </JobMasonryGrid>
             <Pagination
               className="mt-8"
               page={page}

@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Bookmark, Link2, Loader2, Plus, Trash2, Bell, BellOff } from "lucide-react";
 import Job from "./Job";
 import Pagination from "@/components/shared/Pagination";
+import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
 
 const WATCHLIST_PAGE_SIZE = 10;
 const BROWSE_PAGE_SIZE = 20;
@@ -388,11 +389,11 @@ const CompanyLists = () => {
                 {watchlistJobs.length > 0 && (
                   <section>
                     <h2 className="mb-4 text-lg font-semibold">Latest IT jobs from your watchlist</h2>
-                    <div className="grid items-start gap-4 md:grid-cols-2">
+                    <JobMasonryGrid maxColumns={2}>
                       {watchlistJobs.map((job) => (
                         <Job key={job._id} job={job} />
                       ))}
-                    </div>
+                    </JobMasonryGrid>
                     <Pagination
                       className="mt-6"
                       page={watchlistJobsPagination?.page || watchlistJobsPage}
