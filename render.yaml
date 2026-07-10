@@ -60,5 +60,5 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-      - key: ALERT_DIGEST_CRON
-        value: 30 14 * * *
+      - key: CRON_SECRET
+        sync: false

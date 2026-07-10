@@ -162,9 +162,47 @@ ALERT_DIGEST_CRON=30 14 * * *
 
 `ALERT_DIGEST_CRON` runs at **8:00 PM IST** (14:30 UTC). Without `RESEND_API_KEY`, emails are skipped in dev.
 
-## Scraping on Render
+## Scraping (hybrid: Render + GitHub Actions)
 
-Render free tier sets `SKIP_PUPPETEER_SCRAPERS=true` — **~45 API-based sources** sync; **55 auto-puppeteer sources** are skipped. Run a local sync against Atlas for Puppeteer companies, or use ops API endpoints.
+| Layer | What runs | Where |
+|-------|-------------|--------|
+| **API scrapers** (~47) | greenhouse, lever, workday, smartrecruiters, RSS, etc. | **Render** cron every 6h (`SCRAPE_ENABLED=true`, puppeteer skipped) |
+| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** weekly — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) |
+
+Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** scraped on the hosted backend.
+
+### GitHub Actions setup (required for full 100-source coverage)
+
+1. Repo **Settings → Secrets and variables → Actions**
+2. Add secret: `MONGO_URI` (same Atlas URI as Render)
+3. Workflow runs **weekly** (Sunday 08:00 IST) and supports **manual dispatch** from the Actions tab
+
+The workflow runs:
+1. `reprobe:sources` — tries to upgrade auto-puppeteer boards to API scrapers
+2. `sync:puppeteer` — scrapes remaining Puppeteer sources into Atlas
+3. `source-health` — logs a status report
+
+### Ops sync endpoint (optional)
+
+`POST /api/v1/scraped-jobs/sync/ops?mode=api|puppeteer|all` with header `x-cron-secret: <CRON_SECRET>`.
+
+Set `CRON_SECRET` on Render if you want external cron triggers. Render’s built-in scheduler already syncs **API sources only**.
+
+### Manual scripts (debug only)
+
+Do **not** run Puppeteer sync against production Atlas from your laptop. Production Puppeteer scraping is handled only by the GitHub Actions workflow above.
+
+```bash
+cd backend
+npm run sync:api              # API sources only (Render-style)
+npm run sync:puppeteer        # Local debugging only — CI uses the same script
+npm run reprobe:sources       # Upgrade auto-puppeteer → API where possible
+npm run sync:health           # Report; add --report-only to never fail exit code
+```
+
+### One-time: kick API sync on Render
+
+After deploy, either wait for the 6h cron or temporarily set `SCRAPE_ON_BOOT=true` in Render and redeploy once.
 
 ## Tests
 
