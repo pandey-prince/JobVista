@@ -255,7 +255,7 @@ const JobDescription = () => {
                   <Badge className="text-blue-700 font-bold" variant="ghost">
                     {singleJob.position || 1} Positions
                   </Badge>
-                  <Badge className="text-accent-violet font-bold" variant="ghost">
+                  <Badge className="text-accent-amber font-bold" variant="ghost">
                     {salaryText}
                   </Badge>
                   <Badge className="text-green-700 font-bold" variant="ghost">
@@ -279,7 +279,7 @@ const JobDescription = () => {
               <>
               <Button
                 onClick={applyOnCompanySite}
-                className="rounded-lg min-w-36 bg-accent-violet text-white hover:bg-accent-violet/90"
+                className="rounded-lg min-w-36 bg-accent-amber text-white hover:bg-accent-amber/90"
               >
                 Apply on {singleJob?.company?.name || singleJob.externalSource || "company"} site
               </Button>
@@ -297,7 +297,7 @@ const JobDescription = () => {
                 onClick={applyJobHandler}
                 disabled={isApplied || applying}
                 className={`rounded-lg min-w-36 ${
-                  isApplied ? "bg-muted-foreground cursor-not-allowed" : "bg-accent-violet text-white hover:bg-accent-violet/90"
+                  isApplied ? "bg-muted-foreground cursor-not-allowed" : "bg-accent-amber text-white hover:bg-accent-amber/90"
                 }`}
               >
                 {applying && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
