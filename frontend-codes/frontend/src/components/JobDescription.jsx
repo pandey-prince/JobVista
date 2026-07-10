@@ -308,8 +308,8 @@ const JobDescription = () => {
           </div>
         </section>
 
-        <section className="grid md:grid-cols-[1fr_320px] gap-6 mt-6">
-          <div className="bg-card border border-border rounded-lg p-6">
+        <section className="mt-6 grid items-start gap-6 md:grid-cols-[1fr_320px]">
+          <div className="w-full self-start rounded-lg border border-border bg-card p-6">
             <h2 className="font-bold text-xl">Job Description</h2>
             <div className="mt-4 space-y-4">
               {descriptionParagraphs.length ? (
@@ -323,7 +323,7 @@ const JobDescription = () => {
               )}
             </div>
 
-            <div className="mt-8">
+            <div className={descriptionParagraphs.length ? "mt-6" : "mt-4"}>
               <h2 className="font-bold text-xl">Requirements</h2>
               {requirements.length ? (
                 <div className="grid sm:grid-cols-2 gap-3 mt-4">
@@ -340,7 +340,7 @@ const JobDescription = () => {
             </div>
           </div>
 
-          <aside className="space-y-4">
+          <aside className="w-full space-y-4 self-start">
             <MatchScorePanel
               showForStudent={user?.role === "student"}
               matchScore={matchScore}

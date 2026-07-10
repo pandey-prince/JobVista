@@ -3,7 +3,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import UserAvatar from "./UserAvatar";
 import ThemeToggle from "./ThemeToggle";
-import { LogOut, Menu, User2, X } from "lucide-react";
+import UpdateProfileDialog from "../UpdateProfileDialog";
+import { LogOut, Menu, MoreVertical, User2, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -16,6 +17,8 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const logoutHandler = async () => {
     try {
@@ -63,6 +66,14 @@ const Navbar = () => {
     await logoutHandler();
   };
 
+  const openProfileEditor = () => {
+    setUserMenuOpen(false);
+    closeMobileMenu();
+    setProfileDialogOpen(true);
+  };
+
+  const showProfileEditor = user && user.role !== "recruiter";
+
   return (
     <div className="border-b border-border bg-card">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -99,44 +110,69 @@ const Navbar = () => {
               </Link>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <ThemeToggle />
-            <Popover>
-              <PopoverTrigger asChild>
+              <button
+                type="button"
+                onClick={showProfileEditor ? openProfileEditor : () => setUserMenuOpen(true)}
+                className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label={showProfileEditor ? "Edit profile" : "Open account menu"}
+              >
                 <UserAvatar
                   name={user?.fullname}
                   className="cursor-pointer font-bold pb-1.5"
                 />
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div>
-                  <div className="flex gap-2 space-y-2">
-                    <UserAvatar name={user?.fullname} className="cursor-pointer" />
-                    <div className="min-w-0">
-                      <h4 className="font-medium">{user?.fullname}</h4>
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {user?.profile?.bio}
-                      </p>
+              </button>
+              <Popover open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 shrink-0"
+                    aria-label="Account options"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72" align="end">
+                  <div>
+                    <div className="flex gap-2">
+                      <UserAvatar name={user?.fullname} className="shrink-0" />
+                      <div className="min-w-0">
+                        <h4 className="font-medium">{user?.fullname}</h4>
+                        <p className="line-clamp-2 text-sm text-muted-foreground">
+                          {user?.profile?.bio || user?.email}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="my-2 flex flex-col text-muted-foreground">
-                    <div className="flex w-fit items-center gap-2 cursor-pointer">
-                      <User2 />
-                      <Button variant="link">
-                        <Link to="/profile">View Profile</Link>
+                    <div className="my-3 flex flex-col gap-1 text-muted-foreground">
+                      {showProfileEditor ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="justify-start px-2"
+                          onClick={openProfileEditor}
+                        >
+                          Edit profile
+                        </Button>
+                      ) : null}
+                      <Button variant="ghost" className="justify-start px-2" asChild>
+                        <Link to="/profile" onClick={() => setUserMenuOpen(false)}>
+                          View profile
+                        </Link>
                       </Button>
-                    </div>
-
-                    <div className="flex w-fit items-center gap-2 cursor-pointer">
-                      <LogOut />
-                      <Button onClick={logoutHandler} variant="link">
+                      <Button
+                        variant="ghost"
+                        className="justify-start px-2 text-destructive hover:text-destructive"
+                        onClick={logoutHandler}
+                      >
                         Logout
                       </Button>
                     </div>
                   </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </div>
@@ -184,23 +220,36 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="rounded-lg border border-border bg-muted/40 p-3">
-                <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={showProfileEditor ? openProfileEditor : closeMobileMenu}
+                  className="flex w-full items-center gap-3 text-left"
+                >
                   <UserAvatar name={user?.fullname} className="cursor-pointer font-bold" />
                   <div className="min-w-0">
                     <h4 className="truncate font-medium">{user?.fullname}</h4>
                     <p className="truncate text-sm text-muted-foreground">
-                      {user?.profile?.bio}
+                      {showProfileEditor ? "Tap to edit profile" : user?.profile?.bio || user?.email}
                     </p>
                   </div>
-                </div>
+                </button>
                 <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
+                  {showProfileEditor ? (
+                    <button
+                      type="button"
+                      onClick={openProfileEditor}
+                      className="flex items-center gap-2 text-left hover:text-foreground"
+                    >
+                      <span>Edit profile</span>
+                    </button>
+                  ) : null}
                   <Link
                     to="/profile"
                     onClick={closeMobileMenu}
                     className="flex items-center gap-2"
                   >
                     <User2 className="h-4 w-4" />
-                    <span>View Profile</span>
+                    <span>View profile</span>
                   </Link>
                   <button
                     type="button"
@@ -215,6 +264,9 @@ const Navbar = () => {
             )}
           </div>
         </div>
+      ) : null}
+      {showProfileEditor ? (
+        <UpdateProfileDialog open={profileDialogOpen} setOpen={setProfileDialogOpen} />
       ) : null}
     </div>
   );
