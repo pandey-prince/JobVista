@@ -6,6 +6,7 @@ import FilterCard from "./FilterCard";
 import { emptyJobFilters } from "@/utils/jobFilters";
 import usePaginatedJobs from "@/hooks/usePaginatedJobs";
 import Pagination from "@/components/shared/Pagination";
+import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
 import { Loader2 } from "lucide-react";
 
 const JOBS_PER_PAGE = 12;
@@ -70,11 +71,11 @@ const Browse = () => {
             </div>
           ) : (
             <div className="flex-1">
-              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <JobMasonryGrid>
                 {jobs.map((job) => (
                   <Job key={job._id} job={job} />
                 ))}
-              </div>
+              </JobMasonryGrid>
               <Pagination
                 className="mt-8"
                 page={pagination?.page || page}

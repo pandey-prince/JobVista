@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { emptyJobFilters } from "@/utils/jobFilters";
 import usePaginatedJobs from "@/hooks/usePaginatedJobs";
 import Pagination from "@/components/shared/Pagination";
+import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
 import { Loader2 } from "lucide-react";
 
 const JOBS_PER_PAGE = 12;
@@ -71,19 +72,19 @@ const Jobs = () => {
             </div>
           ) : (
             <div className="flex-1 pb-5">
-              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <JobMasonryGrid>
                 {jobs.map((job) => (
                   <motion.div
                     key={job._id}
                     className="w-full"
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
                   >
                     <Job job={job} />
                   </motion.div>
                 ))}
-              </div>
+              </JobMasonryGrid>
               <Pagination
                 className="mt-8"
                 page={pagination?.page || page}
