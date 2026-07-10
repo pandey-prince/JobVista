@@ -21,11 +21,12 @@ const Job = ({job}) => {
     }
 
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
+    const description = cleanJobText(job?.description, { maxLength: 220 });
     
     return (
         <>
         <div
-            className='flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer'
+            className='flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer'
             onClick={() => setQuickViewOpen(true)}
         >
             <div className='flex items-center justify-between gap-3'>
@@ -49,14 +50,16 @@ const Job = ({job}) => {
                 </div>
             </div>
 
-            <div className='mt-4 flex-1'>
+            <div className='mt-4'>
                 <h3 className='font-bold text-lg leading-snug'>{job?.title}</h3>
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>
-                <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>
-                    {cleanJobText(job?.description, { maxLength: 220 })}
-                </p>
+                {description ? (
+                    <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>
+                        {description}
+                    </p>
+                ) : null}
             </div>
 
             <div className='mt-4 flex flex-wrap items-center gap-2'>

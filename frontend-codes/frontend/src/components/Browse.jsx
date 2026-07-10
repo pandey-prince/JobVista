@@ -70,7 +70,7 @@ const Browse = () => {
             </div>
           ) : (
             <div className="flex-1">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {jobs.map((job) => (
                   <Job key={job._id} job={job} />
                 ))}
