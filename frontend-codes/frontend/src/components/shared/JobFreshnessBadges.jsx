@@ -12,7 +12,7 @@ const JobFreshnessBadges = ({ job, size = "sm" }) => {
       {badges.isPostedToday && (
         <Badge
           variant="outline"
-          className={`${textSize} border-amber-300 bg-amber-50 font-semibold text-amber-800`}
+          className={`${textSize} border-amber-300 bg-amber-50 font-semibold text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200`}
         >
           Posted today
         </Badge>
@@ -20,7 +20,7 @@ const JobFreshnessBadges = ({ job, size = "sm" }) => {
       {badges.isNew && !badges.isPostedToday && (
         <Badge
           variant="outline"
-          className={`${textSize} border-orange-300 bg-orange-50 font-semibold text-orange-800`}
+          className={`${textSize} border-orange-300 bg-orange-50 font-semibold text-orange-800 dark:border-orange-700 dark:bg-orange-950 dark:text-orange-200`}
         >
           New
         </Badge>
@@ -28,7 +28,7 @@ const JobFreshnessBadges = ({ job, size = "sm" }) => {
       {badges.isCareerPage && (
         <Badge
           variant="outline"
-          className={`${textSize} border-emerald-300 bg-emerald-50 font-semibold text-emerald-800`}
+          className={`${textSize} border-emerald-300 bg-emerald-50 font-semibold text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200`}
         >
           Career page
         </Badge>

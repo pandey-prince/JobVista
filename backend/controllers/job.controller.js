@@ -7,6 +7,11 @@ import {
 } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
+import { parseJobListFilters, filterJobList } from "../utils/jobListFilters.js";
+import {
+  parsePagination,
+  paginateArray,
+} from "../utils/pagination.js";
 import { attachBadgesToJob } from "../utils/jobBadges.js";
 
 export const postJob = async (req, res) => {
@@ -72,6 +77,11 @@ export const postJob = async (req, res) => {
 export const getAllJobs = async (req, res) => {
   try {
     const keyword = req.query.keyword || "";
+    const filters = parseJobListFilters(req.query);
+    const paginationQuery = parsePagination(req.query, {
+      defaultLimit: 12,
+      maxLimit: 48,
+    });
 
     const jobs = await Job.find({
       $or: [
@@ -91,9 +101,12 @@ export const getAllJobs = async (req, res) => {
     );
     const scrapedJobs = await getScrapedJobsForList(keyword);
     const mergedJobs = sortJobsByDate([...itJobs, ...scrapedJobs]);
+    const filteredJobs = filterJobList(mergedJobs, keyword, filters);
+    const { data: jobsPage, pagination } = paginateArray(filteredJobs, paginationQuery);
 
     res.status(200).json({
-      jobs: mergedJobs,
+      jobs: jobsPage,
+      pagination,
       success: true,
     });
   } catch (err) {

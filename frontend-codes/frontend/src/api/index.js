@@ -43,7 +43,10 @@ export const trackerApi = {
 };
 
 export const jobsApi = {
-  list: (keyword = "") => apiClient.get(`${JOB_API_END_POINT}/get`, { params: { keyword } }),
+  list: ({ keyword = "", page = 1, limit = 12, ...filterParams } = {}) =>
+    apiClient.get(`${JOB_API_END_POINT}/get`, {
+      params: { keyword, page, limit, ...filterParams },
+    }),
   getById: (id) => apiClient.get(`${JOB_API_END_POINT}/get/${id}`),
   getScrapedById: (id) => apiClient.get(`${SCRAPED_JOB_API_END_POINT}/${id}`),
   matchScore: (jobKey) => apiClient.post(`${JOB_API_END_POINT}/match-score`, { jobKey }),
@@ -54,11 +57,18 @@ export const applicationsApi = {
 };
 
 export const careerSourceApi = {
-  listPublic: () => apiClient.get(`${CAREER_SOURCE_API_END_POINT}/`),
-  listUserLists: (type) =>
-    apiClient.get(`${CAREER_SOURCE_API_END_POINT}/lists`, { params: { type } }),
-  listWatchlistJobs: () =>
-    apiClient.get(`${CAREER_SOURCE_API_END_POINT}/lists/jobs`, { params: { type: "watchlist" } }),
+  listPublic: ({ page = 1, limit = 20, search = "" } = {}) =>
+    apiClient.get(`${CAREER_SOURCE_API_END_POINT}/`, {
+      params: { page, limit, search },
+    }),
+  listUserLists: (type, { page = 1, limit = 10 } = {}) =>
+    apiClient.get(`${CAREER_SOURCE_API_END_POINT}/lists`, {
+      params: { type, page, limit },
+    }),
+  listWatchlistJobs: ({ page = 1, limit = 8 } = {}) =>
+    apiClient.get(`${CAREER_SOURCE_API_END_POINT}/lists/jobs`, {
+      params: { type: "watchlist", page, limit },
+    }),
   submit: (payload) => apiClient.post(`${CAREER_SOURCE_API_END_POINT}/submit`, payload),
   addList: (payload) => apiClient.post(`${CAREER_SOURCE_API_END_POINT}/lists`, payload),
   updateList: (id, payload) =>

@@ -1,16 +1,19 @@
 import { ScrapedJob } from "../../models/scrapedJob.model.js";
 import { filterItJobs } from "../../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../../utils/indiaJobFilter.js";
+import { cleanJobText, extractExperienceFromTitle } from "../../utils/jobText.js";
 import { attachBadgesToJob } from "../../utils/jobBadges.js";
 
-export const mapScrapedJobForList = (job) =>
-  attachBadgesToJob(
+export const mapScrapedJobForList = (job) => {
+  const description = cleanJobText(job.description, { maxLength: 400 });
+
+  return attachBadgesToJob(
     {
       _id: `scraped-${job._id}`,
       title: job.title,
-      description: job.description.slice(0, 260),
+      description,
       requirements: job.requirements || [],
-      experienceLevel: job.jobType || "Open",
+      experienceLevel: extractExperienceFromTitle(job.title) || "Not specified",
       salary: job.salary || "Not disclosed",
       location: job.location,
       jobType: job.jobType,
@@ -31,6 +34,7 @@ export const mapScrapedJobForList = (job) =>
       sourceLabel: job.source?.name || job.companyName,
     },
   );
+};
 
 export const getScrapedJobsForList = async (keyword = "") => {
   const query = { status: "active" };
@@ -48,9 +52,9 @@ export const getScrapedJobsForList = async (keyword = "") => {
   const jobs = await ScrapedJob.find(query)
     .populate("source")
     .sort({ firstSeenAt: -1 })
-    .limit(200);
+    .limit(500);
 
-  return filterIndiaJobs(filterItJobs(jobs)).slice(0, 150).map(mapScrapedJobForList);
+  return filterIndiaJobs(filterItJobs(jobs)).map(mapScrapedJobForList);
 };
 
 export const sortJobsByDate = (jobs = []) =>

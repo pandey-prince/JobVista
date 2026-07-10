@@ -63,11 +63,11 @@ const ProfileSetup = () => {
 
   return (
     <div>
-      <div className="max-w-5xl mx-auto my-6 border border-gray-200 rounded-md p-6 bg-white">
+      <div className="max-w-5xl mx-auto my-6 border border-border rounded-md p-6 bg-card">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="font-bold text-2xl">Complete your JobVista profile</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Add education, skills, experience, internships and links so recruiters can understand you better.
             </p>
           </div>
@@ -98,7 +98,7 @@ const ProfileSetup = () => {
               name="bio"
               value={input.bio}
               onChange={changeEventHandler}
-              className="w-full min-h-20 border border-gray-300 rounded-md px-3 py-2 text-sm"
+              className="w-full min-h-20 border border-border rounded-md px-3 py-2 text-sm"
               placeholder="Example: Final year CSE student interested in frontend development"
             />
           </div>
@@ -173,7 +173,7 @@ const ProfileSetup = () => {
                 name="experience"
                 value={input.experience}
                 onChange={changeEventHandler}
-                className="w-full min-h-28 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full min-h-28 border border-border rounded-md px-3 py-2 text-sm"
                 placeholder="Title | Company | Duration | Description"
               />
             </div>
@@ -183,7 +183,7 @@ const ProfileSetup = () => {
                 name="internships"
                 value={input.internships}
                 onChange={changeEventHandler}
-                className="w-full min-h-28 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full min-h-28 border border-border rounded-md px-3 py-2 text-sm"
                 placeholder="Title | Company | Duration | Description"
               />
             </div>
@@ -193,13 +193,13 @@ const ProfileSetup = () => {
                 name="projects"
                 value={input.projects}
                 onChange={changeEventHandler}
-                className="w-full min-h-28 border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full min-h-28 border border-border rounded-md px-3 py-2 text-sm"
                 placeholder="Project | Link | Description"
               />
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5b30a6]" disabled={loading}>
+          <Button type="submit" className="w-full bg-brand hover:bg-brand/90" disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Save Profile
           </Button>

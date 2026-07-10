@@ -1,35 +1,60 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LatestJobCards from "./LatestJobCards";
-import { useSelector } from "react-redux";
+import { jobsApi } from "@/api";
+import { Loader2 } from "lucide-react";
 
 const LatestJobs = () => {
-  const { allJobs } = useSelector((store) => store.job);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const jobsToDisplay = Array.isArray(allJobs) ? allJobs.slice(0, 6) : [];
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        setLoading(true);
+        const res = await jobsApi.list({ page: 1, limit: 6 });
+        if (res.data.success) setJobs(res.data.jobs || []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatest();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto my-20 px-4 sm:px-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-3xl font-bold sm:text-4xl">
-            <span className="text-[#6A38C2]">Fresh</span> IT job openings
+            <span className="text-brand">Fresh</span> IT job openings
           </h2>
-          <p className="text-sm text-gray-500 mt-2 max-w-2xl">
-            New roles from company career pages, recruiter posts, and trusted remote feeds — with freshness badges on every card.
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+            New India IT roles from company career pages and JobVista recruiters — with freshness badges on every card.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
-        {jobsToDisplay.length === 0 ? (
-          <div className="col-span-full border border-dashed border-gray-300 rounded-md p-8 text-center">
-            <h2 className="font-semibold">No jobs available yet</h2>
-            <p className="text-sm text-gray-500 mt-1">Try searching a role or check again after recruiters post new openings.</p>
-          </div>
-        ) : (
-          jobsToDisplay.map((job) => <LatestJobCards key={job._id} job={job} />)
-        )}
-      </div>
+      {loading ? (
+        <div className="mt-10 flex items-center justify-center text-muted-foreground">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          Loading latest jobs...
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
+          {jobs.length === 0 ? (
+            <div className="col-span-full border border-dashed border-border rounded-md p-8 text-center bg-card">
+              <h2 className="font-semibold">No jobs available yet</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Try searching a role or check again after recruiters post new openings.
+              </p>
+            </div>
+          ) : (
+            jobs.map((job) => <LatestJobCards key={job._id} job={job} />)
+          )}
+        </div>
+      )}
     </div>
   );
 };

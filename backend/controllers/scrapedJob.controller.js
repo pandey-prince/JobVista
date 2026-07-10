@@ -15,6 +15,7 @@ import {
   mapScrapedJobForList,
 } from "../services/job-catalog/index.js";
 import { attachBadgesToJob } from "../utils/jobBadges.js";
+import { cleanJobText, extractExperienceFromTitle } from "../utils/jobText.js";
 
 export const listScrapedJobs = async (req, res) => {
   try {
@@ -50,9 +51,9 @@ export const getScrapedJobById = async (req, res) => {
           _id: `scraped-${job._id}`,
           scrapedJobId: job._id,
           title: job.title,
-          description: job.description,
-          requirements: job.requirements,
-          experienceLevel: job.jobType,
+          description: cleanJobText(job.description),
+          requirements: (job.requirements || []).map((item) => cleanJobText(String(item))),
+          experienceLevel: extractExperienceFromTitle(job.title) || "Not specified",
           salary: job.salary,
           location: job.location,
           jobType: job.jobType,

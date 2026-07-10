@@ -22,6 +22,7 @@ import JobFreshnessBadges from "./shared/JobFreshnessBadges";
 import MatchScorePanel from "@/features/job-detail/MatchScorePanel";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
+import { cleanJobText, toDescriptionParagraphs } from "@/utils/jobText";
 
 const formatDate = (value) => {
   if (!value) return "Not available";
@@ -56,8 +57,13 @@ const JobDescription = () => {
 
   const requirements = useMemo(() => {
     if (!singleJob?.requirements?.length) return [];
-    return singleJob.requirements.filter(Boolean);
+    return singleJob.requirements.map((item) => cleanJobText(String(item))).filter(Boolean);
   }, [singleJob]);
+
+  const descriptionParagraphs = useMemo(
+    () => toDescriptionParagraphs(singleJob?.description, 20),
+    [singleJob?.description],
+  );
 
   const applyOnCompanySite = () => {
     if (singleJob?.applicationLink) {
@@ -194,7 +200,7 @@ const JobDescription = () => {
   if (loading) {
     return (
       <div>
-        <div className="max-w-6xl mx-auto my-16 flex items-center justify-center text-gray-500">
+        <div className="max-w-6xl mx-auto my-16 flex items-center justify-center text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin mr-2" />
           Loading job details
         </div>
@@ -205,9 +211,9 @@ const JobDescription = () => {
   if (!singleJob) {
     return (
       <div>
-        <div className="max-w-6xl mx-auto my-16 border border-dashed border-gray-300 rounded-md p-10 text-center">
+        <div className="max-w-6xl mx-auto my-16 border border-dashed border-border rounded-md p-10 text-center">
           <h1 className="font-bold text-xl">Job not found</h1>
-          <p className="text-sm text-gray-500 mt-2">This job may have been removed or is no longer available.</p>
+          <p className="text-sm text-muted-foreground mt-2">This job may have been removed or is no longer available.</p>
         </div>
       </div>
     );
@@ -220,7 +226,7 @@ const JobDescription = () => {
   return (
     <div>
       <main className="max-w-6xl mx-auto my-8">
-        <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <section className="bg-card border border-border rounded-lg p-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             <div className="flex gap-4">
               <CompanyLogo company={singleJob?.company} className="h-16 w-16" />
@@ -232,7 +238,7 @@ const JobDescription = () => {
                 <div className="mt-3">
                   <JobFreshnessBadges job={singleJob} size="md" />
                 </div>
-                <p className="text-gray-600 mt-2">
+                <p className="text-muted-foreground mt-2">
                   {singleJob?.company?.name || "JobVista Company"} · {singleJob.location}
                 </p>
                 {badges.isCareerPage && singleJob.sourceUrl && (
@@ -240,7 +246,7 @@ const JobDescription = () => {
                     href={singleJob.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-block text-sm font-medium text-[#6A38C2] hover:underline"
+                    className="mt-2 inline-block text-sm font-medium text-brand hover:underline"
                   >
                     View original career page →
                   </a>
@@ -249,7 +255,7 @@ const JobDescription = () => {
                   <Badge className="text-blue-700 font-bold" variant="ghost">
                     {singleJob.position || 1} Positions
                   </Badge>
-                  <Badge className="text-[#7209b7] font-bold" variant="ghost">
+                  <Badge className="text-accent-violet font-bold" variant="ghost">
                     {salaryText}
                   </Badge>
                   <Badge className="text-green-700 font-bold" variant="ghost">
@@ -263,7 +269,7 @@ const JobDescription = () => {
               <Button
                 variant="outline"
                 onClick={() => toggleSaveJob(singleJob)}
-                className={isSaved(jobId) ? "border-[#6A38C2] text-[#6A38C2]" : ""}
+                className={isSaved(jobId) ? "border-brand text-brand" : ""}
               >
                 <Bookmark className={`mr-2 h-4 w-4 ${isSaved(jobId) ? "fill-current" : ""}`} />
                 {isSaved(jobId) ? "Saved" : "Save job"}
@@ -273,7 +279,7 @@ const JobDescription = () => {
               <>
               <Button
                 onClick={applyOnCompanySite}
-                className="rounded-lg min-w-36 bg-[#7209b7] hover:bg-[#5f32ad]"
+                className="rounded-lg min-w-36 bg-accent-violet text-white hover:bg-accent-violet/90"
               >
                 Apply on {singleJob?.company?.name || singleJob.externalSource || "company"} site
               </Button>
@@ -291,7 +297,7 @@ const JobDescription = () => {
                 onClick={applyJobHandler}
                 disabled={isApplied || applying}
                 className={`rounded-lg min-w-36 ${
-                  isApplied ? "bg-gray-600 cursor-not-allowed" : "bg-[#7209b7] hover:bg-[#5f32ad]"
+                  isApplied ? "bg-muted-foreground cursor-not-allowed" : "bg-accent-violet text-white hover:bg-accent-violet/90"
                 }`}
               >
                 {applying && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
@@ -303,23 +309,33 @@ const JobDescription = () => {
         </section>
 
         <section className="grid md:grid-cols-[1fr_320px] gap-6 mt-6">
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="bg-card border border-border rounded-lg p-6">
             <h2 className="font-bold text-xl">Job Description</h2>
-            <p className="text-gray-700 leading-7 mt-4">{singleJob.description}</p>
+            <div className="mt-4 space-y-4">
+              {descriptionParagraphs.length ? (
+                descriptionParagraphs.map((paragraph, index) => (
+                  <p key={index} className="text-foreground/80 leading-7">
+                    {paragraph}
+                  </p>
+                ))
+              ) : (
+                <p className="text-muted-foreground">No description available.</p>
+              )}
+            </div>
 
             <div className="mt-8">
               <h2 className="font-bold text-xl">Requirements</h2>
               {requirements.length ? (
                 <div className="grid sm:grid-cols-2 gap-3 mt-4">
                   {requirements.map((item, index) => (
-                    <div key={`${item}-${index}`} className="flex gap-2 text-sm text-gray-700">
+                    <div key={`${item}-${index}`} className="flex gap-2 text-sm text-foreground/80">
                       <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 mt-3">Requirements were not added by the recruiter.</p>
+                <p className="text-sm text-muted-foreground mt-3">Requirements were not added by the recruiter.</p>
               )}
             </div>
           </div>
@@ -332,59 +348,59 @@ const JobDescription = () => {
               onLoad={() => loadMatchScore(true)}
             />
 
-            <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <div className="bg-card border border-border rounded-lg p-5">
               <h2 className="font-bold text-lg">Job Overview</h2>
               <div className="space-y-4 mt-4">
                 <div className="flex gap-3">
-                  <MapPin className="h-5 w-5 text-[#6A38C2]" />
+                  <MapPin className="h-5 w-5 text-brand" />
                   <div>
-                    <p className="text-sm text-gray-500">Location</p>
+                    <p className="text-sm text-muted-foreground">Location</p>
                     <p className="font-medium">{singleJob.location}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <BriefcaseBusiness className="h-5 w-5 text-[#6A38C2]" />
+                  <BriefcaseBusiness className="h-5 w-5 text-brand" />
                   <div>
-                    <p className="text-sm text-gray-500">Experience</p>
+                    <p className="text-sm text-muted-foreground">Experience</p>
                     <p className="font-medium">{singleJob.experienceLevel || "Not specified"} yrs</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <IndianRupee className="h-5 w-5 text-[#6A38C2]" />
+                  <IndianRupee className="h-5 w-5 text-brand" />
                   <div>
-                    <p className="text-sm text-gray-500">Salary</p>
+                    <p className="text-sm text-muted-foreground">Salary</p>
                     <p className="font-medium">{salaryText}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Users className="h-5 w-5 text-[#6A38C2]" />
+                  <Users className="h-5 w-5 text-brand" />
                   <div>
-                    <p className="text-sm text-gray-500">Applicants</p>
+                    <p className="text-sm text-muted-foreground">Applicants</p>
                     <p className="font-medium">{singleJob.applications?.length || 0}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <CalendarDays className="h-5 w-5 text-[#6A38C2]" />
+                  <CalendarDays className="h-5 w-5 text-brand" />
                   <div>
-                    <p className="text-sm text-gray-500">Posted Date</p>
+                    <p className="text-sm text-muted-foreground">Posted Date</p>
                     <p className="font-medium">{formatDate(singleJob.createdAt)}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Clock3 className="h-5 w-5 text-[#6A38C2]" />
+                  <Clock3 className="h-5 w-5 text-brand" />
                   <div>
-                    <p className="text-sm text-gray-500">Job Type</p>
+                    <p className="text-sm text-muted-foreground">Job Type</p>
                     <p className="font-medium">{singleJob.jobType}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#f7f4ff] border border-[#e4d8ff] rounded-lg p-5">
+            <div className="rounded-lg border border-brand/20 bg-brand-muted p-5">
               <h2 className="font-bold text-lg">
                 {badges.isCareerPage ? "Direct from career page" : "Need help applying?"}
               </h2>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 {badges.isCareerPage
                   ? `This role was synced from ${singleJob.sourceName || singleJob.externalSource || "a company career page"}. Last verified ${formatDate(singleJob.lastSeenAt || singleJob.createdAt)}.`
                   : "Ask JobMate to improve your resume, write a cover letter, or prepare interview answers for this role."}

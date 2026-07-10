@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
@@ -11,30 +11,96 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bookmark, BriefcaseBusiness, IndianRupee, MapPin } from "lucide-react";
+import {
+  Bookmark,
+  BriefcaseBusiness,
+  CalendarDays,
+  ExternalLink,
+  IndianRupee,
+  Loader2,
+  MapPin,
+  Users,
+} from "lucide-react";
 import CompanyLogo from "@/components/CompanyLogo";
 import JobFreshnessBadges from "@/components/shared/JobFreshnessBadges";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
+import { jobsApi } from "@/api";
+import {
+  cleanJobText,
+  formatJobPostedDate,
+  getJobExperienceLabel,
+  toDescriptionParagraphs,
+} from "@/utils/jobText";
 
 const JobQuickView = ({ job, open, onOpenChange }) => {
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
   const { isSaved, toggleSaveJob } = useSavedJobs();
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !job) {
+      setDetails(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadDetails = async () => {
+      setLoading(true);
+      try {
+        const isScrapedJob = String(job._id || "").startsWith("scraped-");
+        const res = isScrapedJob
+          ? await jobsApi.getScrapedById(job.scrapedJobId || String(job._id).replace("scraped-", ""))
+          : await jobsApi.getById(job._id);
+
+        if (!cancelled && res.data.success) {
+          setDetails(res.data.job);
+        } else if (!cancelled) {
+          setDetails(job);
+        }
+      } catch {
+        if (!cancelled) setDetails(job);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadDetails();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, job]);
+
+  const displayJob = details || job;
+  const descriptionParagraphs = useMemo(
+    () => toDescriptionParagraphs(displayJob?.description, 10),
+    [displayJob?.description],
+  );
 
   if (!job) return null;
+  const requirements = (displayJob?.requirements || [])
+    .map((item) => cleanJobText(String(item)))
+    .filter(Boolean)
+    .slice(0, 8);
 
-  const badges = getJobBadges(job);
-  const saved = isSaved(job._id);
-  const isScrapedJob = String(job._id || "").startsWith("scraped-");
-  const isExternalFeed = job.external && !isScrapedJob;
+  const badges = getJobBadges(displayJob);
+  const saved = isSaved(displayJob._id);
+  const isScrapedJob = String(displayJob._id || "").startsWith("scraped-");
+  const isExternalFeed = displayJob.external && !isScrapedJob;
   const salaryText =
-    typeof job.salary === "number" ? `${job.salary} LPA` : job.salary || "Not disclosed";
+    typeof displayJob.salary === "number"
+      ? `${displayJob.salary} LPA`
+      : displayJob.salary || "Not disclosed";
+  const experienceLabel = getJobExperienceLabel(displayJob);
+  const postedDate = formatJobPostedDate(displayJob.createdAt);
 
   const handleApply = () => {
     if (isExternalFeed || isScrapedJob) {
-      if (job.applicationLink) {
-        window.open(job.applicationLink, "_blank", "noopener,noreferrer");
+      if (displayJob.applicationLink) {
+        window.open(displayJob.applicationLink, "_blank", "noopener,noreferrer");
       }
       return;
     }
@@ -44,70 +110,140 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
       return;
     }
     onOpenChange(false);
-    navigate(`/description/${job._id}`);
+    navigate(`/description/${displayJob._id}`);
   };
 
   const handleSave = async () => {
-    await toggleSaveJob(job);
+    await toggleSaveJob(displayJob);
+  };
+
+  const openFullDetails = () => {
+    onOpenChange(false);
+    navigate(`/description/${displayJob._id}`);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-md flex-col overflow-hidden sm:max-w-2xl">
+        <DialogHeader className="shrink-0">
           <div className="flex items-start gap-3 pr-6">
-            <CompanyLogo company={job.company} className="h-12 w-12 shrink-0" />
+            <CompanyLogo company={displayJob.company} className="h-12 w-12 shrink-0" />
             <div className="min-w-0 text-left">
-              <DialogTitle className="text-xl leading-snug">{job.title}</DialogTitle>
+              <DialogTitle className="text-xl leading-snug">{displayJob.title}</DialogTitle>
               <DialogDescription className="mt-1 text-base text-muted-foreground">
-                {job.company?.name || "Company"}
+                {displayJob.company?.name || "Company"}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <JobFreshnessBadges job={job} size="md" />
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+          <JobFreshnessBadges job={displayJob} size="md" />
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <MapPin className="h-4 w-4 text-[#6A38C2]" />
-              <span>{job.location || "India"}</span>
+              <MapPin className="h-4 w-4 shrink-0 text-brand" />
+              <span>{displayJob.location || "India"}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <IndianRupee className="h-4 w-4 text-[#6A38C2]" />
+              <IndianRupee className="h-4 w-4 shrink-0 text-brand" />
               <span>{salaryText}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <BriefcaseBusiness className="h-4 w-4 text-[#6A38C2]" />
-              <span>{job.jobType || "Full-time"}</span>
+              <BriefcaseBusiness className="h-4 w-4 shrink-0 text-brand" />
+              <span>{displayJob.jobType || "Full-time"}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <Badge variant="outline">{job.experienceLevel || "Open"} yrs</Badge>
+              <Users className="h-4 w-4 shrink-0 text-brand" />
+              <span>{experienceLabel}</span>
             </div>
+            {postedDate && (
+              <div className="flex items-center gap-2 text-sm text-foreground sm:col-span-2">
+                <CalendarDays className="h-4 w-4 shrink-0 text-brand" />
+                <span>Posted {postedDate}</span>
+              </div>
+            )}
+            {displayJob.position ? (
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Badge variant="outline">{displayJob.position} open positions</Badge>
+              </div>
+            ) : null}
           </div>
 
-          {job.description && (
-            <p className="text-sm leading-6 text-muted-foreground line-clamp-4">{job.description}</p>
-          )}
+          {loading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading full job details...
+            </div>
+          ) : (
+            <>
+              {descriptionParagraphs.length > 0 && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4">
+                  <h3 className="text-sm font-semibold text-foreground">About this role</h3>
+                  <div className="mt-3 space-y-3">
+                    {descriptionParagraphs.map((paragraph, index) => (
+                      <p key={index} className="text-sm leading-6 text-foreground/90">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {badges.isCareerPage && (
-            <p className="text-xs text-muted-foreground">
-              Synced from {job.externalSource || job.company?.name} career page
-            </p>
+              {requirements.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Key requirements</h3>
+                  <ul className="mt-2 space-y-1.5">
+                    {requirements.map((item, index) => (
+                      <li key={index} className="text-sm leading-6 text-muted-foreground">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {badges.isCareerPage && (
+                <p className="text-xs text-muted-foreground">
+                  Synced from {displayJob.externalSource || displayJob.company?.name} career page
+                  {displayJob.sourceUrl ? (
+                    <>
+                      {" · "}
+                      <a
+                        href={displayJob.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand hover:underline"
+                      >
+                        View source
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              )}
+            </>
           )}
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+        <DialogFooter className="shrink-0 flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-between">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+              variant="outline"
+              onClick={handleSave}
+              className={saved ? "border-brand text-brand" : ""}
+            >
+              <Bookmark className={`mr-2 h-4 w-4 ${saved ? "fill-current" : ""}`} />
+              {saved ? "Saved" : "Save job"}
+            </Button>
+            <Button variant="ghost" onClick={openFullDetails}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Full details
+            </Button>
+          </div>
           <Button
-            variant="outline"
-            onClick={handleSave}
-            className={saved ? "border-[#6A38C2] text-[#6A38C2]" : ""}
+            onClick={handleApply}
+            className="w-full bg-accent-violet text-white hover:bg-accent-violet/90 sm:w-auto"
           >
-            <Bookmark className={`mr-2 h-4 w-4 ${saved ? "fill-current" : ""}`} />
-            {saved ? "Saved" : "Save job"}
-          </Button>
-          <Button onClick={handleApply} className="bg-[#7209b7] hover:bg-[#5f32ad]">
             {isExternalFeed || isScrapedJob ? "Apply on company site" : "Apply now"}
           </Button>
         </DialogFooter>

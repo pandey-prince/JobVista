@@ -6,6 +6,7 @@ import CompanyLogo from './CompanyLogo'
 import JobFreshnessBadges from './shared/JobFreshnessBadges'
 import JobQuickView from '@/features/job-detail/JobQuickView'
 import { getJobBadges } from '@/utils/jobBadges'
+import { cleanJobText } from '@/utils/jobText'
 import useSavedJobs from '@/hooks/useSavedJobs'
 
 const Job = ({job}) => {
@@ -28,10 +29,10 @@ const Job = ({job}) => {
             onClick={() => setQuickViewOpen(true)}
         >
             <div className='flex items-center justify-between gap-3'>
-                <p className='text-sm font-medium text-gray-500'>{badges.freshnessLabel}</p>
+                <p className='text-sm font-medium text-muted-foreground'>{badges.freshnessLabel}</p>
                 <Button
                     variant="outline"
-                    className={`rounded-full shrink-0 ${saved ? "border-[#6A38C2] text-[#6A38C2]" : ""}`}
+                    className={`rounded-full shrink-0 ${saved ? "border-brand text-brand" : ""}`}
                     size="icon"
                     aria-label={saved ? "Unsave job" : "Save job"}
                     onClick={handleSave}
@@ -44,7 +45,7 @@ const Job = ({job}) => {
                 <CompanyLogo company={job?.company} className="h-14 w-14" />
                 <div className="min-w-0">
                     <h2 className='truncate font-medium text-lg'>{job?.company?.name}</h2>
-                    <p className='text-sm text-gray-500 dark:text-muted-foreground'>{job?.location || "India"}</p>
+                    <p className='text-sm text-muted-foreground'>{job?.location || "India"}</p>
                 </div>
             </div>
 
@@ -53,13 +54,15 @@ const Job = ({job}) => {
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>
-                <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>{job?.description}</p>
+                <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>
+                    {cleanJobText(job?.description, { maxLength: 220 })}
+                </p>
             </div>
 
             <div className='mt-4 flex flex-wrap items-center gap-2'>
                 <Badge className='font-semibold text-blue-700' variant="ghost">{job?.position} Positions</Badge>
-                <Badge className='font-semibold text-[#F83002]' variant="ghost">{job?.jobType}</Badge>
-                <Badge className='font-semibold text-[#7209b7]' variant="ghost">{salaryText}</Badge>
+                <Badge className='font-semibold text-accent-orange' variant="ghost">{job?.jobType}</Badge>
+                <Badge className='font-semibold text-accent-violet' variant="ghost">{salaryText}</Badge>
             </div>
 
             <div className='mt-4 flex items-center gap-3'>
@@ -78,7 +81,7 @@ const Job = ({job}) => {
                         e.stopPropagation();
                         handleSave(e);
                     }}
-                    className="flex-1 bg-[#7209b7] hover:bg-[#5f32ad]"
+                    className="flex-1 bg-accent-violet text-white hover:bg-accent-violet/90"
                 >
                     {saved ? "Saved" : "Save"}
                 </Button>

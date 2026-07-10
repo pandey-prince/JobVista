@@ -2,18 +2,26 @@ import React, { useEffect, useState } from "react";
 import Job from "./Job";
 import { useDispatch, useSelector } from "react-redux";
 import { setSearchedQuery } from "@/redux/jobSlice";
-import useGetAllJobs from "@/hooks/useGetAllJobs";
 import FilterCard from "./FilterCard";
-import { emptyJobFilters, filterJobs } from "@/utils/jobFilters";
+import { emptyJobFilters } from "@/utils/jobFilters";
+import usePaginatedJobs from "@/hooks/usePaginatedJobs";
+import Pagination from "@/components/shared/Pagination";
+import { Loader2 } from "lucide-react";
+
+const JOBS_PER_PAGE = 12;
 
 const Browse = () => {
-  useGetAllJobs();
-
-  const { allJobs = [] } = useSelector((store) => store.job);
   const { searchedQuery } = useSelector((store) => store.job);
   const [selectedFilters, setSelectedFilters] = useState(emptyJobFilters);
+  const [page, setPage] = useState(1);
   const dispatch = useDispatch();
-  const filteredJobs = filterJobs(allJobs, searchedQuery, selectedFilters);
+
+  const { jobs, pagination, loading } = usePaginatedJobs({
+    page,
+    limit: JOBS_PER_PAGE,
+    keyword: searchedQuery,
+    filters: selectedFilters,
+  });
 
   useEffect(() => {
     return () => {
@@ -21,13 +29,22 @@ const Browse = () => {
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [searchedQuery, selectedFilters]);
+
+  const handleFilterChange = (nextFilters) => {
+    setSelectedFilters(nextFilters);
+    setPage(1);
+  };
+
   return (
     <div>
       <div className="mx-auto my-10 max-w-7xl px-4 sm:px-6">
         <h1 className="my-10 text-xl font-bold">
-          Search Results ({filteredJobs.length})
+          Search Results ({pagination?.total ?? jobs.length})
         </h1>
-        <p className="-mt-8 mb-6 text-sm text-gray-500">
+        <p className="-mt-8 mb-6 text-sm text-muted-foreground">
           India IT jobs from career pages and JobVista recruiters.
         </p>
 
@@ -35,20 +52,36 @@ const Browse = () => {
           <div className="w-full lg:w-72 lg:shrink-0">
             <FilterCard
               selectedFilters={selectedFilters}
-              onFilterChange={setSelectedFilters}
-              onClear={() => setSelectedFilters(emptyJobFilters)}
+              onFilterChange={handleFilterChange}
+              onClear={() => handleFilterChange(emptyJobFilters)}
             />
           </div>
-          {filteredJobs.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-1 items-center justify-center py-20 text-muted-foreground">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading jobs...
+            </div>
+          ) : jobs.length === 0 ? (
             <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">No jobs match your search</h2>
-              <p className="mt-2 text-sm text-gray-500">Try removing one filter or searching another role.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try removing one filter or searching another role.
+              </p>
             </div>
           ) : (
-            <div className="flex-1 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredJobs.map((job) => (
-                <Job key={job._id} job={job} />
-              ))}
+            <div className="flex-1">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {jobs.map((job) => (
+                  <Job key={job._id} job={job} />
+                ))}
+              </div>
+              <Pagination
+                className="mt-8"
+                page={pagination?.page || page}
+                totalPages={pagination?.totalPages || 1}
+                total={pagination?.total}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </div>

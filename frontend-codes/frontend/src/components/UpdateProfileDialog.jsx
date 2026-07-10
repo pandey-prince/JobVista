@@ -49,7 +49,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
     const fieldRowClassName = 'grid gap-2 sm:grid-cols-4 sm:items-center sm:gap-4';
     const labelClassName = 'sm:text-right';
     const inputClassName = 'sm:col-span-3';
-    const textareaClassName = 'min-h-20 rounded-md border border-gray-300 px-3 py-2 text-sm sm:col-span-3';
+    const textareaClassName = 'min-h-20 rounded-md border border-border px-3 py-2 text-sm sm:col-span-3';
 
     return (
         <div>

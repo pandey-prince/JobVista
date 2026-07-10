@@ -76,7 +76,7 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {
                 <div>
                     <h1 className='font-bold text-lg'>Filter Jobs</h1>
                     {activeCount > 0 && (
-                        <p className="text-xs text-gray-500">{activeCount} active</p>
+                        <p className="text-xs text-muted-foreground">{activeCount} active</p>
                     )}
                 </div>
                 <Button type="button" variant="link" className="px-0 text-sm" onClick={onClear}>
@@ -98,7 +98,7 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {
                                             checked={selectedFilters[data.key]?.includes(item) || false}
                                             id={itemId}
                                             onChange={() => changeHandler(data.key, item)}
-                                            className='h-4 w-4 accent-[#6A38C2] cursor-pointer'
+                                            className='h-4 w-4 accent-brand cursor-pointer'
                                         />
                                         <Label htmlFor={itemId} className="cursor-pointer text-sm">{item}</Label>
                                     </div>

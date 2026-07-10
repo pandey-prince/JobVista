@@ -17,6 +17,11 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { Bookmark, Link2, Loader2, Plus, Trash2, Bell, BellOff } from "lucide-react";
 import Job from "./Job";
+import Pagination from "@/components/shared/Pagination";
+
+const WATCHLIST_PAGE_SIZE = 10;
+const BROWSE_PAGE_SIZE = 20;
+const WATCHLIST_JOBS_PAGE_SIZE = 8;
 
 const CompanyLists = () => {
   const { user } = useSelector((store) => store.auth);
@@ -28,6 +33,12 @@ const CompanyLists = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sourceSearch, setSourceSearch] = useState("");
+  const [watchlistPage, setWatchlistPage] = useState(1);
+  const [browsePage, setBrowsePage] = useState(1);
+  const [watchlistJobsPage, setWatchlistJobsPage] = useState(1);
+  const [listsPagination, setListsPagination] = useState(null);
+  const [browsePagination, setBrowsePagination] = useState(null);
+  const [watchlistJobsPagination, setWatchlistJobsPagination] = useState(null);
   const [submitForm, setSubmitForm] = useState({
     companyName: "",
     url: "",
@@ -39,27 +50,60 @@ const CompanyLists = () => {
     notes: "",
   });
 
-  const fetchLists = async () => {
-    const res = await careerSourceApi.listUserLists("watchlist");
-    if (res.data.success) setLists(res.data.lists);
+  const fetchLists = async (page = watchlistPage) => {
+    const res = await careerSourceApi.listUserLists("watchlist", {
+      page,
+      limit: WATCHLIST_PAGE_SIZE,
+    });
+    if (res.data.success) {
+      setLists(res.data.lists);
+      setListsPagination(res.data.pagination);
+    }
   };
 
-  const fetchPublicSources = async () => {
-    const res = await careerSourceApi.listPublic();
-    if (res.data.success) setPublicSources(res.data.sources);
+  const fetchPublicSources = async (page = browsePage, search = sourceSearch) => {
+    const res = await careerSourceApi.listPublic({
+      page,
+      limit: BROWSE_PAGE_SIZE,
+      search,
+    });
+    if (res.data.success) {
+      setPublicSources(res.data.sources);
+      setBrowsePagination(res.data.pagination);
+    }
   };
 
-  const fetchWatchlistJobs = async () => {
-    const res = await careerSourceApi.listWatchlistJobs();
-    if (res.data.success) setWatchlistJobs(res.data.jobs);
+  const fetchWatchlistJobs = async (page = watchlistJobsPage) => {
+    const res = await careerSourceApi.listWatchlistJobs({
+      page,
+      limit: WATCHLIST_JOBS_PAGE_SIZE,
+    });
+    if (res.data.success) {
+      setWatchlistJobs(res.data.jobs);
+      setWatchlistJobsPagination(res.data.pagination);
+    }
   };
 
-  const loadAll = async () => {
+  const loadWatchlistTab = async () => {
     try {
       setLoading(true);
-      await Promise.all([fetchLists(), fetchPublicSources(), fetchWatchlistJobs()]);
+      await Promise.all([
+        fetchLists(watchlistPage),
+        fetchWatchlistJobs(watchlistJobsPage),
+      ]);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load company lists");
+      toast.error(error.response?.data?.message || "Failed to load watchlist");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBrowseTab = async () => {
+    try {
+      setLoading(true);
+      await fetchPublicSources(browsePage, sourceSearch);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load companies");
     } finally {
       setLoading(false);
     }
@@ -70,8 +114,22 @@ const CompanyLists = () => {
       navigate("/login");
       return;
     }
-    loadAll();
-  }, [user]);
+    if (activeTab === "submit") setLoading(false);
+  }, [user, activeTab, navigate]);
+
+  useEffect(() => {
+    if (!user || activeTab !== "watchlist") return;
+    loadWatchlistTab();
+  }, [user, activeTab, watchlistPage, watchlistJobsPage]);
+
+  useEffect(() => {
+    if (!user || activeTab !== "browse") return;
+    loadBrowseTab();
+  }, [user, activeTab, browsePage, sourceSearch]);
+
+  useEffect(() => {
+    setBrowsePage(1);
+  }, [sourceSearch]);
 
   const submitCareerPage = async (e) => {
     e.preventDefault();
@@ -86,7 +144,9 @@ const CompanyLists = () => {
       if (res.data.success) {
         toast.success(res.data.message);
         setSubmitForm({ companyName: "", url: "", addToWatchlist: true });
-        await loadAll();
+        setWatchlistPage(1);
+        setWatchlistJobsPage(1);
+        await loadWatchlistTab();
         setActiveTab("watchlist");
       }
     } catch (error) {
@@ -115,7 +175,8 @@ const CompanyLists = () => {
       if (res.data.success) {
         toast.success(res.data.message);
         setManualForm({ companyName: "", careerUrl: "", notes: "" });
-        await loadAll();
+        setWatchlistPage(1);
+        await fetchLists(1);
         setActiveTab("watchlist");
       }
     } catch (error) {
@@ -130,7 +191,8 @@ const CompanyLists = () => {
       const res = await careerSourceApi.addList({ listType: "watchlist", jobSourceId: source._id });
       if (res.data.success) {
         toast.success(`Added ${source.companyName} to watchlist`);
-        await loadAll();
+        await fetchLists(watchlistPage);
+        await fetchWatchlistJobs(watchlistJobsPage);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add company");
@@ -152,19 +214,12 @@ const CompanyLists = () => {
     try {
       await careerSourceApi.removeList(id);
       toast.success("Removed from watchlist");
-      await loadAll();
+      await fetchLists(watchlistPage);
+      await fetchWatchlistJobs(watchlistJobsPage);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to remove");
     }
   };
-
-  const filteredSources = publicSources.filter((source) => {
-    const q = sourceSearch.toLowerCase();
-    return (
-      source.companyName?.toLowerCase().includes(q) ||
-      source.name?.toLowerCase().includes(q)
-    );
-  });
 
   const tabs = [
     { id: "watchlist", label: "Watchlist", icon: Bookmark },
@@ -275,7 +330,7 @@ const CompanyLists = () => {
                                     href={item.careerUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-xs text-[#6A38C2] hover:underline"
+                                    className="text-xs text-brand hover:underline"
                                   >
                                     Career page
                                   </a>
@@ -292,7 +347,7 @@ const CompanyLists = () => {
                               <Button
                                 size="sm"
                                 variant={item.alertEnabled === false ? "outline" : "default"}
-                                className={item.alertEnabled === false ? "" : "bg-[#6A38C2]"}
+                                className={item.alertEnabled === false ? "" : "bg-brand"}
                                 onClick={() => toggleWatchlistAlert(item)}
                               >
                                 {item.alertEnabled === false ? (
@@ -321,16 +376,30 @@ const CompanyLists = () => {
                       No companies yet. Browse the catalog or submit a career page to get started.
                     </p>
                   )}
+                  <Pagination
+                    className="mt-6"
+                    page={listsPagination?.page || watchlistPage}
+                    totalPages={listsPagination?.totalPages || 1}
+                    total={listsPagination?.total}
+                    onPageChange={setWatchlistPage}
+                  />
                 </section>
 
                 {watchlistJobs.length > 0 && (
                   <section>
                     <h2 className="mb-4 text-lg font-semibold">Latest IT jobs from your watchlist</h2>
                     <div className="grid gap-4 md:grid-cols-2">
-                      {watchlistJobs.slice(0, 8).map((job) => (
+                      {watchlistJobs.map((job) => (
                         <Job key={job._id} job={job} />
                       ))}
                     </div>
+                    <Pagination
+                      className="mt-6"
+                      page={watchlistJobsPagination?.page || watchlistJobsPage}
+                      totalPages={watchlistJobsPagination?.totalPages || 1}
+                      total={watchlistJobsPagination?.total}
+                      onPageChange={setWatchlistJobsPage}
+                    />
                   </section>
                 )}
               </div>
@@ -384,7 +453,9 @@ const CompanyLists = () => {
             {activeTab === "browse" && (
               <section className="rounded-lg border border-border bg-card p-6">
                 <div className="mb-4 flex items-center justify-between gap-4">
-                  <h2 className="text-lg font-semibold">All public companies ({publicSources.length})</h2>
+                  <h2 className="text-lg font-semibold">
+                    All public companies ({browsePagination?.total ?? publicSources.length})
+                  </h2>
                   <Input
                     className="max-w-xs"
                     placeholder="Search companies"
@@ -402,7 +473,7 @@ const CompanyLists = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredSources.map((source) => (
+                    {publicSources.map((source) => (
                       <TableRow key={source._id}>
                         <TableCell>
                           <div>
@@ -411,7 +482,7 @@ const CompanyLists = () => {
                               href={source.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs text-[#6A38C2] hover:underline"
+                              className="text-xs text-brand hover:underline"
                             >
                               View careers
                             </a>
@@ -438,6 +509,13 @@ const CompanyLists = () => {
                     ))}
                   </TableBody>
                 </Table>
+                <Pagination
+                  className="mt-6"
+                  page={browsePagination?.page || browsePage}
+                  totalPages={browsePagination?.totalPages || 1}
+                  total={browsePagination?.total}
+                  onPageChange={setBrowsePage}
+                />
               </section>
             )}
           </>

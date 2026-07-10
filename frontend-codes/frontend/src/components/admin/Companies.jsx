@@ -21,7 +21,7 @@ const Companies = () => {
             <div className='max-w-6xl mx-auto my-10'>
                 <div className='mb-6'>
                     <h1 className='font-bold text-2xl'>Manage Companies</h1>
-                    <p className='text-sm text-gray-500'>Create company profiles before posting jobs for candidates.</p>
+                    <p className='text-sm text-muted-foreground'>Create company profiles before posting jobs for candidates.</p>
                 </div>
                 <div className='flex items-center justify-between my-5'>
                     <Input

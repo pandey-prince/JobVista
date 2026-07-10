@@ -44,7 +44,7 @@ const renderBotText = (text) => {
 
         return (
           <div key={index} className={isBullet ? "flex gap-2" : ""}>
-            {isBullet && <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6A38C2]" />}
+            {isBullet && <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />}
             <span>{renderInlineText(content)}</span>
           </div>
         );
@@ -98,8 +98,8 @@ const JobMateChatbot = () => {
   return (
     <div className="fixed bottom-4 right-4 z-50 sm:bottom-5 sm:right-5">
       {open && (
-        <div className="mb-3 flex h-[min(32rem,calc(100vh-7.5rem))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl sm:w-[340px] sm:max-w-[calc(100vw-2rem)]">
-          <div className="flex items-center justify-between bg-[#6A38C2] px-3 py-3 text-white sm:px-4">
+        <div className="mb-3 flex h-[min(32rem,calc(100vh-7.5rem))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl sm:w-[340px] sm:max-w-[calc(100vw-2rem)]">
+          <div className="flex items-center justify-between bg-brand px-3 py-3 text-white sm:px-4">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 shrink-0" />
               <div className="min-w-0">
@@ -111,14 +111,14 @@ const JobMateChatbot = () => {
               type="button"
               size="icon"
               variant="ghost"
-              className="text-white hover:bg-white/10 hover:text-white"
+              className="text-white hover:bg-card/10 hover:text-white"
               onClick={() => setOpen(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-3">
+          <div className="flex-1 space-y-3 overflow-y-auto bg-muted p-3">
             {messages.map((item, index) => (
               <div
                 key={`${item.sender}-${index}`}
@@ -127,8 +127,8 @@ const JobMateChatbot = () => {
                 <div
                   className={`max-w-[88%] break-words rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[82%] ${
                     item.sender === "user"
-                      ? "bg-[#6A38C2] text-white"
-                      : "bg-white border border-gray-200 text-gray-800"
+                      ? "bg-brand text-white"
+                      : "bg-card border border-border text-foreground"
                   }`}
                 >
                   {item.sender === "bot" ? renderBotText(item.text) : item.text}
@@ -137,7 +137,7 @@ const JobMateChatbot = () => {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm flex items-center gap-2">
+                <div className="bg-card border border-border rounded-lg px-3 py-2 text-sm flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   JobMate is typing
                 </div>
@@ -146,14 +146,14 @@ const JobMateChatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={sendMessage} className="flex gap-2 border-t border-gray-200 p-3">
+          <form onSubmit={sendMessage} className="flex gap-2 border-t border-border p-3">
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#6A38C2]"
+              className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-brand"
               placeholder="Ask about resume, interview, job post..."
             />
-            <Button type="submit" size="icon" className="shrink-0 bg-[#6A38C2] hover:bg-[#5b30a6]">
+            <Button type="submit" size="icon" className="shrink-0 bg-brand hover:bg-brand/90">
               <Send className="h-4 w-4" />
             </Button>
           </form>
@@ -163,7 +163,7 @@ const JobMateChatbot = () => {
       <Button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="h-12 w-12 rounded-full bg-[#6A38C2] shadow-lg hover:bg-[#5b30a6] sm:h-14 sm:w-14"
+        className="h-12 w-12 rounded-full bg-brand shadow-lg hover:bg-brand/90 sm:h-14 sm:w-14"
       >
         <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>

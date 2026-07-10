@@ -28,7 +28,7 @@ const CategoryCarousel = () => {
         <section className="mx-auto my-16 max-w-4xl px-4 sm:px-6">
             <div className="text-center">
                 <h2 className="text-2xl font-bold">Popular IT roles</h2>
-                <p className="mt-2 text-sm text-gray-500">Tap a role to search fresher and early-career openings</p>
+                <p className="mt-2 text-sm text-muted-foreground">Tap a role to search fresher and early-career openings</p>
             </div>
             <Carousel className="mx-auto mt-6 w-full max-w-2xl">
                 <CarouselContent>
@@ -38,7 +38,7 @@ const CategoryCarousel = () => {
                                 <Button
                                     onClick={() => searchJobHandler(cat)}
                                     variant="outline"
-                                    className="w-full rounded-full border-violet-200 hover:bg-violet-50"
+                                    className="w-full rounded-full border-brand/30 hover:bg-brand-muted"
                                 >
                                     {cat}
                                 </Button>
