@@ -31,7 +31,7 @@ const HeroSection = () => {
     return (
         <div className='px-4 text-center sm:px-6'>
             <div className='mx-auto flex max-w-5xl flex-col gap-5 my-10'>
-                <span className='mx-auto inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-[#6A38C2]'>
+                <span className='mx-auto inline-flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-[#6A38C2] dark:bg-violet-950/40'>
                     <Sparkles className='h-4 w-4' />
                     Fresh IT jobs from company career pages
                 </span>

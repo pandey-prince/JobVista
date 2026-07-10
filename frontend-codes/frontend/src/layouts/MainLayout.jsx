@@ -3,7 +3,7 @@ import Navbar from "@/components/shared/Navbar";
 
 const MainLayout = () => {
   return (
-    <div className="mx-2">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <Outlet />
     </div>

@@ -40,7 +40,7 @@ const Jobs = () => {
           </div>
 
           {filteredJobs.length === 0 ? (
-            <div className="flex-1 rounded-md border border-dashed border-gray-300 bg-white p-10 text-center">
+            <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">No jobs match your filters</h2>
               <p className="mt-2 text-sm text-gray-500">Try removing one filter or searching another role.</p>
             </div>

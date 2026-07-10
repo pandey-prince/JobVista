@@ -59,7 +59,7 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
             <CompanyLogo company={job.company} className="h-12 w-12 shrink-0" />
             <div className="min-w-0 text-left">
               <DialogTitle className="text-xl leading-snug">{job.title}</DialogTitle>
-              <DialogDescription className="mt-1 text-base text-gray-700">
+              <DialogDescription className="mt-1 text-base text-muted-foreground">
                 {job.company?.name || "Company"}
               </DialogDescription>
             </div>
@@ -70,29 +70,29 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
           <JobFreshnessBadges job={job} size="md" />
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <MapPin className="h-4 w-4 text-[#6A38C2]" />
               <span>{job.location || "India"}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <IndianRupee className="h-4 w-4 text-[#6A38C2]" />
               <span>{salaryText}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <BriefcaseBusiness className="h-4 w-4 text-[#6A38C2]" />
               <span>{job.jobType || "Full-time"}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <Badge variant="outline">{job.experienceLevel || "Open"} yrs</Badge>
             </div>
           </div>
 
           {job.description && (
-            <p className="text-sm leading-6 text-gray-600 line-clamp-4">{job.description}</p>
+            <p className="text-sm leading-6 text-muted-foreground line-clamp-4">{job.description}</p>
           )}
 
           {badges.isCareerPage && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Synced from {job.externalSource || job.company?.name} career page
             </p>
           )}
