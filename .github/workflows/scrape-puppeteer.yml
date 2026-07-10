@@ -2,8 +2,8 @@ name: Scrape Puppeteer Sources
 
 on:
   schedule:
-    # Sundays 02:30 UTC (8:00 AM IST)
-    - cron: "30 2 * * 0"
+    # Daily 02:30 UTC (8:00 AM IST)
+    - cron: "30 2 * * *"
   workflow_dispatch:
 
 concurrency:

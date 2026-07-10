@@ -167,7 +167,7 @@ ALERT_DIGEST_CRON=30 14 * * *
 | Layer | What runs | Where |
 |-------|-------------|--------|
 | **API scrapers** (~47) | greenhouse, lever, workday, smartrecruiters, RSS, etc. | **Render** cron every 6h (`SCRAPE_ENABLED=true`, puppeteer skipped) |
-| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** weekly — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) |
+| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** daily — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) |
 
 Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** scraped on the hosted backend.
 
