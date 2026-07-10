@@ -172,6 +172,16 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
+      <div className="overflow-hidden border-t border-border bg-muted/20 pb-4 pt-6">
+        <p
+          className="pointer-events-none select-none text-center text-[clamp(4rem,18vw,12rem)] font-black leading-[0.85] tracking-tighter"
+          aria-hidden="true"
+        >
+          <span className="text-foreground/10">JOB</span>
+          <span className="text-accent-orange/20">VISTA</span>
+        </p>
+      </div>
     </footer>
   );
 };
