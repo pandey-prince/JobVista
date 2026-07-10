@@ -173,13 +173,12 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="overflow-hidden border-t border-border bg-muted/20 pb-4 pt-6">
+      <div className="relative overflow-hidden bg-black">
         <p
-          className="pointer-events-none select-none text-center text-[clamp(4rem,18vw,12rem)] font-black leading-[0.85] tracking-tighter"
+          className="pointer-events-none select-none whitespace-nowrap pb-0 pt-2 text-center font-black uppercase leading-[0.78] tracking-[-0.05em] text-[clamp(4.5rem,15vw,13.5rem)] text-transparent bg-gradient-to-b from-neutral-600 via-neutral-800 to-neutral-950 bg-clip-text"
           aria-hidden="true"
         >
-          <span className="text-foreground/10">JOB</span>
-          <span className="text-accent-orange/20">VISTA</span>
+          JOBVISTA
         </p>
       </div>
     </footer>
