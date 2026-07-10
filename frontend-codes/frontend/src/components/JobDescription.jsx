@@ -19,6 +19,8 @@ import {
   Users,
 } from "lucide-react";
 import CompanyLogo from "./CompanyLogo";
+import JobFreshnessBadges from "./shared/JobFreshnessBadges";
+import { getJobBadges } from "@/utils/jobBadges";
 
 const formatDate = (value) => {
   if (!value) return "Not available";
@@ -27,13 +29,6 @@ const formatDate = (value) => {
     month: "short",
     year: "numeric",
   });
-};
-
-const getDaysAgo = (value) => {
-  if (!value) return "Recently posted";
-  const difference = Date.now() - new Date(value).getTime();
-  const days = Math.max(Math.floor(difference / (1000 * 60 * 60 * 24)), 0);
-  return days === 0 ? "Posted today" : `Posted ${days} days ago`;
 };
 
 const JobDescription = () => {
@@ -153,6 +148,7 @@ const JobDescription = () => {
 
   const salaryText =
     typeof singleJob.salary === "number" ? `${singleJob.salary} LPA` : singleJob.salary || "Not disclosed";
+  const badges = getJobBadges(singleJob);
 
   return (
     <div>
@@ -166,21 +162,23 @@ const JobDescription = () => {
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="font-bold text-3xl">{singleJob.title}</h1>
                   <Badge variant="outline">{singleJob.jobType}</Badge>
-                  {singleJob.isNew && <Badge className="text-orange-700 font-bold" variant="ghost">New</Badge>}
-                  {isScrapedJob && (
-                    <Badge className="text-green-700 font-bold" variant="ghost">
-                      {singleJob.externalSource || singleJob.sourceName}
-                    </Badge>
-                  )}
-                  {isExternalJob && (
-                    <Badge className="text-green-700 font-bold" variant="ghost">
-                      {singleJob.externalSource || "External"}
-                    </Badge>
-                  )}
+                </div>
+                <div className="mt-3">
+                  <JobFreshnessBadges job={singleJob} size="md" />
                 </div>
                 <p className="text-gray-600 mt-2">
-                  {singleJob?.company?.name || "JobVista Company"} - {singleJob.location}
+                  {singleJob?.company?.name || "JobVista Company"} · {singleJob.location}
                 </p>
+                {badges.isCareerPage && singleJob.sourceUrl && (
+                  <a
+                    href={singleJob.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-sm font-medium text-[#6A38C2] hover:underline"
+                  >
+                    View original career page →
+                  </a>
+                )}
                 <div className="flex flex-wrap gap-2 mt-4">
                   <Badge className="text-blue-700 font-bold" variant="ghost">
                     {singleJob.position || 1} Positions
@@ -189,7 +187,7 @@ const JobDescription = () => {
                     {salaryText}
                   </Badge>
                   <Badge className="text-green-700 font-bold" variant="ghost">
-                    {getDaysAgo(singleJob.createdAt)}
+                    {badges.freshnessLabel}
                   </Badge>
                 </div>
               </div>
@@ -290,11 +288,11 @@ const JobDescription = () => {
 
             <div className="bg-[#f7f4ff] border border-[#e4d8ff] rounded-lg p-5">
               <h2 className="font-bold text-lg">
-                {isScrapedJob ? "Sourced listing" : "Need help applying?"}
+                {badges.isCareerPage ? "Direct from career page" : "Need help applying?"}
               </h2>
               <p className="text-sm text-gray-600 mt-2">
-                {isScrapedJob
-                  ? `This role was synced from ${singleJob.sourceName || singleJob.externalSource || "a company career page"}. Last seen ${formatDate(singleJob.lastSeenAt || singleJob.createdAt)}.`
+                {badges.isCareerPage
+                  ? `This role was synced from ${singleJob.sourceName || singleJob.externalSource || "a company career page"}. Last verified ${formatDate(singleJob.lastSeenAt || singleJob.createdAt)}.`
                   : "Ask JobMate to improve your resume, write a cover letter, or prepare interview answers for this role."}
               </p>
             </div>

@@ -16,9 +16,12 @@ import PostJob from './components/admin/PostJob'
 import Applicants from './components/admin/Applicants'
 import ScrapeSources from './components/admin/ScrapeSources'
 import CompanyLists from './components/CompanyLists'
+import SavedJobs from './components/SavedJobs'
+import JobAlerts from './components/JobAlerts'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import AuthRoute from './components/shared/AuthRoute'
 import JobMateChatbot from './components/JobMateChatbot'
+import SessionBootstrap from './components/shared/SessionBootstrap'
 
 
 const appRouter = createBrowserRouter([
@@ -58,6 +61,14 @@ const appRouter = createBrowserRouter([
     path: "/my-companies",
     element: <AuthRoute><CompanyLists /></AuthRoute>
   },
+  {
+    path: "/saved-jobs",
+    element: <AuthRoute roles={["student"]}><SavedJobs /></AuthRoute>
+  },
+  {
+    path: "/alerts",
+    element: <AuthRoute roles={["student"]}><JobAlerts /></AuthRoute>
+  },
   // recruiter dashboard
   {
     path:"/admin/companies",
@@ -93,6 +104,7 @@ function App() {
 
   return (
     <div className='mx-2'>
+      <SessionBootstrap />
       <RouterProvider router={appRouter} />
       <JobMateChatbot />
     </div>

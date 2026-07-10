@@ -12,6 +12,7 @@ import applicationRoute from "./routes/application.route.js";
 import chatbotRoute from "./routes/chatbot.route.js";
 import scrapedJobRoute from "./routes/scrapedJob.route.js";
 import careerSourceRoute from "./routes/careerSource.route.js";
+import statsRoute from "./routes/stats.route.js";
 import { startScrapeScheduler } from "./jobs/scrapeScheduler.js";
 import { seedDefaultJobSources } from "./utils/seedJobSources.js";
 dotenv.config({});
@@ -55,6 +56,7 @@ app.use("/api/v1/application", applicationRoute);
 app.use("/api/v1/chatbot", chatbotRoute);
 app.use("/api/v1/scraped-jobs", scrapedJobRoute);
 app.use("/api/v1/career-sources", careerSourceRoute);
+app.use("/api/v1/stats", statsRoute);
 
 app.get("/home", (req, res) => {
   return res.status(200).json({

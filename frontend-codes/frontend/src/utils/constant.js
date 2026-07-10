@@ -22,3 +22,6 @@ export const SCRAPED_JOB_API_END_POINT =
 
 export const CAREER_SOURCE_API_END_POINT =
   import.meta.env.VITE_CAREER_SOURCE_API_END_POINT || `${API_ROOT}/career-sources`;
+
+export const STATS_API_END_POINT =
+  import.meta.env.VITE_STATS_API_END_POINT || `${API_ROOT}/stats`;

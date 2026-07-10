@@ -46,8 +46,13 @@ const Navbar = () => {
       : [
           { label: "Home", to: "/" },
           { label: "Jobs", to: "/jobs" },
-          { label: "Browse", to: "/browse" },
-          ...(user ? [{ label: "My Companies", to: "/my-companies" }] : []),
+          ...(user
+            ? [
+                { label: "Saved", to: "/saved-jobs" },
+                { label: "Alerts", to: "/alerts" },
+                { label: "My Companies", to: "/my-companies" },
+              ]
+            : []),
         ];
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);

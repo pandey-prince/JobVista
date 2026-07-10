@@ -44,3 +44,9 @@ services:
         sync: false
       - key: API_BASE_URL
         value: https://jobvista-ahek.onrender.com
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: ALERT_DIGEST_CRON
+        value: 30 14 * * *

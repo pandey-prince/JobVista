@@ -1,6 +1,7 @@
 import { Job } from "../models/job.model.js";
 import { getScrapedJobsForList } from "./scrapedJob.controller.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
+import { attachBadgesToJob } from "../utils/jobBadges.js";
 
 const stripHtml = (value = "") => value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
@@ -48,51 +49,59 @@ const matchesExternalKeyword = (job, keyword = "") => {
     .includes(query);
 };
 
-const mapRemotiveJob = (job) => ({
-  _id: `remotive-${job.id}`,
-  title: job.title,
-  description: stripHtml(job.description).slice(0, 260),
-  requirements: job.tags || [],
-  experienceLevel: job.category || "Remote",
-  salary: job.salary && job.salary !== "-" ? job.salary : "Not disclosed",
-  location: job.candidate_required_location || "Remote / Worldwide",
-  jobType: job.job_type?.replace("_", " ") || "Remote",
-  position: 1,
-  company: {
-    name: job.company_name || "Remote Company",
-    logo: job.company_logo || "",
-  },
-  createdAt: job.publication_date
-    ? new Date(job.publication_date).toISOString()
-    : new Date().toISOString(),
-  applications: [],
-  external: true,
-  externalSource: "Remotive",
-  applicationLink: job.url,
-});
+const mapRemotiveJob = (job) =>
+  attachBadgesToJob(
+    {
+      _id: `remotive-${job.id}`,
+      title: job.title,
+      description: stripHtml(job.description).slice(0, 260),
+      requirements: job.tags || [],
+      experienceLevel: job.category || "Remote",
+      salary: job.salary && job.salary !== "-" ? job.salary : "Not disclosed",
+      location: job.candidate_required_location || "Remote / Worldwide",
+      jobType: job.job_type?.replace("_", " ") || "Remote",
+      position: 1,
+      company: {
+        name: job.company_name || "Remote Company",
+        logo: job.company_logo || "",
+      },
+      createdAt: job.publication_date
+        ? new Date(job.publication_date).toISOString()
+        : new Date().toISOString(),
+      applications: [],
+      external: true,
+      externalSource: "Remotive",
+      applicationLink: job.url,
+    },
+    { sourceType: "remotive", sourceLabel: "Remotive" },
+  );
 
-const mapArbeitnowJob = (job) => ({
-  _id: `arbeitnow-${job.slug}`,
-  title: job.title,
-  description: stripHtml(job.description).slice(0, 260),
-  requirements: job.tags || [],
-  experienceLevel: job.job_types?.join(", ") || "Open",
-  salary: "Not disclosed",
-  location: job.remote ? "Remote" : job.location || "Europe",
-  jobType: job.job_types?.[0] || (job.remote ? "Remote" : "On-site"),
-  position: 1,
-  company: {
-    name: job.company_name || "Hiring Company",
-    logo: "",
-  },
-  createdAt: job.created_at
-    ? new Date(job.created_at * 1000).toISOString()
-    : new Date().toISOString(),
-  applications: [],
-  external: true,
-  externalSource: "Arbeitnow",
-  applicationLink: job.url,
-});
+const mapArbeitnowJob = (job) =>
+  attachBadgesToJob(
+    {
+      _id: `arbeitnow-${job.slug}`,
+      title: job.title,
+      description: stripHtml(job.description).slice(0, 260),
+      requirements: job.tags || [],
+      experienceLevel: job.job_types?.join(", ") || "Open",
+      salary: "Not disclosed",
+      location: job.remote ? "Remote" : job.location || "Europe",
+      jobType: job.job_types?.[0] || (job.remote ? "Remote" : "On-site"),
+      position: 1,
+      company: {
+        name: job.company_name || "Hiring Company",
+        logo: "",
+      },
+      createdAt: job.created_at
+        ? new Date(job.created_at * 1000).toISOString()
+        : new Date().toISOString(),
+      applications: [],
+      external: true,
+      externalSource: "Arbeitnow",
+      applicationLink: job.url,
+    },
+    { sourceType: "arbeitnow", sourceLabel: "Arbeitnow" },
+  );
 
 const REMOTIVE_IT_CATEGORIES = [
   "software-dev",
@@ -275,7 +284,12 @@ export const getAllJobs = async (req, res) => {
       });
     }
 
-    const itJobs = filterItJobs(jobs);
+    const itJobs = filterItJobs(jobs).map((job) =>
+      attachBadgesToJob(job, {
+        sourceType: "recruiter",
+        sourceLabel: "JobVista",
+      }),
+    );
     const externalJobs = includeExternal ? await fetchExternalJobs(keyword) : [];
     const scrapedJobs = includeExternal ? await getScrapedJobsForList(keyword) : [];
     const mergedJobs = sortJobsByDate([...itJobs, ...scrapedJobs, ...externalJobs]);
@@ -318,7 +332,10 @@ export const getJobById = async (req, res) => {
       });
     }
     return res.status(200).json({
-      job,
+      job: attachBadgesToJob(job, {
+        sourceType: "recruiter",
+        sourceLabel: "JobVista",
+      }),
       success: true,
     });
   } catch (err) {

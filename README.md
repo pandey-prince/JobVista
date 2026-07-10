@@ -98,13 +98,26 @@ Frontend: http://localhost:3000 · Backend: http://localhost:8000
 
 | Prefix | Purpose |
 |--------|---------|
-| `/user` | Register, login, logout, profile |
+| `/user` | Register, login, logout, profile, **session (`GET /me`)** |
 | `/job` | List/create jobs |
 | `/application` | Apply, applicants, status |
 | `/company` | Recruiter companies |
 | `/scraped-jobs` | Scraped jobs + admin sources |
 | `/career-sources` | Public directory, watchlist, Excel import |
 | `/chatbot` | JobMate messages |
+| `/stats` | Public platform stats (job counts, companies monitored) |
+
+## Email alerts (Resend)
+
+Set on backend (Render dashboard or `backend/.env`):
+
+```env
+RESEND_API_KEY=re_xxxx
+EMAIL_FROM=JobVista <notifications@yourdomain.com>
+ALERT_DIGEST_CRON=30 14 * * *
+```
+
+`ALERT_DIGEST_CRON` runs at **8:00 PM IST** (14:30 UTC). Without `RESEND_API_KEY`, emails are skipped in dev.
 
 ## Scraping on Render
 

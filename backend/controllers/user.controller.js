@@ -210,6 +210,29 @@ export const login = async (req, res) => {
   }
 };
 
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.id);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: getSafeUser(user),
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Unable to load session",
+      success: false,
+    });
+  }
+};
+
 export const logout = async (req, res) => {
   try {
     console.log("request came to logout");

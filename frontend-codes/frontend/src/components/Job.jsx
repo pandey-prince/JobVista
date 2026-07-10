@@ -4,17 +4,12 @@ import { Bookmark } from 'lucide-react'
 import { Badge } from './ui/badge'
 import { useNavigate } from 'react-router-dom'
 import CompanyLogo from './CompanyLogo'
+import JobFreshnessBadges from './shared/JobFreshnessBadges'
+import { getJobBadges } from '@/utils/jobBadges'
 
 const Job = ({job}) => {
     const navigate = useNavigate();
-    // const jobId = "lsekdhjgdsnfvsdkjf";
-
-    const daysAgoFunction = (mongodbTime) => {
-        const createdAt = new Date(mongodbTime);
-        const currentTime = new Date();
-        const timeDifference = currentTime - createdAt;
-        return Math.floor(timeDifference/(1000*24*60*60));
-    }
+    const badges = getJobBadges(job);
 
     const openDetails = () => {
         const isScrapedJob = String(job?._id || "").startsWith("scraped-");
@@ -26,39 +21,43 @@ const Job = ({job}) => {
     }
 
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
-    const daysAgo = daysAgoFunction(job?.createdAt);
     
     return (
-        <div className='p-5 rounded-md shadow-xl bg-white border border-gray-100'>
-            <div className='flex items-center justify-between'>
-                <p className='text-sm text-gray-500'>{daysAgo === 0 ? "Today" : `${daysAgo} days ago`}</p>
-                <Button variant="outline" className="rounded-full" size="icon"><Bookmark /></Button>
+        <div className='flex h-full flex-col rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md'>
+            <div className='flex items-center justify-between gap-3'>
+                <p className='text-sm font-medium text-gray-500'>{badges.freshnessLabel}</p>
+                <Button variant="outline" className="rounded-full shrink-0" size="icon" aria-label="Save job">
+                    <Bookmark className="h-4 w-4" />
+                </Button>
             </div>
 
-            <div className='flex items-center gap-3 my-4'>
+            <div className='mt-3 flex items-center gap-3'>
                 <CompanyLogo company={job?.company} className="h-14 w-14" />
-                <div>
-                    <h1 className='font-medium text-lg'>{job?.company?.name}</h1>
+                <div className="min-w-0">
+                    <h2 className='truncate font-medium text-lg'>{job?.company?.name}</h2>
                     <p className='text-sm text-gray-500'>{job?.location || "India"}</p>
                 </div>
             </div>
 
-            <div>
-                <div className='flex items-center gap-2'>
-                    <h1 className='font-bold text-lg my-2'>{job?.title}</h1>
-                    {job?.isNew && <Badge className='text-orange-700 font-bold' variant="ghost">New</Badge>}
-                    {job?.external && <Badge className='text-green-700 font-bold' variant="ghost">{job.externalSource}</Badge>}
+            <div className='mt-4 flex-1'>
+                <h3 className='font-bold text-lg leading-snug'>{job?.title}</h3>
+                <div className="mt-2">
+                    <JobFreshnessBadges job={job} />
                 </div>
-                <p className='text-sm text-gray-600 line-clamp-3'>{job?.description}</p>
+                <p className='mt-3 text-sm text-gray-600 line-clamp-3'>{job?.description}</p>
             </div>
-            <div className='flex items-center gap-2 mt-4'>
-                <Badge className={'text-blue-700 font-bold'} variant="ghost">{job?.position} Positions</Badge>
-                <Badge className={'text-[#F83002] font-bold'} variant="ghost">{job?.jobType}</Badge>
-                <Badge className={'text-[#7209b7] font-bold'} variant="ghost">{salaryText}</Badge>
+
+            <div className='mt-4 flex flex-wrap items-center gap-2'>
+                <Badge className='font-semibold text-blue-700' variant="ghost">{job?.position} Positions</Badge>
+                <Badge className='font-semibold text-[#F83002]' variant="ghost">{job?.jobType}</Badge>
+                <Badge className='font-semibold text-[#7209b7]' variant="ghost">{salaryText}</Badge>
             </div>
-            <div className='flex items-center gap-4 mt-4'>
-                <Button onClick={openDetails} variant="outline">{job?.external && !String(job?._id || "").startsWith("scraped-") ? "View Source" : "Details"}</Button>
-                <Button className="bg-[#7209b7]">Save For Later</Button>
+
+            <div className='mt-4 flex items-center gap-3'>
+                <Button onClick={openDetails} variant="outline" className="flex-1">
+                    {job?.external && !String(job?._id || "").startsWith("scraped-") ? "View Source" : "Details"}
+                </Button>
+                <Button className="flex-1 bg-[#7209b7] hover:bg-[#5f32ad]">Save</Button>
             </div>
         </div>
     )
