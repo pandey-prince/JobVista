@@ -22,18 +22,6 @@ const footerLinks = {
     { label: "Your profile", to: "/profile" },
     { label: "My companies", to: "/my-companies" },
   ],
-  employersGuest: [
-    { label: "Recruiter signup", to: "/signup" },
-    { label: "Post a job", to: "/admin/jobs/create" },
-    { label: "Manage companies", to: "/admin/companies" },
-    { label: "Applicant pipeline", to: "/admin/jobs" },
-  ],
-  employersRecruiter: [
-    { label: "Post a job", to: "/admin/jobs/create" },
-    { label: "Manage companies", to: "/admin/companies" },
-    { label: "Applicant pipeline", to: "/admin/jobs" },
-    { label: "Scrape sources", to: "/admin/scrape-sources" },
-  ],
 };
 
 const FooterLinkColumn = ({ title, links }) => (
@@ -61,14 +49,7 @@ const Footer = () => {
 
   const candidateLinks = useMemo(() => {
     if (!user) return footerLinks.candidatesGuest;
-    if (user.role === "student") return footerLinks.candidatesStudent;
-    return footerLinks.candidatesGuest.filter((link) => link.to !== "/signup");
-  }, [user]);
-
-  const employerLinks = useMemo(() => {
-    if (!user) return footerLinks.employersGuest;
-    if (user.role === "recruiter") return footerLinks.employersRecruiter;
-    return footerLinks.employersGuest.filter((link) => link.to !== "/signup");
+    return footerLinks.candidatesStudent;
   }, [user]);
 
   return (
@@ -94,10 +75,6 @@ const Footer = () => {
               <Button asChild variant="outline" className="rounded-full">
                 <Link to="/signup">Create free account</Link>
               </Button>
-            ) : user.role === "recruiter" ? (
-              <Button asChild variant="outline" className="rounded-full">
-                <Link to="/admin/jobs">Manage job posts</Link>
-              </Button>
             ) : (
               <>
                 <Button asChild variant="outline" className="rounded-full">
@@ -113,16 +90,16 @@ const Footer = () => {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 pb-0 pt-12 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="sm:col-span-2 lg:col-span-2">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="sm:col-span-2">
             <Link to="/" className="inline-block">
               <h2 className="text-2xl font-bold">
                 Job<span className="text-accent-orange">Vista</span>
               </h2>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              India&apos;s modern job portal for tech talent and hiring teams. Discover roles,
-              track applications, and get AI-powered career guidance with JobMate.
+              India&apos;s modern job portal for tech talent. Discover roles from company career
+              pages, track applications, and get AI-powered career guidance with JobMate.
             </p>
 
             <ul className="mt-5 space-y-2.5 text-sm text-muted-foreground">
@@ -167,7 +144,6 @@ const Footer = () => {
 
           <FooterLinkColumn title="Platform" links={footerLinks.platform} />
           <FooterLinkColumn title="For job seekers" links={candidateLinks} />
-          <FooterLinkColumn title="For employers" links={employerLinks} />
         </div>
       </div>
 

@@ -34,7 +34,7 @@ const HowItWorks = () => {
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
           Not another generic job board. JobVista focuses on IT roles in India pulled directly from
-          company career pages, recruiter posts, and trusted remote feeds.
+          company career pages and trusted remote feeds.
         </p>
       </div>
 

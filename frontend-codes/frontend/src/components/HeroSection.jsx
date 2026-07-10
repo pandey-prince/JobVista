@@ -54,10 +54,6 @@ const HeroSection = () => {
                         <Button onClick={() => navigate("/signup")} className="rounded-full bg-brand hover:bg-brand/90">
                             Create free account
                         </Button>
-                    ) : user.role === "recruiter" ? (
-                        <Button onClick={() => navigate("/admin/jobs")} className="rounded-full bg-brand hover:bg-brand/90">
-                            Manage job posts
-                        </Button>
                     ) : (
                         <>
                             <Button onClick={() => navigate("/saved-jobs")} variant="outline" className="rounded-full">

@@ -46,7 +46,7 @@ const Browse = () => {
           Search Results ({pagination?.total ?? jobs.length})
         </h1>
         <p className="-mt-8 mb-6 text-sm text-muted-foreground">
-          India IT jobs from career pages and JobVista recruiters.
+          India IT jobs from company career pages.
         </p>
 
         <div className="flex flex-col gap-5 lg:flex-row">
@@ -61,7 +61,7 @@ const Browse = () => {
             <LoadingState
               variant="cards"
               message="Loading search results"
-              description="Matching roles from career pages and recruiters."
+              description="Matching roles from company career pages."
               skeletonCount={6}
               className="flex-1"
             />

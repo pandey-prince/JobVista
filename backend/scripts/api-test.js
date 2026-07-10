@@ -19,6 +19,11 @@ const fail = (name, detail = "") => {
   console.error(`✗ ${name}${detail ? ` — ${detail}` : ""}`);
 };
 
+const skip = (name, detail = "") => {
+  results.push({ name, ok: true, skipped: true, detail });
+  console.log(`⊘ ${name} (skipped${detail ? ` — ${detail}` : ""})`);
+};
+
 class CookieClient {
   constructor(baseUrl) {
     this.baseUrl = baseUrl;
@@ -64,7 +69,6 @@ const run = async () => {
   console.log("\n=== JobVista Full API Test Suite ===\n");
   const ts = Date.now();
   const student = new CookieClient(API_BASE);
-  const recruiter = new CookieClient(API_BASE);
 
   try {
     const health = await fetch(`${API_BASE}/home`);
@@ -120,19 +124,21 @@ const run = async () => {
       ? pass("GET /stats/public", `${statsData.stats.totalJobs} jobs`)
       : fail("GET /stats/public", statsData?.message);
 
-    const recruiterReg = await recruiter.request("/api/v1/user/register", {
+    const recruiterReg = await fetch(`${API_BASE}/api/v1/user/register`, {
       method: "POST",
-      body: {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         fullname: "Test Recruiter",
         email: `recruiter${ts}@test.com`,
         password: "Test@1234",
         phoneNumber: 9876543211,
         role: "recruiter",
-      },
+      }),
     });
-    recruiterReg.response.ok && recruiterReg.data.success
-      ? pass("POST /user/register (recruiter)")
-      : fail("POST /user/register (recruiter)", recruiterReg.data?.message);
+    const recruiterRegData = await recruiterReg.json();
+    recruiterReg.status === 403 && !recruiterRegData.success
+      ? pass("POST /user/register (recruiter blocked)", recruiterRegData.message)
+      : fail("POST /user/register (recruiter blocked)", recruiterRegData?.message);
 
     const submitCareer = await student.request("/api/v1/career-sources/submit", {
       method: "POST",
@@ -176,10 +182,8 @@ const run = async () => {
       ? pass("GET /scraped-jobs", `${scrapedData.jobs?.length || 0} jobs`)
       : fail("GET /scraped-jobs");
 
-    const adminSources = await recruiter.request("/api/v1/scraped-jobs/sources");
-    adminSources.response.ok && adminSources.data.sources?.length > 0
-      ? pass("GET /scraped-jobs/sources (recruiter)", `${adminSources.data.sources.length} sources`)
-      : fail("GET /scraped-jobs/sources (recruiter)", adminSources.data?.message);
+    skip("GET /scraped-jobs/sources (recruiter)", "applicant-only mode");
+    skip("POST /career-sources/import/excel (recruiter)", "applicant-only mode");
 
     const workbookData = [
       ["companyName", "careerUrl"],
@@ -193,16 +197,6 @@ const run = async () => {
     parsed.length === 1
       ? pass("Excel parser unit test")
       : fail("Excel parser unit test");
-
-    const formData = new FormData();
-    formData.append("file", new Blob([buffer]), "companies.xlsx");
-    const excelImport = await recruiter.request("/api/v1/career-sources/import/excel", {
-      method: "POST",
-      body: formData,
-    });
-    excelImport.response.ok && excelImport.data.success
-      ? pass("POST /career-sources/import/excel", `${excelImport.data.summary?.total} rows`)
-      : fail("POST /career-sources/import/excel", excelImport.data?.message);
 
     isItJob({ title: "Software Engineer" }) && !isItJob({ title: "Marketing Manager" })
       ? pass("IT job filter")

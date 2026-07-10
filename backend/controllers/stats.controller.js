@@ -1,4 +1,3 @@
-import { Job } from "../models/job.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { JobSource } from "../models/jobSource.model.js";
 
@@ -12,35 +11,25 @@ export const getPublicStats = async (req, res) => {
   try {
     const today = startOfToday();
 
-    const [
-      recruiterJobs,
-      scrapedJobs,
-      companiesMonitored,
-      recruiterJobsToday,
-      scrapedJobsToday,
-    ] = await Promise.all([
-      Job.countDocuments(),
+    const [scrapedJobs, companiesMonitored, scrapedJobsToday] = await Promise.all([
       ScrapedJob.countDocuments({ status: "active" }),
       JobSource.countDocuments({ isActive: true }),
-      Job.countDocuments({ createdAt: { $gte: today } }),
       ScrapedJob.countDocuments({
         status: "active",
         firstSeenAt: { $gte: today },
       }),
     ]);
 
-    const totalJobs = recruiterJobs + scrapedJobs;
-    const jobsAddedToday = recruiterJobsToday + scrapedJobsToday;
+    const totalJobs = scrapedJobs;
+    const jobsAddedToday = scrapedJobsToday;
 
     return res.status(200).json({
       success: true,
       stats: {
         totalJobs,
-        recruiterJobs,
         scrapedJobs,
         companiesMonitored,
         jobsAddedToday,
-        externalFeeds: ["Remotive", "Arbeitnow"],
         updatedAt: new Date().toISOString(),
       },
     });

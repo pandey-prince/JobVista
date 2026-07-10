@@ -68,7 +68,7 @@ const ProfileSetup = () => {
           <div>
             <h1 className="font-bold text-2xl">Complete your JobVista profile</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Add education, skills, experience, internships and links so recruiters can understand you better.
+              Add education, skills, experience, internships and links so employers can understand you better.
             </p>
           </div>
           <Button type="button" variant="outline" onClick={() => saveProfile(true)} disabled={loading}>

@@ -42,9 +42,16 @@ const cookieOptions = {
 export const register = async (req, res) => {
   try {
     const { fullname, email, password, phoneNumber, role } = req.body;
-    if (!fullname || !email || !password || !phoneNumber || !role) {
+    if (!fullname || !email || !password || !phoneNumber) {
       return res.status(400).json({
         message: "Something is missing",
+        success: false,
+      });
+    }
+
+    if (role === "recruiter") {
+      return res.status(403).json({
+        message: "Recruiter signup is disabled. JobVista is for job seekers only.",
         success: false,
       });
     }
@@ -62,7 +69,7 @@ export const register = async (req, res) => {
       fullname,
       email,
       phoneNumber,
-      role,
+      role: "student",
       password: hashedPassword,
     });
 
@@ -153,9 +160,9 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       return res.status(400).json({
         message: "Something is missing",
         success: false,
@@ -171,18 +178,18 @@ export const login = async (req, res) => {
       });
     }
 
+    if (user.role === "recruiter") {
+      return res.status(403).json({
+        message: "Recruiter accounts are disabled. JobVista is for job seekers only.",
+        success: false,
+      });
+    }
+
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
       return res.status(400).json({
         message: "Incorrect email or password",
-        success: false,
-      });
-    }
-
-    if (role !== user.role) {
-      return res.status(400).json({
-        message: "Account doesn't exist with current role",
         success: false,
       });
     }

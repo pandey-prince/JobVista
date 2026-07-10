@@ -40,24 +40,17 @@ const Navbar = () => {
     }
   };
 
-  const navigationLinks =
-    user && user.role === "recruiter"
+  const navigationLinks = [
+    { label: "Home", to: "/" },
+    { label: "Jobs", to: "/jobs" },
+    ...(user
       ? [
-          { label: "Companies", to: "/admin/companies" },
-          { label: "Jobs", to: "/admin/jobs" },
-          { label: "Scrape Sources", to: "/admin/scrape-sources" },
+          { label: "Saved", to: "/saved-jobs" },
+          { label: "Alerts", to: "/alerts" },
+          { label: "My Companies", to: "/my-companies" },
         ]
-      : [
-          { label: "Home", to: "/" },
-          { label: "Jobs", to: "/jobs" },
-          ...(user
-            ? [
-                { label: "Saved", to: "/saved-jobs" },
-                { label: "Alerts", to: "/alerts" },
-                { label: "My Companies", to: "/my-companies" },
-              ]
-            : []),
-        ];
+      : []),
+  ];
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -72,7 +65,7 @@ const Navbar = () => {
     setProfileDialogOpen(true);
   };
 
-  const showProfileEditor = user && user.role !== "recruiter";
+  const showProfileEditor = Boolean(user);
 
   return (
     <div className="border-b border-border bg-card">

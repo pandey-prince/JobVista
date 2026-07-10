@@ -85,29 +85,8 @@ export const getAllJobs = async (req, res) => {
       maxLimit: 48,
     });
 
-    const recruiterQuery = keyword
-      ? {
-          $or: [
-            { title: { $regex: escapeRegex(keyword), $options: "i" } },
-            { description: { $regex: escapeRegex(keyword), $options: "i" } },
-            { location: { $regex: escapeRegex(keyword), $options: "i" } },
-          ],
-        }
-      : {};
-
-    const jobs = await Job.find(recruiterQuery).populate("company");
-
-    const itJobs = filterIndiaJobs(
-      filterItJobs(jobs).map((job) =>
-        attachBadgesToJob(job, {
-          sourceType: "recruiter",
-          sourceLabel: "JobVista",
-        }),
-      ),
-    );
     const scrapedJobs = await getScrapedJobsForList(keyword);
-    const mergedJobs = sortJobsByDate([...itJobs, ...scrapedJobs]);
-    const filteredJobs = filterJobList(mergedJobs, keyword, filters);
+    const filteredJobs = filterJobList(scrapedJobs, keyword, filters);
     const { data: jobsPage, pagination } = paginateArray(filteredJobs, paginationQuery);
 
     res.status(200).json({
