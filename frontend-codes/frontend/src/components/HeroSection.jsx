@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button } from './ui/button'
-import { BriefcaseBusiness, Building2, Bot, Search, Wifi } from 'lucide-react'
+import { BriefcaseBusiness, Building2, Bot, Wifi } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 import { useNavigate } from 'react-router-dom';
 import useGetPublicStats from '@/hooks/useGetPublicStats';
+import JobSearchBar from './shared/JobSearchBar';
 
 const formatCount = (value) => {
   if (!value && value !== 0) return "—";
@@ -13,13 +14,12 @@ const formatCount = (value) => {
 };
 
 const HeroSection = () => {
-    const [query, setQuery] = useState("");
     const { user, loading: authLoading } = useSelector((store) => store.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { stats, loading } = useGetPublicStats();
 
-    const searchJobHandler = () => {
+    const searchJobHandler = (query) => {
         dispatch(setSearchedQuery(query));
         navigate("/jobs");
     }
@@ -42,19 +42,10 @@ const HeroSection = () => {
                     JobVista monitors 100+ company career boards across India for fresher and 0–3 year IT openings.
                     Watch companies, save roles, and get email alerts when something new drops.
                 </p>
-                <div className='mx-auto flex w-full max-w-2xl items-center gap-2 rounded-full border border-border bg-card pl-3 shadow-lg sm:gap-4'>
-                    <input
-                        type="text"
-                        placeholder='Search SDE, React, Python, Data...'
-                        value={query}
-                        onKeyDown={(e) => e.key === "Enter" && searchJobHandler()}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className='w-full border-none bg-transparent py-3 text-foreground outline-none placeholder:text-muted-foreground'
-                    />
-                    <Button onClick={searchJobHandler} className="rounded-r-full bg-brand px-4 sm:px-6">
-                        <Search className='h-5 w-5' />
-                    </Button>
-                </div>
+                <JobSearchBar
+                    className="mx-auto max-w-2xl"
+                    onSearch={searchJobHandler}
+                />
                 <div className='flex flex-wrap items-center justify-center gap-3'>
                     <Button onClick={browseFreshJobs} variant="outline" className="rounded-full">
                         Browse fresh IT jobs

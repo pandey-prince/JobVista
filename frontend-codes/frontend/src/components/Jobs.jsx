@@ -2,19 +2,22 @@ import React, { useEffect, useState } from "react";
 import FilterCard from "./FilterCard";
 import Job from "./Job";
 import { Button } from "./ui/button";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchedQuery } from "@/redux/jobSlice";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { emptyJobFilters } from "@/utils/jobFilters";
 import usePaginatedJobs from "@/hooks/usePaginatedJobs";
 import Pagination from "@/components/shared/Pagination";
 import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
-import { Loader2 } from "lucide-react";
+import JobSearchBar from "@/components/shared/JobSearchBar";
+import { Loader2, X } from "lucide-react";
 
 const JOBS_PER_PAGE = 12;
 
 const Jobs = () => {
   const { searchedQuery } = useSelector((store) => store.job);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [selectedFilters, setSelectedFilters] = useState(emptyJobFilters);
   const [page, setPage] = useState(1);
@@ -30,6 +33,16 @@ const Jobs = () => {
     setPage(1);
   }, [searchedQuery, selectedFilters]);
 
+  const handleSearch = (query) => {
+    dispatch(setSearchedQuery(query));
+    setPage(1);
+  };
+
+  const clearSearch = () => {
+    dispatch(setSearchedQuery(""));
+    setPage(1);
+  };
+
   const handleFilterChange = (nextFilters) => {
     setSelectedFilters(nextFilters);
     setPage(1);
@@ -38,16 +51,37 @@ const Jobs = () => {
   return (
     <div>
       <div className="mx-auto mt-5 max-w-7xl px-4 sm:px-6">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
-            <p className="text-sm text-muted-foreground">
-              India IT roles from company career pages and JobVista recruiters. Use filters for city, experience, and work mode.
-            </p>
+        <div className="mb-5 flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
+              <p className="text-sm text-muted-foreground">
+                India IT roles from company career pages and JobVista recruiters. Use filters for city, experience, and work mode.
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => navigate("/alerts")}>
+              Create job alert
+            </Button>
           </div>
-          <Button variant="outline" onClick={() => navigate("/alerts")}>
-            Create job alert
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <JobSearchBar
+              className="max-w-2xl"
+              defaultQuery={searchedQuery}
+              onSearch={handleSearch}
+            />
+            {searchedQuery ? (
+              <Button type="button" variant="ghost" onClick={clearSearch} className="shrink-0">
+                <X className="mr-1 h-4 w-4" />
+                Clear search
+              </Button>
+            ) : null}
+          </div>
+          {searchedQuery ? (
+            <p className="text-sm text-muted-foreground">
+              Showing results for <span className="font-medium text-foreground">&quot;{searchedQuery}&quot;</span>
+              {pagination?.total != null ? ` (${pagination.total} jobs)` : ""}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-col gap-5 lg:flex-row">
           <div className="w-full lg:w-72 lg:shrink-0">
