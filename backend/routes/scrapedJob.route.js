@@ -9,6 +9,7 @@ import {
   listJobSources,
   listScrapedJobs,
   triggerFullSync,
+  triggerLinkCheck,
   triggerSourceSync,
   updateJobSource,
 } from "../controllers/scrapedJob.controller.js";
@@ -31,6 +32,9 @@ router
 router
   .route("/sources/:id/sync")
   .post(isAuthenticated, requireRole("recruiter"), triggerSourceSync);
+router
+  .route("/link-check")
+  .post(isAuthenticated, requireRole("recruiter"), triggerLinkCheck);
 router.route("/:id").get(getScrapedJobById);
 
 export default router;

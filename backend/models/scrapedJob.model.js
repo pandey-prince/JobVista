@@ -61,6 +61,21 @@ const scrapedJobSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    lastLinkCheckedAt: {
+      type: Date,
+    },
+    linkHttpStatus: {
+      type: Number,
+      default: 0,
+    },
+    linkFailCount: {
+      type: Number,
+      default: 0,
+    },
+    linkCheckReason: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

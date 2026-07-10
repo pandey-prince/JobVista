@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import LatestJobCards from "./LatestJobCards";
 import { jobsApi } from "@/api";
-import { Loader2 } from "lucide-react";
+import LoadingState, { JobGridSkeleton } from "@/components/shared/LoadingState";
 
 const LatestJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -37,9 +37,9 @@ const LatestJobs = () => {
       </div>
 
       {loading ? (
-        <div className="mt-10 flex items-center justify-center text-muted-foreground">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          Loading latest jobs...
+        <div className="mt-10 space-y-4">
+          <LoadingState variant="inline" message="Loading latest openings" />
+          <JobGridSkeleton count={6} />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-5">

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Job from "./Job";
 import useSavedJobs from "@/hooks/useSavedJobs";
-import { Bookmark, Loader2 } from "lucide-react";
+import { Bookmark } from "lucide-react";
+import LoadingState from "@/components/shared/LoadingState";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import Pagination from "@/components/shared/Pagination";
@@ -34,10 +35,13 @@ const SavedJobs = () => {
         <p className="mt-2 text-muted-foreground">Roles you bookmarked to apply later.</p>
 
         {loading ? (
-          <div className="mt-16 flex items-center justify-center text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Loading saved jobs...
-          </div>
+          <LoadingState
+            variant="cards"
+            message="Loading saved jobs"
+            description="Fetching your bookmarked roles."
+            skeletonCount={3}
+            className="mt-10"
+          />
         ) : savedJobs.length === 0 ? (
           <div className="mt-10 rounded-xl border border-dashed border-border bg-card p-10 text-center">
             <Bookmark className="mx-auto h-10 w-10 text-brand" />

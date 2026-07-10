@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import CompanyLogo from "./CompanyLogo";
 import JobFreshnessBadges from "./shared/JobFreshnessBadges";
+import LoadingState from "@/components/shared/LoadingState";
 import MatchScorePanel from "@/features/job-detail/MatchScorePanel";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
@@ -199,11 +200,12 @@ const JobDescription = () => {
 
   if (loading) {
     return (
-      <div>
-        <div className="max-w-6xl mx-auto my-16 flex items-center justify-center text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin mr-2" />
-          Loading job details
-        </div>
+      <div className="max-w-6xl mx-auto my-16">
+        <LoadingState
+          variant="page"
+          message="Loading job details"
+          description="Fetching role description, requirements, and apply link."
+        />
       </div>
     );
   }

@@ -55,7 +55,7 @@ const run = async () => {
     const summary = await syncAllSources();
     pass(
       "Full sync",
-      `${summary.successful}/${summary.totalSources} sources OK, ${summary.newJobsCount} new jobs`
+      `${summary.successful}/${summary.totalSources} sources OK, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard || 0} removed from board`,
     );
 
     const activeJobs = await ScrapedJob.countDocuments({ status: "active" });
