@@ -147,7 +147,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="relative overflow-hidden bg-background pb-0">
+      <div className="relative overflow-hidden bg-card pb-0">
         <p
           className="pointer-events-none m-0 translate-y-[6%] select-none whitespace-nowrap pb-0 text-center font-black uppercase leading-[0.68] tracking-[-0.06em] text-[clamp(6rem,26vw,22rem)] text-transparent bg-gradient-to-b from-foreground/35 via-foreground/20 to-foreground/5 bg-clip-text"
           aria-hidden="true"
@@ -155,7 +155,7 @@ const Footer = () => {
           JOBVISTA
         </p>
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-b from-transparent via-background/70 to-background"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-b from-transparent via-card/70 to-card"
           aria-hidden="true"
         />
       </div>
