@@ -57,7 +57,7 @@ const Jobs = () => {
             <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
               <p className="text-sm text-muted-foreground">
-                India IT roles from company career pages and JobVista recruiters. Use filters for city, experience, and work mode.
+                India IT roles from company career pages. Use filters for city, experience, and work mode.
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
@@ -105,7 +105,7 @@ const Jobs = () => {
             <LoadingState
               variant="cards"
               message="Finding fresh IT jobs"
-              description="Pulling the latest roles from career pages and recruiters."
+              description="Pulling the latest roles from company career pages."
               skeletonCount={6}
               className="flex-1"
             />

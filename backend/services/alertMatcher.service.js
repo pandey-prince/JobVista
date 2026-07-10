@@ -1,7 +1,5 @@
-import { Job } from "../models/job.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
-import { attachBadgesToJob } from "../utils/jobBadges.js";
 import { mapScrapedJobForList } from "../services/job-catalog/index.js";
 
 const toSearchText = (job) =>
@@ -25,19 +23,12 @@ export const getJobKey = (job) => String(job._id || job.jobKey || "");
 export const getRecentJobsSince = async (sinceDate) => {
   const since = sinceDate || new Date(0);
 
-  const [internalJobs, scrapedJobs] = await Promise.all([
-    Job.find({ createdAt: { $gte: since } }).populate("company"),
-    ScrapedJob.find({ status: "active", firstSeenAt: { $gte: since } }).populate(
-      "source",
-    ),
-  ]);
+  const scrapedJobs = await ScrapedJob.find({
+    status: "active",
+    firstSeenAt: { $gte: since },
+  }).populate("source");
 
-  const mappedInternal = filterItJobs(internalJobs).map((job) =>
-    attachBadgesToJob(job, { sourceType: "recruiter", sourceLabel: "JobVista" }),
-  );
-  const mappedScraped = filterItJobs(scrapedJobs).map(mapScrapedJobForList);
-
-  return [...mappedInternal, ...mappedScraped].map((job) => ({
+  return filterItJobs(scrapedJobs).map(mapScrapedJobForList).map((job) => ({
     ...job,
     jobKey: getJobKey(job),
   }));

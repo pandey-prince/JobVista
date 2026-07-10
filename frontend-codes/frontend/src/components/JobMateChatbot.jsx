@@ -12,10 +12,7 @@ const demoReply = (message = "") => {
   if (text.includes("interview")) {
     return "Practice your introduction, revise your projects, prepare role-specific questions, and answer with examples from your own work.";
   }
-  if (text.includes("recruiter") || text.includes("job post")) {
-    return "Mention role, responsibilities, required skills, experience, location, salary range and application steps in the job post.";
-  }
-  return "I can help with job search guidance, resumes, interviews, cover letters, job posts and candidate screening questions.";
+  return "I can help with job search guidance, resumes, interviews, cover letters, and tailoring your profile for roles you want.";
 };
 
 const normalizeBotText = (text) =>
@@ -61,7 +58,7 @@ const JobMateChatbot = () => {
   const [messages, setMessages] = useState([
     {
       sender: "bot",
-      text: "Hi, I am JobMate. I help job seekers with applications, resumes and interviews, and recruiters with job posts and screening questions.",
+      text: "Hi, I am JobMate. I help job seekers with applications, resumes, interviews, and finding roles that match their skills.",
     },
   ]);
 
@@ -104,7 +101,7 @@ const JobMateChatbot = () => {
               <Bot className="h-5 w-5 shrink-0" />
               <div className="min-w-0">
                 <h2 className="font-semibold leading-tight">JobMate</h2>
-                <p className="truncate text-xs text-white/80">Career and recruiter assistant</p>
+                <p className="truncate text-xs text-white/80">Career assistant for job seekers</p>
               </div>
             </div>
             <Button
@@ -151,7 +148,7 @@ const JobMateChatbot = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-brand"
-              placeholder="Ask about resume, interview, job post..."
+              placeholder="Ask about resume, interview, or job search..."
             />
             <Button type="submit" size="icon" className="shrink-0 bg-brand hover:bg-brand/90">
               <Send className="h-4 w-4" />

@@ -337,7 +337,7 @@ const JobDescription = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground mt-3">Requirements were not added by the recruiter.</p>
+                <p className="text-sm text-muted-foreground mt-3">No detailed requirements listed for this role.</p>
               )}
             </div>
           </div>

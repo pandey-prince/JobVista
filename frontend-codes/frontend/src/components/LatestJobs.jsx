@@ -31,7 +31,7 @@ const LatestJobs = () => {
             <span className="text-brand">Fresh</span> IT job openings
           </h2>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            New India IT roles from company career pages and JobVista recruiters — with freshness badges on every card.
+            New India IT roles from company career pages — with freshness badges on every card.
           </p>
         </div>
       </div>
@@ -47,7 +47,7 @@ const LatestJobs = () => {
             <div className="col-span-full border border-dashed border-border rounded-md p-8 text-center bg-card">
               <h2 className="font-semibold">No jobs available yet</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Try searching a role or check again after recruiters post new openings.
+                Try searching a role or check again after new career-page listings sync.
               </p>
             </div>
           ) : (

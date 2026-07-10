@@ -59,27 +59,13 @@ If you want, I can give you mock interview questions too.`;
 If you want, I can write a sample cover letter for you.`;
   }
 
-  if (text.includes("post") || text.includes("recruiter")) {
-    return `A good job post should include:
-* Job title
-* Key responsibilities
-* Required skills
-* Experience level
-* Location or remote policy
-* Salary range if available
-* Selection process
-* Application deadline or next step
-
-If you want, I can draft a full job post for a specific role.`;
-  }
-
   if (text.includes("apply")) {
     return `To apply effectively:
 * Read the full job description.
 * Match your resume to the role.
 * Keep your profile updated.
 * Apply with a clean resume and correct links.
-* Prepare a short introduction in case a recruiter calls.
+* Prepare a short introduction in case the employer calls.
 
 If you want, I can also help you tailor your application.`;
   }
@@ -89,7 +75,7 @@ If you want, I can also help you tailor your application.`;
 
 const fallbackReply = (message = "") =>
   getTemplateReply(message) ||
-  "Hi, I am JobMate. I help job seekers with applications, resumes, interviews, and recruiters with job descriptions and candidate screening. Ask me about a resume, interview, cover letter, job post, or candidate screening questions.";
+  "Hi, I am JobMate. I help job seekers with applications, resumes, interviews, and cover letters. Ask me about job search tips, resume formatting, or interview prep.";
 
 export const chatWithJobMate = async (req, res) => {
   try {
@@ -123,7 +109,7 @@ export const chatWithJobMate = async (req, res) => {
       (await generateGeminiText({
         prompt: message,
         systemInstruction:
-          "You are JobMate, a friendly job portal assistant. Help job seekers with job search, resumes, cover letters and interviews. Help recruiters write job posts and candidate screening questions. Give direct, complete, practical answers. When the user asks for questions, provide a list of actual questions instead of a short summary.",
+          "You are JobMate, a friendly job portal assistant for job seekers. Help with job search, resume tips, cover letters, and interview preparation. Give direct, complete, practical answers. When the user asks for questions, provide a list of actual questions instead of a short summary.",
         temperature: 0.6,
         maxOutputTokens: 500,
       })) || fallbackReply(message);

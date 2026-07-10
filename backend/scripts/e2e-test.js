@@ -8,7 +8,6 @@ dotenv.config();
 const API = process.env.TEST_API_BASE || "http://localhost:8000";
 const ts = Date.now();
 const studentEmail = `e2e-student-${ts}@test.com`;
-const recruiterEmail = `e2e-recruiter-${ts}@test.com`;
 const password = "TestPass123!";
 const results = [];
 
@@ -20,6 +19,11 @@ const pass = (name, detail = "") => {
 const fail = (name, detail = "") => {
   results.push({ name, ok: false, detail });
   console.error(`✗ ${name}${detail ? ` — ${detail}` : ""}`);
+};
+
+const skip = (name, detail = "") => {
+  results.push({ name, ok: true, skipped: true, detail });
+  console.log(`⊘ ${name} (skipped${detail ? ` — ${detail}` : ""})`);
 };
 
 class Client {
@@ -64,10 +68,6 @@ const run = async () => {
   console.log(`\n=== JobVista E2E Test (${API}) ===\n`);
 
   const student = new Client();
-  const recruiter = new Client();
-  const otherRecruiter = new Client();
-  let jobId = null;
-  let applicationId = null;
   let externalJobId = null;
   let scrapedJobId = null;
 
@@ -84,7 +84,6 @@ const run = async () => {
       pass("GET /job/get", `${jobsData.jobs.length} jobs`);
       externalJobId = jobsData.jobs.find((j) => String(j._id).startsWith("remotive-"))?._id;
       scrapedJobId = jobsData.jobs.find((j) => String(j._id).startsWith("scraped-"))?._id;
-      jobId = jobsData.jobs.find((j) => !String(j._id).includes("-"))?._id;
     } else {
       fail("GET /job/get", "No jobs returned");
     }
@@ -136,31 +135,24 @@ const run = async () => {
     });
     r.res.ok && r.data.success ? pass("Student register (no photo)") : fail("Student register", r.data?.message);
 
-    // Recruiter register
-    r = await recruiter.req("/api/v1/user/register", {
+    // Recruiter signup blocked (applicant-only mode)
+    r = await fetch(`${API}/api/v1/user/register`, {
       method: "POST",
-      body: {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         fullname: "E2E Recruiter",
-        email: recruiterEmail,
+        email: `e2e-recruiter-${ts}@test.com`,
         phoneNumber: "9876543211",
         password,
         role: "recruiter",
-      },
+      }),
     });
-    r.res.ok && r.data.success ? pass("Recruiter register") : fail("Recruiter register", r.data?.message);
+    const recruiterRegData = await r.json();
+    r.status === 403 && !recruiterRegData.success
+      ? pass("Recruiter register blocked", recruiterRegData.message)
+      : fail("Recruiter register blocked", recruiterRegData?.message);
 
-    // Other recruiter for auth test
-    r = await otherRecruiter.req("/api/v1/user/register", {
-      method: "POST",
-      body: {
-        fullname: "Other Recruiter",
-        email: `e2e-other-${ts}@test.com`,
-        phoneNumber: "9876543212",
-        password,
-        role: "recruiter",
-      },
-    });
-    r.res.ok ? pass("Second recruiter register") : fail("Second recruiter register");
+    skip("Recruiter company/job/applicant flows", "applicant-only mode");
 
     // Student profile update (no file)
     r = await student.req("/api/v1/user/profile/update", {
@@ -214,76 +206,15 @@ const run = async () => {
     }
     r.res.ok && r.data.success ? pass("Student profile update (no file)") : fail("Student profile update", r.data?.message);
 
-    // Recruiter: create company + job
-    r = await recruiter.req("/api/v1/company/register", {
-      method: "POST",
-      body: { companyName: `E2E Co ${ts}` },
-    });
-    const companyId = r.data?.company?._id;
-    r.res.ok && companyId ? pass("Create company") : fail("Create company", r.data?.message);
-
-    if (companyId) {
-      r = await recruiter.req("/api/v1/job/post", {
-        method: "POST",
-        body: {
-          title: "E2E Backend Developer",
-          description: "Node.js backend engineer role for testing",
-          requirements: "Node,Express,MongoDB",
-          salary: "12",
-          location: "Bangalore",
-          jobType: "Full-time",
-          experience: "2",
-          position: "2",
-          companyId,
-        },
-      });
-      jobId = r.data?.job?._id || jobId;
-      r.res.ok && r.data.success ? pass("Post internal job") : fail("Post internal job", r.data?.message);
-    }
-
-    // Student apply to internal job
-    if (jobId && !String(jobId).includes("-")) {
-      r = await student.req(`/api/v1/application/apply/${jobId}`);
-      r.res.ok && r.data.success ? pass("Student apply to job") : fail("Student apply", r.data?.message);
-
-      // Block apply to scraped job
-      if (scrapedJobId) {
-        r = await student.req(`/api/v1/application/apply/${scrapedJobId}`);
-        r.res.status === 400 ? pass("Block apply on scraped job") : fail("Block apply on scraped job", `status ${r.res.status}`);
-      }
-
-      // Recruiter views applicants
-      r = await recruiter.req(`/api/v1/application/${jobId}/applicants`);
-      applicationId = r.data?.job?.applications?.[0]?._id;
-      r.res.ok && r.data.success ? pass("Recruiter view applicants") : fail("Recruiter view applicants", r.data?.message);
-
-      // Other recruiter denied
-      r = await otherRecruiter.req(`/api/v1/application/${jobId}/applicants`);
-      r.res.status === 403 ? pass("Applicant list blocked for non-owner") : fail("Applicant auth", `status ${r.res.status}`);
-
-      // Update status
-      if (applicationId) {
-        r = await recruiter.req(`/api/v1/application/status/${applicationId}/update`, {
-          method: "POST",
-          body: { status: "accepted" },
-        });
-        r.res.ok && r.data.success ? pass("Update application status") : fail("Update status", r.data?.message);
-
-        r = await otherRecruiter.req(`/api/v1/application/status/${applicationId}/update`, {
-          method: "POST",
-          body: { status: "rejected" },
-        });
-        r.res.status === 403 ? pass("Status update blocked for non-owner") : fail("Status auth", `status ${r.res.status}`);
-      }
+    // Block apply on scraped job (career-page listings)
+    if (scrapedJobId) {
+      r = await student.req(`/api/v1/application/apply/${scrapedJobId}`);
+      r.res.status === 400 ? pass("Block apply on scraped job") : fail("Block apply on scraped job", `status ${r.res.status}`);
     } else {
-      fail("Apply flow", "No internal job id");
+      fail("Block apply on scraped job", "No scraped job in feed");
     }
 
-    // Recruiter cannot apply
-    if (jobId && !String(jobId).includes("-")) {
-      r = await recruiter.req(`/api/v1/application/apply/${jobId}`);
-      r.res.status === 403 ? pass("Recruiter blocked from applying") : fail("Recruiter apply block", `status ${r.res.status}`);
-    }
+    skip("Internal job apply and recruiter applicant flows", "applicant-only mode");
 
     // Watchlist
     r = await student.req("/api/v1/career-sources/lists", {
@@ -292,11 +223,7 @@ const run = async () => {
     });
     r.res.ok && r.data.success ? pass("Add watchlist") : fail("Add watchlist", r.data?.message);
 
-    // Scrape sources (recruiter)
-    r = await recruiter.req("/api/v1/scraped-jobs/sources");
-    r.res.ok && r.data.sources?.length >= 90
-      ? pass("Recruiter scrape sources list", `${r.data.sources.length} sources`)
-      : fail("Scrape sources list");
+    skip("Recruiter scrape sources list", "applicant-only mode");
 
     // Invalid JWT returns 401
     const badAuth = await fetch(`${API}/api/v1/user/profile/update`, {

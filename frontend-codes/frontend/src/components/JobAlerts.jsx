@@ -116,7 +116,6 @@ const JobAlerts = () => {
               >
                 <option value="">Any source</option>
                 <option value="career_page">Career page only</option>
-                <option value="recruiter">JobVista recruiter</option>
               </select>
             </div>
           </div>

@@ -1,6 +1,8 @@
 # JobVista
 
-A job portal for IT roles in India — internal recruiter postings, scraped company career pages (100 sources). Only India-relevant roles are shown.
+A job portal for **job seekers** — IT roles in India from company career pages (100+ sources). Only India-relevant roles are shown.
+
+> **Applicant-only mode:** The product UI is for job seekers. Recruiter signup and admin dashboards are hidden; the public job feed shows scraped career-page listings only. Recruiter APIs remain in the backend for ops but are not exposed in the app.
 
 ## Live
 
@@ -17,12 +19,11 @@ A job portal for IT roles in India — internal recruiter postings, scraped comp
 
 ## Features
 
-- Student & recruiter auth (JWT cookies)
-- Merged job feed: internal + scraped (India IT roles only)
+- Job seeker auth (JWT cookies) — student accounts only
+- Job feed: scraped company career pages (India IT roles only)
 - **JobMate AI Assistant:** Gemini-powered career assistant (optional `GEMINI_API_KEY`)
-- 100 Indian company career sources (Greenhouse, Lever, Workday, TCS, etc.)
-- Student job seeker tools: save jobs, email alerts, watchlist instant alerts, application kanban, resume match score
-- Recruiter dashboard: companies, jobs, applicants, scrape admin
+- 100+ Indian company career sources (Greenhouse, Lever, Workday, TCS, etc.)
+- Job seeker tools: save jobs, email alerts, watchlist instant alerts, application kanban, resume match score
 - First-letter profile avatars (no photo upload required)
 - Docker Compose for local full stack
 
@@ -92,7 +93,7 @@ Scraped jobs are kept fresh by:
 - **Scrape sync** (default every 6 hours) — re-reads career boards and hard-deletes jobs no longer listed
 - **Link check** (default daily) — validates `applicationUrl` and hard-deletes confirmed 404 / "job not found" pages after 3 failures
 
-Recruiters can trigger manually: `POST /api/v1/scraped-jobs/link-check`
+Recruiters can trigger manually via API (ops): `POST /api/v1/scraped-jobs/link-check`
 
 Optional company logo uploads (otherwise files save to `backend/uploads/`):
 
@@ -103,13 +104,13 @@ CLOUDINARY_API_SECRET=
 API_BASE_URL=http://localhost:8000
 ```
 
-Optional — seed demo jobs so the board is never empty:
+Optional — seed demo data (legacy recruiter jobs; not shown in applicant-only feed):
 
 ```bash
 npm run seed
 ```
 
-Creates a demo recruiter, companies, and ~15 IT jobs. Idempotent (only replaces its own demo data).
+Creates a demo recruiter, companies, and ~15 IT jobs in the database. Idempotent (only replaces its own demo data). These internal jobs do not appear in the public feed in applicant-only mode.
 
 ```bash
 npm run dev
@@ -138,10 +139,10 @@ Frontend: http://localhost:3000 · Backend: http://localhost:8000
 | Prefix | Purpose |
 |--------|---------|
 | `/user` | Register, login, logout, profile, **session (`GET /me`)** |
-| `/job` | List/create jobs |
-| `/application` | Apply, applicants, status |
-| `/company` | Recruiter companies |
-| `/scraped-jobs` | Scraped jobs + admin sources |
+| `/job` | List jobs (scraped feed) |
+| `/application` | Apply to internal jobs (legacy; feed is scraped-only) |
+| `/company` | Recruiter companies (API only) |
+| `/scraped-jobs` | Scraped jobs + admin sources (admin API only) |
 | `/career-sources` | Public directory, watchlist, Excel import |
 | `/chatbot` | JobMate messages |
 | `/stats` | Public platform stats (job counts, companies monitored) |
@@ -163,7 +164,7 @@ ALERT_DIGEST_CRON=30 14 * * *
 
 ## Scraping on Render
 
-Render free tier sets `SKIP_PUPPETEER_SCRAPERS=true` — **~45 API-based sources** sync; **55 auto-puppeteer sources** are skipped. Use recruiter **Sync All** for API scrapers, or run a local sync against Atlas for Puppeteer companies.
+Render free tier sets `SKIP_PUPPETEER_SCRAPERS=true` — **~45 API-based sources** sync; **55 auto-puppeteer sources** are skipped. Run a local sync against Atlas for Puppeteer companies, or use ops API endpoints.
 
 ## Tests
 

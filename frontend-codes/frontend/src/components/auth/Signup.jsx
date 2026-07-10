@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { RadioGroup } from "../ui/radio-group";
 import { Button } from "../ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -17,7 +16,6 @@ const Signup = () => {
     email: "",
     phoneNumber: "",
     password: "",
-    role: "",
   });
   const { loading, user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
@@ -32,17 +30,19 @@ const Signup = () => {
 
     try {
       dispatch(setLoading(true));
-      const res = await axios.post(`${USER_API_END_POINT}/register`, input, {
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        `${USER_API_END_POINT}/register`,
+        { ...input, role: "student" },
+        { withCredentials: true },
+      );
       if (res.data.success) {
         dispatch(setUser(res.data.user));
-        navigate(input.role === "student" ? "/profile/setup" : "/");
+        navigate("/profile/setup");
         toast.success(res.data.message);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Signup failed");
     } finally {
       dispatch(setLoading(false));
     }
@@ -61,6 +61,9 @@ const Signup = () => {
           className="my-10 w-full max-w-xl rounded-md border border-border p-4 sm:p-6"
         >
           <h1 className="mb-5 text-xl font-bold">Sign Up</h1>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Create your JobVista account to save jobs, set alerts, and track applications.
+          </p>
           <div className="my-2">
             <Label>Full Name</Label>
             <Input
@@ -101,30 +104,6 @@ const Signup = () => {
               placeholder="**********"
             />
           </div>
-          <RadioGroup className="my-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <div className="flex items-center space-x-2">
-              <Input
-                type="radio"
-                name="role"
-                value="student"
-                checked={input.role === "student"}
-                onChange={changeEventHandler}
-                className="cursor-pointer"
-              />
-              <Label htmlFor="r1">Student</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="radio"
-                name="role"
-                value="recruiter"
-                checked={input.role === "recruiter"}
-                onChange={changeEventHandler}
-                className="cursor-pointer"
-              />
-              <Label htmlFor="r2">Recruiter</Label>
-            </div>
-          </RadioGroup>
           {loading ? (
             <Button className="my-4 w-full">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
