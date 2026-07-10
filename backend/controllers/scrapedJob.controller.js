@@ -11,6 +11,7 @@ import {
   extractCompanySlugFromUrl,
 } from "../services/scrapers/index.js";
 import { filterItJobs, isItJob } from "../utils/itJobFilter.js";
+import { isIndiaJob } from "../utils/indiaJobFilter.js";
 import { createOrGetJobSource } from "../services/careerSource.service.js";
 import {
   getScrapedJobsForList,
@@ -39,7 +40,7 @@ export const listScrapedJobs = async (req, res) => {
 export const getScrapedJobById = async (req, res) => {
   try {
     const job = await ScrapedJob.findById(req.params.id).populate("source");
-    if (!job || job.status !== "active" || !isItJob(job)) {
+    if (!job || job.status !== "active" || !isItJob(job) || !isIndiaJob(job)) {
       return res.status(404).json({
         success: false,
         message: "Scraped job not found",

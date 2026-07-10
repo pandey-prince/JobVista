@@ -39,6 +39,7 @@ const JobDescription = () => {
   const { user } = useSelector((store) => store.auth);
   const [isApplied, setIsApplied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchFailed, setFetchFailed] = useState(false);
   const [applying, setApplying] = useState(false);
   const [tracking, setTracking] = useState(false);
   const [isTracked, setIsTracked] = useState(false);
@@ -69,7 +70,9 @@ const JobDescription = () => {
   const applyOnCompanySite = () => {
     if (singleJob?.applicationLink) {
       window.open(singleJob.applicationLink, "_blank", "noopener,noreferrer");
+      return;
     }
+    toast.error("Apply link is not available for this role.");
   };
 
   const markAsApplied = async () => {
@@ -155,6 +158,9 @@ const JobDescription = () => {
     const fetchSingleJob = async () => {
       try {
         setLoading(true);
+        setFetchFailed(false);
+        dispatch(setSingleJob(null));
+
         const res = isScrapedJob
           ? await jobsApi.getScrapedById(scrapedJobId)
           : await jobsApi.getById(jobId);
@@ -169,6 +175,9 @@ const JobDescription = () => {
               ) || false,
             );
           }
+        } else {
+          dispatch(setSingleJob(null));
+          setFetchFailed(true);
         }
 
         if (user?.role === "student") {
@@ -184,6 +193,8 @@ const JobDescription = () => {
           }
         }
       } catch (error) {
+        dispatch(setSingleJob(null));
+        setFetchFailed(true);
         toast.error(error.response?.data?.message || "Unable to load job details");
       } finally {
         setLoading(false);
@@ -191,7 +202,7 @@ const JobDescription = () => {
     };
 
     fetchSingleJob();
-  }, [jobId, scrapedJobId, isScrapedJob, isExternalJob, dispatch, user?._id]);
+  }, [jobId, scrapedJobId, isScrapedJob, isExternalJob, dispatch, user?._id, user?.role]);
 
   useEffect(() => {
     if (!user || user.role !== "student" || !singleJob?._id) return;
@@ -210,7 +221,7 @@ const JobDescription = () => {
     );
   }
 
-  if (!singleJob) {
+  if (!singleJob || fetchFailed) {
     return (
       <div>
         <div className="max-w-6xl mx-auto my-16 border border-dashed border-border rounded-md p-10 text-center">
@@ -281,7 +292,8 @@ const JobDescription = () => {
               <>
               <Button
                 onClick={applyOnCompanySite}
-                className="rounded-lg min-w-36 bg-accent-amber text-white hover:bg-accent-amber/90"
+                disabled={!singleJob?.applicationLink}
+                className="rounded-lg min-w-36 bg-accent-amber text-white hover:bg-accent-amber/90 disabled:opacity-60"
               >
                 Apply on {singleJob?.company?.name || singleJob.externalSource || "company"} site
               </Button>

@@ -1,5 +1,5 @@
-import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { JobSource } from "../models/jobSource.model.js";
+import { getScrapedJobsForList } from "../services/job-catalog/index.js";
 
 const startOfToday = () => {
   const date = new Date();
@@ -10,24 +10,19 @@ const startOfToday = () => {
 export const getPublicStats = async (req, res) => {
   try {
     const today = startOfToday();
+    const visibleJobs = await getScrapedJobsForList("");
+    const totalJobs = visibleJobs.length;
+    const jobsAddedToday = visibleJobs.filter(
+      (job) => job.createdAt && new Date(job.createdAt) >= today,
+    ).length;
 
-    const [scrapedJobs, companiesMonitored, scrapedJobsToday] = await Promise.all([
-      ScrapedJob.countDocuments({ status: "active" }),
-      JobSource.countDocuments({ isActive: true }),
-      ScrapedJob.countDocuments({
-        status: "active",
-        firstSeenAt: { $gte: today },
-      }),
-    ]);
-
-    const totalJobs = scrapedJobs;
-    const jobsAddedToday = scrapedJobsToday;
+    const companiesMonitored = await JobSource.countDocuments({ isActive: true });
 
     return res.status(200).json({
       success: true,
       stats: {
         totalJobs,
-        scrapedJobs,
+        scrapedJobs: totalJobs,
         companiesMonitored,
         jobsAddedToday,
         updatedAt: new Date().toISOString(),

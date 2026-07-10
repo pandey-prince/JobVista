@@ -1,7 +1,6 @@
-import { Job } from "../models/job.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
-import { attachBadgesToJob } from "../utils/jobBadges.js";
-import { filterItJobs } from "../utils/itJobFilter.js";
+import { isItJob } from "../utils/itJobFilter.js";
+import { isIndiaJob } from "../utils/indiaJobFilter.js";
 import {
   fetchExternalJobById,
   isExternalJobId,
@@ -25,7 +24,7 @@ export const resolveJobByKey = async (jobKey) => {
   if (jobKey.startsWith("scraped-")) {
     const scrapedId = jobKey.replace("scraped-", "");
     const job = await ScrapedJob.findById(scrapedId).populate("source");
-    if (!job || job.status !== "active") return null;
+    if (!job || job.status !== "active" || !isItJob(job) || !isIndiaJob(job)) return null;
     return mapScrapedJobForList(job);
   }
 
@@ -33,12 +32,7 @@ export const resolveJobByKey = async (jobKey) => {
     return fetchExternalJobById(jobKey);
   }
 
-  const job = await Job.findById(jobKey).populate("company");
-  if (!job || !filterItJobs([job]).length) return null;
-  return attachBadgesToJob(job, {
-    sourceType: "recruiter",
-    sourceLabel: "JobVista",
-  });
+  return null;
 };
 
 export const snapshotFromPayload = (payload = {}) => {

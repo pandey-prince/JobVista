@@ -17,7 +17,7 @@ const Browse = () => {
   const [page, setPage] = useState(1);
   const dispatch = useDispatch();
 
-  const { jobs, pagination, loading } = usePaginatedJobs({
+  const { jobs, pagination, loading, error } = usePaginatedJobs({
     page,
     limit: JOBS_PER_PAGE,
     keyword: searchedQuery,
@@ -65,6 +65,13 @@ const Browse = () => {
               skeletonCount={6}
               className="flex-1"
             />
+          ) : error ? (
+            <div className="flex-1 rounded-md border border-dashed border-destructive/40 bg-card p-10 text-center">
+              <h2 className="text-lg font-semibold">Could not load search results</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Something went wrong while fetching jobs. Please try again.
+              </p>
+            </div>
           ) : jobs.length === 0 ? (
             <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">No jobs match your search</h2>

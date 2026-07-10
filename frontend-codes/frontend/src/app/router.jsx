@@ -23,7 +23,7 @@ export const appRouter = createBrowserRouter([
       { path: "/jobs", element: <Jobs /> },
       { path: "/description/:id", element: <JobDescription /> },
       { path: "/browse", element: <Browse /> },
-      { path: "/profile", element: <AuthRoute><Profile /></AuthRoute> },
+      { path: "/profile", element: <AuthRoute roles={["student"]}><Profile /></AuthRoute> },
       {
         path: "/profile/setup",
         element: (
@@ -32,7 +32,7 @@ export const appRouter = createBrowserRouter([
           </AuthRoute>
         ),
       },
-      { path: "/my-companies", element: <AuthRoute><CompanyLists /></AuthRoute> },
+      { path: "/my-companies", element: <AuthRoute roles={["student"]}><CompanyLists /></AuthRoute> },
       {
         path: "/saved-jobs",
         element: (

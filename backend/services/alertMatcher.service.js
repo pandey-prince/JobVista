@@ -1,5 +1,6 @@
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
+import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import { mapScrapedJobForList } from "../services/job-catalog/index.js";
 
 const toSearchText = (job) =>
@@ -28,7 +29,7 @@ export const getRecentJobsSince = async (sinceDate) => {
     firstSeenAt: { $gte: since },
   }).populate("source");
 
-  return filterItJobs(scrapedJobs).map(mapScrapedJobForList).map((job) => ({
+  return filterIndiaJobs(filterItJobs(scrapedJobs)).map(mapScrapedJobForList).map((job) => ({
     ...job,
     jobKey: getJobKey(job),
   }));
