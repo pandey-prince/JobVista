@@ -1,14 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Bot,
-  BriefcaseBusiness,
-  Building2,
-  Linkedin,
-  Mail,
-  MapPin,
-  Twitter,
-} from "lucide-react";
+import { Bot, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
 import { Button } from "../ui/button";
 
 const footerLinks = {
@@ -52,8 +44,6 @@ const FooterLinkColumn = ({ title, links }) => (
 );
 
 const Footer = () => {
-  const year = new Date().getFullYear();
-
   return (
     <footer className="mt-auto border-t border-border bg-card">
       <div className="border-b border-border bg-brand-muted/50">
@@ -80,7 +70,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 pb-0 pt-12 sm:px-6">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="sm:col-span-2 lg:col-span-2">
             <Link to="/" className="inline-block">
@@ -104,7 +94,7 @@ const Footer = () => {
               </li>
             </ul>
 
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex items-center gap-3 pb-10">
               <a
                 href="mailto:support@jobvista.demo"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
@@ -137,45 +127,11 @@ const Footer = () => {
           <FooterLinkColumn title="For job seekers" links={footerLinks.candidates} />
           <FooterLinkColumn title="For employers" links={footerLinks.employers} />
         </div>
-
-        <div className="mt-10 grid gap-4 rounded-xl border border-border bg-muted/30 p-4 sm:grid-cols-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10 text-brand">
-              <BriefcaseBusiness className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Fresh IT listings</p>
-              <p className="text-xs text-muted-foreground">Updated daily from trusted sources</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-orange/10 text-accent-orange">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Recruiter tools</p>
-              <p className="text-xs text-muted-foreground">Post jobs and manage applicants in one place</p>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div className="border-t border-border bg-muted/20">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-center text-sm text-muted-foreground sm:flex-row sm:px-6 sm:text-left">
-          <p>&copy; {year} JobVista. All rights reserved.</p>
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-            <a href="mailto:support@jobvista.demo" className="transition-colors hover:text-brand">
-              support@jobvista.demo
-            </a>
-            <span>Privacy</span>
-            <span>Terms</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative overflow-hidden bg-black">
+      <div className="overflow-hidden bg-black pb-0">
         <p
-          className="pointer-events-none select-none whitespace-nowrap pb-0 pt-2 text-center font-black uppercase leading-[0.78] tracking-[-0.05em] text-[clamp(4.5rem,15vw,13.5rem)] text-transparent bg-gradient-to-b from-neutral-600 via-neutral-800 to-neutral-950 bg-clip-text"
+          className="pointer-events-none m-0 select-none whitespace-nowrap pb-0 text-center font-black uppercase leading-[0.72] tracking-[-0.05em] text-[clamp(4.5rem,15vw,13.5rem)] text-transparent bg-gradient-to-b from-neutral-600 via-neutral-800 to-black bg-clip-text"
           aria-hidden="true"
         >
           JOBVISTA
