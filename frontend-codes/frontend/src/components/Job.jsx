@@ -1,27 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { Bookmark } from 'lucide-react'
 import { Badge } from './ui/badge'
-import { useNavigate } from 'react-router-dom'
 import CompanyLogo from './CompanyLogo'
 import JobFreshnessBadges from './shared/JobFreshnessBadges'
+import JobQuickView from '@/features/job-detail/JobQuickView'
 import { getJobBadges } from '@/utils/jobBadges'
 import useSavedJobs from '@/hooks/useSavedJobs'
 
 const Job = ({job}) => {
-    const navigate = useNavigate();
+    const [quickViewOpen, setQuickViewOpen] = useState(false);
     const { isSaved, toggleSaveJob } = useSavedJobs();
     const badges = getJobBadges(job);
     const saved = isSaved(job?._id);
-
-    const openDetails = () => {
-        const isScrapedJob = String(job?._id || "").startsWith("scraped-");
-        if (job?.external && job?.applicationLink && !isScrapedJob) {
-            window.open(job.applicationLink, "_blank", "noopener,noreferrer");
-            return;
-        }
-        navigate(`/description/${job?._id}`);
-    }
 
     const handleSave = async (e) => {
         e.stopPropagation();
@@ -31,7 +22,11 @@ const Job = ({job}) => {
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
     
     return (
-        <div className='flex h-full flex-col rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md'>
+        <>
+        <div
+            className='flex h-full flex-col rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer'
+            onClick={() => setQuickViewOpen(true)}
+        >
             <div className='flex items-center justify-between gap-3'>
                 <p className='text-sm font-medium text-gray-500'>{badges.freshnessLabel}</p>
                 <Button
@@ -68,14 +63,30 @@ const Job = ({job}) => {
             </div>
 
             <div className='mt-4 flex items-center gap-3'>
-                <Button onClick={openDetails} variant="outline" className="flex-1">
-                    {job?.external && !String(job?._id || "").startsWith("scraped-") ? "View Source" : "Details"}
+                <Button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setQuickViewOpen(true);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                >
+                    Quick view
                 </Button>
-                <Button onClick={handleSave} className="flex-1 bg-[#7209b7] hover:bg-[#5f32ad]">
+                <Button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleSave(e);
+                    }}
+                    className="flex-1 bg-[#7209b7] hover:bg-[#5f32ad]"
+                >
                     {saved ? "Saved" : "Save"}
                 </Button>
             </div>
         </div>
+
+        <JobQuickView job={job} open={quickViewOpen} onOpenChange={setQuickViewOpen} />
+        </>
     )
 }
 

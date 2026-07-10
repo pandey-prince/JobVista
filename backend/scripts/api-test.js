@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import * as XLSX from "xlsx";
 import { parseCareerSourcesSpreadsheet } from "../utils/parseCareerSourcesSpreadsheet.js";
 import { isItJob } from "../utils/itJobFilter.js";
+import { isIndiaJob } from "../utils/indiaJobFilter.js";
 
 dotenv.config();
 
@@ -206,6 +207,11 @@ const run = async () => {
     isItJob({ title: "Software Engineer" }) && !isItJob({ title: "Marketing Manager" })
       ? pass("IT job filter")
       : fail("IT job filter");
+
+    isIndiaJob({ location: "Bangalore, India" }) &&
+    !isIndiaJob({ location: "San Francisco, USA" })
+      ? pass("India job filter")
+      : fail("India job filter");
 
     const jobsList = await fetch(`${API_BASE}/api/v1/job/get`);
     const jobsListData = await jobsList.json();
