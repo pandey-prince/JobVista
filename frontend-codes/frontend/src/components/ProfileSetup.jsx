@@ -34,10 +34,6 @@ const ProfileSetup = () => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-  const fileChangeHandler = (e) => {
-    setInput({ ...input, file: e.target.files?.[0] });
-  };
-
   const saveProfile = async (skipped = false) => {
     try {
       setLoading(true);
@@ -203,11 +199,6 @@ const ProfileSetup = () => {
                 placeholder="Project | Link | Description"
               />
             </div>
-          </div>
-
-          <div>
-            <Label>Resume</Label>
-            <Input type="file" accept="application/pdf" onChange={fileChangeHandler} />
           </div>
 
           <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5b30a6]" disabled={loading}>

@@ -19,7 +19,6 @@ const Signup = () => {
     phoneNumber: "",
     password: "",
     role: "",
-    file: "",
   });
   const { loading, user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
@@ -28,25 +27,13 @@ const Signup = () => {
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
-  const changeFileHandler = (e) => {
-    setInput({ ...input, file: e.target.files?.[0] });
-  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("fullname", input.fullname);
-    formData.append("email", input.email);
-    formData.append("phoneNumber", input.phoneNumber);
-    formData.append("password", input.password);
-    formData.append("role", input.role);
-    if (input.file) {
-      formData.append("file", input.file);
-    }
 
     try {
       dispatch(setLoading(true));
-      const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const res = await axios.post(`${USER_API_END_POINT}/register`, input, {
         withCredentials: true,
       });
       if (res.data.success) {
@@ -116,41 +103,30 @@ const Signup = () => {
               placeholder="**********"
             />
           </div>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <RadioGroup className="my-1 flex flex-col gap-3 sm:my-5 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="student"
-                  checked={input.role === "student"}
-                  onChange={changeEventHandler}
-                  className="cursor-pointer"
-                />
-                <Label htmlFor="r1">Student</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="recruiter"
-                  checked={input.role === "recruiter"}
-                  onChange={changeEventHandler}
-                  className="cursor-pointer"
-                />
-                <Label htmlFor="r2">Recruiter</Label>
-              </div>
-            </RadioGroup>
-            <div className="flex w-full flex-col gap-2 sm:w-auto">
-              <Label>Profile</Label>
+          <RadioGroup className="my-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center space-x-2">
               <Input
-                accept="image/*"
-                type="file"
-                onChange={changeFileHandler}
+                type="radio"
+                name="role"
+                value="student"
+                checked={input.role === "student"}
+                onChange={changeEventHandler}
                 className="cursor-pointer"
               />
+              <Label htmlFor="r1">Student</Label>
             </div>
-          </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="radio"
+                name="role"
+                value="recruiter"
+                checked={input.role === "recruiter"}
+                onChange={changeEventHandler}
+                className="cursor-pointer"
+              />
+              <Label htmlFor="r2">Recruiter</Label>
+            </div>
+          </RadioGroup>
           {loading ? (
             <Button className="my-4 w-full">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait

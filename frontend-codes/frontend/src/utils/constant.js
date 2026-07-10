@@ -1,32 +1,24 @@
 const PRODUCTION_API = "https://jobvista-ahek.onrender.com/api/v1";
+const DEV_API = "http://localhost:8000/api/v1";
+const API_ROOT = import.meta.env.PROD ? PRODUCTION_API : DEV_API;
 
 export const USER_API_END_POINT =
-  import.meta.env.VITE_USER_API_END_POINT ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/user` : undefined);
+  import.meta.env.VITE_USER_API_END_POINT || `${API_ROOT}/user`;
 
 export const JOB_API_END_POINT =
-  import.meta.env.VITE_JOB_API_END_POINT ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/job` : undefined);
+  import.meta.env.VITE_JOB_API_END_POINT || `${API_ROOT}/job`;
 
 export const APPLICATION_API_END_POINT =
-  import.meta.env.VITE_APPLICATION_API_END_POINT ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/application` : undefined);
+  import.meta.env.VITE_APPLICATION_API_END_POINT || `${API_ROOT}/application`;
 
 export const COMPANY_API_END_POINT =
-  import.meta.env.VITE_COMPANY_API_END_POINT ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/company` : undefined);
+  import.meta.env.VITE_COMPANY_API_END_POINT || `${API_ROOT}/company`;
 
 export const CHATBOT_API_END_POINT =
-  import.meta.env.VITE_CHATBOT_API_END_POINT ||
-  USER_API_END_POINT?.replace("/user", "/chatbot") ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/chatbot` : undefined);
+  import.meta.env.VITE_CHATBOT_API_END_POINT || `${API_ROOT}/chatbot`;
 
 export const SCRAPED_JOB_API_END_POINT =
-  import.meta.env.VITE_SCRAPED_JOB_API_END_POINT ||
-  JOB_API_END_POINT?.replace("/job", "/scraped-jobs") ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/scraped-jobs` : undefined);
+  import.meta.env.VITE_SCRAPED_JOB_API_END_POINT || `${API_ROOT}/scraped-jobs`;
 
 export const CAREER_SOURCE_API_END_POINT =
-  import.meta.env.VITE_CAREER_SOURCE_API_END_POINT ||
-  JOB_API_END_POINT?.replace("/job", "/career-sources") ||
-  (import.meta.env.PROD ? `${PRODUCTION_API}/career-sources` : undefined);
+  import.meta.env.VITE_CAREER_SOURCE_API_END_POINT || `${API_ROOT}/career-sources`;

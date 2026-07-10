@@ -58,6 +58,12 @@ tmp/
 temp/
 
 # ==============================
+# Uploads (local fallback when Cloudinary is not configured)
+# ==============================
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ==============================
 # Package Lock (Optional – Usually Keep It)
 # ==============================
 # If you want to ignore lock files (not recommended):

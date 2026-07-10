@@ -46,6 +46,9 @@ const JobDescription = () => {
   const params = useParams();
   const jobId = params.id;
   const isScrapedJob = String(jobId || "").startsWith("scraped-");
+  const isExternalJob =
+    String(jobId || "").startsWith("remotive-") ||
+    String(jobId || "").startsWith("arbeitnow-");
   const scrapedJobId = isScrapedJob ? jobId.replace("scraped-", "") : jobId;
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -105,7 +108,7 @@ const JobDescription = () => {
 
         if (res.data.success) {
           dispatch(setSingleJob(res.data.job));
-          if (!isScrapedJob) {
+          if (!isScrapedJob && !isExternalJob) {
             setIsApplied(
               res.data.job.applications?.some(
                 (application) =>
@@ -122,7 +125,7 @@ const JobDescription = () => {
     };
 
     fetchSingleJob();
-  }, [jobId, scrapedJobId, isScrapedJob, dispatch, user?._id]);
+  }, [jobId, scrapedJobId, isScrapedJob, isExternalJob, dispatch, user?._id]);
 
   if (loading) {
     return (
@@ -169,6 +172,11 @@ const JobDescription = () => {
                       {singleJob.externalSource || singleJob.sourceName}
                     </Badge>
                   )}
+                  {isExternalJob && (
+                    <Badge className="text-green-700 font-bold" variant="ghost">
+                      {singleJob.externalSource || "External"}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-gray-600 mt-2">
                   {singleJob?.company?.name || "JobVista Company"} - {singleJob.location}
@@ -187,12 +195,12 @@ const JobDescription = () => {
               </div>
             </div>
 
-            {isScrapedJob ? (
+            {isScrapedJob || isExternalJob ? (
               <Button
                 onClick={applyOnCompanySite}
                 className="rounded-lg min-w-36 bg-[#7209b7] hover:bg-[#5f32ad]"
               >
-                Apply on {singleJob?.company?.name || "company"} site
+                Apply on {singleJob?.company?.name || singleJob.externalSource || "company"} site
               </Button>
             ) : (
               <Button

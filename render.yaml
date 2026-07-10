@@ -36,3 +36,11 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: API_BASE_URL
+        value: https://jobvista-ahek.onrender.com

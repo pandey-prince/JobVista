@@ -17,7 +17,6 @@ export const profileInitialState = (user) => ({
   linkedin: user?.profile?.linkedin || "",
   github: user?.profile?.github || "",
   preferredJobRoles: user?.profile?.preferredJobRoles?.join(", ") || "",
-  file: "",
 });
 
 export const formatWorkItems = (items = []) =>
@@ -69,8 +68,5 @@ export const buildProfileFormData = (input, skipped = false) => {
     JSON.stringify(parseLines(input.internships, ["title", "company", "duration", "description"])),
   );
   formData.append("projects", JSON.stringify(parseLines(input.projects, ["title", "link", "description"])));
-  if (input.file instanceof File) {
-    formData.append("file", input.file);
-  }
   return formData;
 };
