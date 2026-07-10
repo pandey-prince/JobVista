@@ -207,6 +207,69 @@ const run = async () => {
       ? pass("IT job filter")
       : fail("IT job filter");
 
+    const jobsList = await fetch(`${API_BASE}/api/v1/job/get`);
+    const jobsListData = await jobsList.json();
+    const sampleJob = jobsListData.jobs?.[0];
+
+    if (sampleJob?._id) {
+      const saveJob = await student.request("/api/v1/saved-jobs/", {
+        method: "POST",
+        body: { jobKey: sampleJob._id, ...sampleJob },
+      });
+      saveJob.response.ok && saveJob.data.success
+        ? pass("POST /saved-jobs", sampleJob._id)
+        : fail("POST /saved-jobs", saveJob.data?.message);
+
+      const savedList = await student.request("/api/v1/saved-jobs/");
+      savedList.response.ok && savedList.data.savedJobs?.length > 0
+        ? pass("GET /saved-jobs")
+        : fail("GET /saved-jobs");
+
+      const createAlert = await student.request("/api/v1/alerts/", {
+        method: "POST",
+        body: {
+          name: "Test Alert",
+          keyword: "software",
+          location: "Remote",
+        },
+      });
+      createAlert.response.ok && createAlert.data.success
+        ? pass("POST /alerts", createAlert.data.alert?.name)
+        : fail("POST /alerts", createAlert.data?.message);
+
+      const alertsList = await student.request("/api/v1/alerts/");
+      alertsList.response.ok && alertsList.data.alerts?.length > 0
+        ? pass("GET /alerts")
+        : fail("GET /alerts");
+
+      const trackApp = await student.request("/api/v1/tracked-applications/", {
+        method: "POST",
+        body: {
+          jobKey: sampleJob._id,
+          title: sampleJob.title,
+          companyName: sampleJob.company?.name,
+        },
+      });
+      trackApp.response.ok && trackApp.data.success
+        ? pass("POST /tracked-applications")
+        : fail("POST /tracked-applications", trackApp.data?.message);
+
+      const trackerList = await student.request("/api/v1/tracked-applications/");
+      trackerList.response.ok && trackerList.data.applications?.length > 0
+        ? pass("GET /tracked-applications")
+        : fail("GET /tracked-applications");
+
+      const matchScore = await student.request("/api/v1/job/match-score", {
+        method: "POST",
+        body: { jobKey: sampleJob._id },
+      });
+      matchScore.response.ok && typeof matchScore.data.match?.score === "number"
+        ? pass("POST /job/match-score", `${matchScore.data.match.score}%`)
+        : fail("POST /job/match-score", matchScore.data?.message);
+    } else {
+      fail("Job seeker feature tests", "No sample job available");
+    }
+
     const logout = await student.request("/api/v1/user/logout", { method: "POST" });
     logout.response.ok ? pass("POST /user/logout") : fail("POST /user/logout");
   } catch (error) {

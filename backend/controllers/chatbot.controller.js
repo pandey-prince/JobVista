@@ -1,3 +1,5 @@
+import { generateGeminiText, isGeminiConfigured } from "../services/gemini.service.js";
+
 const getTemplateReply = (message = "") => {
   const text = message.toLowerCase();
 
@@ -109,7 +111,7 @@ export const chatWithJobMate = async (req, res) => {
       });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!isGeminiConfigured()) {
       return res.status(200).json({
         reply: fallbackReply(message),
         source: "demo",
@@ -117,52 +119,14 @@ export const chatWithJobMate = async (req, res) => {
       });
     }
 
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const aiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.GEMINI_API_KEY,
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [
-              {
-                text: "You are JobMate, a friendly job portal assistant. Help job seekers with job search, resumes, cover letters and interviews. Help recruiters write job posts and candidate screening questions. Give direct, complete, practical answers. When the user asks for questions, provide a list of actual questions instead of a short summary.",
-              },
-            ],
-          },
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: message }],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.6,
-            maxOutputTokens: 500,
-          },
-        }),
-      },
-    );
-
-    if (!aiResponse.ok) {
-      return res.status(200).json({
-        reply: fallbackReply(message),
-        source: "demo",
-        success: true,
-      });
-    }
-
-    const data = await aiResponse.json();
     const reply =
-      data?.candidates?.[0]?.content?.parts
-        ?.map((part) => part.text)
-        .filter(Boolean)
-        .join("\n")
-        .trim() || fallbackReply(message);
+      (await generateGeminiText({
+        prompt: message,
+        systemInstruction:
+          "You are JobMate, a friendly job portal assistant. Help job seekers with job search, resumes, cover letters and interviews. Help recruiters write job posts and candidate screening questions. Give direct, complete, practical answers. When the user asks for questions, provide a list of actual questions instead of a short summary.",
+        temperature: 0.6,
+        maxOutputTokens: 500,
+      })) || fallbackReply(message);
 
     return res.status(200).json({
       reply,

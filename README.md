@@ -21,7 +21,7 @@ A job portal for IT roles in India — internal recruiter postings, scraped comp
 - Merged job feed: internal + scraped + Remotive + Arbeitnow
 - **JobMate AI Assistant:** Gemini-powered career assistant (optional `GEMINI_API_KEY`)
 - 100 Indian company career sources (Greenhouse, Lever, Workday, TCS, etc.)
-- Watchlist / wishlist / submit career URLs
+- Student job seeker tools: save jobs, email alerts, watchlist instant alerts, application kanban, resume match score
 - Recruiter dashboard: companies, jobs, applicants, scrape admin
 - First-letter profile avatars (no photo upload required)
 - Docker Compose for local full stack
@@ -35,6 +35,36 @@ JobVista/
 ├── docker-compose.yml
 └── render.yaml              # Render backend blueprint
 ```
+
+## Architecture (modular layout)
+
+### Backend
+
+Controllers stay thin and delegate to **services**:
+
+| Module | Role |
+|--------|------|
+| `services/job-catalog/` | Job mapping, scraped lists, external feeds (Remotive/Arbeitnow) |
+| `services/trackedApplication.service.js` | Kanban tracker sync and migration |
+| `services/gemini.service.js` | Shared Gemini client for match score |
+| `services/email.service.js` | Resend email delivery |
+| `services/alertDigest.service.js` | Daily digest matching + send |
+| `services/watchlistAlert.service.js` | Instant watchlist alerts after scrape |
+
+Routes map to controllers; controllers call services — not the other way around.
+
+### Frontend
+
+| Layer | Role |
+|-------|------|
+| `src/api/client.js` | Shared axios instance (credentials, base URL) |
+| `src/api/index.js` | Domain APIs: `authApi`, `jobsApi`, `savedJobsApi`, `alertsApi`, `trackerApi`, `careerSourceApi`, … |
+| `src/app/router.jsx` | Route definitions |
+| `src/layouts/MainLayout.jsx` | Navbar + `<Outlet />` shell |
+| `src/features/*/` | Feature hooks and UI (`useJobAlerts`, `useTrackedApplications`, `MatchScorePanel`) |
+| `src/components/` | Page-level and shared UI |
+
+New job-seeker screens should use the API layer and feature hooks instead of calling axios directly.
 
 ## Local development
 
@@ -106,6 +136,9 @@ Frontend: http://localhost:3000 · Backend: http://localhost:8000
 | `/career-sources` | Public directory, watchlist, Excel import |
 | `/chatbot` | JobMate messages |
 | `/stats` | Public platform stats (job counts, companies monitored) |
+| `/saved-jobs` | Bookmark jobs (student) |
+| `/alerts` | Email job alerts — daily digest 8 PM IST (student) |
+| `/tracked-applications` | Application kanban tracker (student) |
 
 ## Email alerts (Resend)
 

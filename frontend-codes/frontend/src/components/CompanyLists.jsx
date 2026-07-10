@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "./shared/Navbar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -12,8 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import axios from "axios";
-import { CAREER_SOURCE_API_END_POINT } from "@/utils/constant";
+import { careerSourceApi } from "@/api";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -24,6 +22,8 @@ import {
   Loader2,
   Plus,
   Trash2,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import Job from "./Job";
 
@@ -49,22 +49,17 @@ const CompanyLists = () => {
   });
 
   const fetchLists = async (type = activeTab) => {
-    const res = await axios.get(`${CAREER_SOURCE_API_END_POINT}/lists?type=${type}`, {
-      withCredentials: true,
-    });
+    const res = await careerSourceApi.listUserLists(type);
     if (res.data.success) setLists(res.data.lists);
   };
 
   const fetchPublicSources = async () => {
-    const res = await axios.get(`${CAREER_SOURCE_API_END_POINT}/`);
+    const res = await careerSourceApi.listPublic();
     if (res.data.success) setPublicSources(res.data.sources);
   };
 
   const fetchWatchlistJobs = async () => {
-    const res = await axios.get(
-      `${CAREER_SOURCE_API_END_POINT}/lists/jobs?type=watchlist`,
-      { withCredentials: true }
-    );
+    const res = await careerSourceApi.listWatchlistJobs();
     if (res.data.success) setWatchlistJobs(res.data.jobs);
   };
 
@@ -100,11 +95,7 @@ const CompanyLists = () => {
 
     try {
       setSubmitting(true);
-      const res = await axios.post(
-        `${CAREER_SOURCE_API_END_POINT}/submit`,
-        submitForm,
-        { withCredentials: true }
-      );
+      const res = await careerSourceApi.submit(submitForm);
       if (res.data.success) {
         toast.success(res.data.message);
         setSubmitForm({ companyName: "", url: "", addToWatchlist: true });
@@ -127,17 +118,13 @@ const CompanyLists = () => {
 
     try {
       setSubmitting(true);
-      const res = await axios.post(
-        `${CAREER_SOURCE_API_END_POINT}/lists`,
-        {
-          listType: "wishlist",
-          companyName: wishlistForm.companyName,
-          careerUrl: wishlistForm.careerUrl,
-          notes: wishlistForm.notes,
-          createSource: Boolean(wishlistForm.careerUrl),
-        },
-        { withCredentials: true }
-      );
+      const res = await careerSourceApi.addList({
+        listType: "wishlist",
+        companyName: wishlistForm.companyName,
+        careerUrl: wishlistForm.careerUrl,
+        notes: wishlistForm.notes,
+        createSource: Boolean(wishlistForm.careerUrl),
+      });
       if (res.data.success) {
         toast.success(res.data.message);
         setWishlistForm({ companyName: "", careerUrl: "", notes: "" });
@@ -153,11 +140,7 @@ const CompanyLists = () => {
 
   const addFromCatalog = async (source, listType) => {
     try {
-      const res = await axios.post(
-        `${CAREER_SOURCE_API_END_POINT}/lists`,
-        { listType, jobSourceId: source._id },
-        { withCredentials: true }
-      );
+      const res = await careerSourceApi.addList({ listType, jobSourceId: source._id });
       if (res.data.success) {
         toast.success(`Added ${source.companyName} to ${listType}`);
         await fetchLists(listType);
@@ -168,11 +151,20 @@ const CompanyLists = () => {
     }
   };
 
+  const toggleWatchlistAlert = async (item) => {
+    const isOn = item.alertEnabled !== false;
+    try {
+      await careerSourceApi.updateList(item._id, { alertEnabled: !isOn });
+      toast.success(!isOn ? "Instant alerts enabled" : "Alerts paused");
+      await fetchLists("watchlist");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update alerts");
+    }
+  };
+
   const removeListItem = async (id) => {
     try {
-      await axios.delete(`${CAREER_SOURCE_API_END_POINT}/lists/${id}`, {
-        withCredentials: true,
-      });
+      await careerSourceApi.removeList(id);
       toast.success("Removed from your list");
       await loadAll();
     } catch (error) {
@@ -197,7 +189,6 @@ const CompanyLists = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="max-w-6xl mx-auto my-10 px-2">
         <div className="mb-6">
           <h1 className="font-bold text-2xl">My Companies</h1>
@@ -237,6 +228,7 @@ const CompanyLists = () => {
                           <TableHead>Company</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>IT Jobs</TableHead>
+                          <TableHead>Alerts</TableHead>
                           <TableHead className="text-right">Action</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -264,6 +256,21 @@ const CompanyLists = () => {
                               </Badge>
                             </TableCell>
                             <TableCell>{item.activeJobCount || 0}</TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant={item.alertEnabled === false ? "outline" : "default"}
+                                className={item.alertEnabled === false ? "" : "bg-[#6A38C2]"}
+                                onClick={() => toggleWatchlistAlert(item)}
+                              >
+                                {item.alertEnabled === false ? (
+                                  <BellOff className="h-4 w-4 mr-1" />
+                                ) : (
+                                  <Bell className="h-4 w-4 mr-1" />
+                                )}
+                                {item.alertEnabled === false ? "Off" : "On"}
+                              </Button>
+                            </TableCell>
                             <TableCell className="text-right">
                               <Button
                                 size="sm"

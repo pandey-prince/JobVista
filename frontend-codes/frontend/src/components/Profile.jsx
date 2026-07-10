@@ -1,23 +1,19 @@
 import React, { useState } from 'react'
-import Navbar from './shared/Navbar'
 import UserAvatar from './shared/UserAvatar'
 import { Button } from './ui/button'
 import { Briefcase, Contact, GraduationCap, Link as LinkIcon, Mail, MapPin, Pen } from 'lucide-react'
 import { Badge } from './ui/badge'
 import { Label } from './ui/label'
-import AppliedJobTable from './AppliedJobTable'
+import ApplicationTracker from './ApplicationTracker'
 import UpdateProfileDialog from './UpdateProfileDialog'
 import { useSelector } from 'react-redux'
-import useGetAppliedJobs from '@/hooks/useGetAppliedJobs'
 
 const Profile = () => {
-    useGetAppliedJobs();
     const [open, setOpen] = useState(false);
     const {user} = useSelector(store=>store.auth);
 
     return (
         <div>
-            <Navbar />
             <div className='mx-auto my-5 max-w-4xl rounded-2xl border border-gray-200 bg-white p-5 sm:p-8'>
                 <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
                     <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center'>
@@ -104,9 +100,9 @@ const Profile = () => {
                     }
                 </div>
             </div>
-            <div className='mx-auto max-w-4xl rounded-2xl bg-white px-2 sm:px-0'>
-                <h1 className='my-5 text-lg font-bold'>Applied Jobs</h1>
-                <AppliedJobTable />
+            <div className='mx-auto max-w-6xl rounded-2xl bg-white px-2 sm:px-0'>
+                <h1 className='my-5 text-lg font-bold'>Application Tracker</h1>
+                <ApplicationTracker />
             </div>
             <UpdateProfileDialog open={open} setOpen={setOpen}/>
         </div>

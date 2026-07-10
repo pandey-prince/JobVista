@@ -30,16 +30,22 @@ class Client {
   async req(path, options = {}) {
     const headers = { ...(options.headers || {}) };
     if (this.cookie) headers.Cookie = this.cookie;
-    if (options.body && !(options.body instanceof FormData)) {
+
+    let body = options.body;
+    if (body instanceof FormData) {
+      // Let fetch set multipart boundary
+    } else if (body instanceof URLSearchParams) {
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
+      body = body.toString();
+    } else if (body) {
       headers["Content-Type"] = "application/json";
+      body = JSON.stringify(body);
     }
+
     const res = await fetch(`${API}${path}`, {
       ...options,
       headers,
-      body:
-        options.body && !(options.body instanceof FormData)
-          ? JSON.stringify(options.body)
-          : options.body,
+      body,
     });
     const setCookie = res.headers.get("set-cookie");
     if (setCookie) this.cookie = setCookie.split(";")[0];

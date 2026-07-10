@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Navbar from "./shared/Navbar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import { APPLICATION_API_END_POINT, JOB_API_END_POINT, SCRAPED_JOB_API_END_POINT } from "@/utils/constant";
+import { applicationsApi, jobsApi, trackerApi } from "@/api";
 import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import {
+  Bookmark,
   BriefcaseBusiness,
   CalendarDays,
   CheckCircle2,
@@ -20,7 +19,9 @@ import {
 } from "lucide-react";
 import CompanyLogo from "./CompanyLogo";
 import JobFreshnessBadges from "./shared/JobFreshnessBadges";
+import MatchScorePanel from "@/features/job-detail/MatchScorePanel";
 import { getJobBadges } from "@/utils/jobBadges";
+import useSavedJobs from "@/hooks/useSavedJobs";
 
 const formatDate = (value) => {
   if (!value) return "Not available";
@@ -37,6 +38,11 @@ const JobDescription = () => {
   const [isApplied, setIsApplied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [tracking, setTracking] = useState(false);
+  const [isTracked, setIsTracked] = useState(false);
+  const [matchScore, setMatchScore] = useState(null);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const { isSaved, toggleSaveJob } = useSavedJobs();
 
   const params = useParams();
   const jobId = params.id;
@@ -59,6 +65,56 @@ const JobDescription = () => {
     }
   };
 
+  const markAsApplied = async () => {
+    if (!user) {
+      toast.error("Please login to track applications");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setTracking(true);
+      const res = await trackerApi.create({
+          jobKey: jobId,
+          title: singleJob?.title,
+          companyName: singleJob?.company?.name,
+          location: singleJob?.location,
+          applicationUrl: singleJob?.applicationLink,
+          sourceType: getJobBadges(singleJob)?.sourceType,
+      });
+      if (res.data.success) {
+        setIsTracked(true);
+        toast.success("Added to your application tracker");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to track application");
+    } finally {
+      setTracking(false);
+    }
+  };
+
+  const loadMatchScore = async (showLoginToast = false) => {
+    if (!user) {
+      if (showLoginToast) {
+        toast.error("Login to see your match score");
+        navigate("/login");
+      }
+      return;
+    }
+
+    try {
+      setMatchLoading(true);
+      const res = await jobsApi.matchScore(jobId);
+      if (res.data.success) setMatchScore(res.data.match);
+    } catch (error) {
+      if (showLoginToast) {
+        toast.error(error.response?.data?.message || "Unable to calculate match score");
+      }
+    } finally {
+      setMatchLoading(false);
+    }
+  };
+
   const applyJobHandler = async () => {
     if (!user) {
       toast.error("Please login as a candidate before applying.");
@@ -68,12 +124,11 @@ const JobDescription = () => {
 
     try {
       setApplying(true);
-      const res = await axios.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {
-        withCredentials: true,
-      });
+      const res = await applicationsApi.apply(jobId);
 
       if (res.data.success) {
         setIsApplied(true);
+        setIsTracked(true);
         dispatch(
           setSingleJob({
             ...singleJob,
@@ -93,13 +148,9 @@ const JobDescription = () => {
     const fetchSingleJob = async () => {
       try {
         setLoading(true);
-        const endpoint = isScrapedJob
-          ? `${SCRAPED_JOB_API_END_POINT}/${scrapedJobId}`
-          : `${JOB_API_END_POINT}/get/${jobId}`;
-
-        const res = await axios.get(endpoint, {
-          withCredentials: true,
-        });
+        const res = isScrapedJob
+          ? await jobsApi.getScrapedById(scrapedJobId)
+          : await jobsApi.getById(jobId);
 
         if (res.data.success) {
           dispatch(setSingleJob(res.data.job));
@@ -112,6 +163,19 @@ const JobDescription = () => {
             );
           }
         }
+
+        if (user?.role === "student") {
+          try {
+            const trackedRes = await trackerApi.list();
+            if (trackedRes.data.success) {
+              setIsTracked(
+                trackedRes.data.applications?.some((item) => item.jobKey === jobId) || false,
+              );
+            }
+          } catch {
+            // tracker optional on load
+          }
+        }
       } catch (error) {
         toast.error(error.response?.data?.message || "Unable to load job details");
       } finally {
@@ -122,10 +186,14 @@ const JobDescription = () => {
     fetchSingleJob();
   }, [jobId, scrapedJobId, isScrapedJob, isExternalJob, dispatch, user?._id]);
 
+  useEffect(() => {
+    if (!user || user.role !== "student" || !singleJob?._id) return;
+    loadMatchScore(false);
+  }, [user?._id, user?.role, singleJob?._id, jobId]);
+
   if (loading) {
     return (
       <div>
-        <Navbar />
         <div className="max-w-6xl mx-auto my-16 flex items-center justify-center text-gray-500">
           <Loader2 className="h-5 w-5 animate-spin mr-2" />
           Loading job details
@@ -137,7 +205,6 @@ const JobDescription = () => {
   if (!singleJob) {
     return (
       <div>
-        <Navbar />
         <div className="max-w-6xl mx-auto my-16 border border-dashed border-gray-300 rounded-md p-10 text-center">
           <h1 className="font-bold text-xl">Job not found</h1>
           <p className="text-sm text-gray-500 mt-2">This job may have been removed or is no longer available.</p>
@@ -152,7 +219,6 @@ const JobDescription = () => {
 
   return (
     <div>
-      <Navbar />
       <main className="max-w-6xl mx-auto my-8">
         <section className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
@@ -193,13 +259,33 @@ const JobDescription = () => {
               </div>
             </div>
 
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="outline"
+                onClick={() => toggleSaveJob(singleJob)}
+                className={isSaved(jobId) ? "border-[#6A38C2] text-[#6A38C2]" : ""}
+              >
+                <Bookmark className={`mr-2 h-4 w-4 ${isSaved(jobId) ? "fill-current" : ""}`} />
+                {isSaved(jobId) ? "Saved" : "Save job"}
+              </Button>
+
             {isScrapedJob || isExternalJob ? (
+              <>
               <Button
                 onClick={applyOnCompanySite}
                 className="rounded-lg min-w-36 bg-[#7209b7] hover:bg-[#5f32ad]"
               >
                 Apply on {singleJob?.company?.name || singleJob.externalSource || "company"} site
               </Button>
+              <Button
+                variant="outline"
+                onClick={markAsApplied}
+                disabled={isTracked || tracking}
+              >
+                {tracking && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {isTracked ? "Tracked in pipeline" : "Mark as applied"}
+              </Button>
+              </>
             ) : (
               <Button
                 onClick={applyJobHandler}
@@ -212,6 +298,7 @@ const JobDescription = () => {
                 {isApplied ? "Already Applied" : "Apply Now"}
               </Button>
             )}
+            </div>
           </div>
         </section>
 
@@ -238,6 +325,13 @@ const JobDescription = () => {
           </div>
 
           <aside className="space-y-4">
+            <MatchScorePanel
+              showForStudent={user?.role === "student"}
+              matchScore={matchScore}
+              matchLoading={matchLoading}
+              onLoad={() => loadMatchScore(true)}
+            />
+
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <h2 className="font-bold text-lg">Job Overview</h2>
               <div className="space-y-4 mt-4">

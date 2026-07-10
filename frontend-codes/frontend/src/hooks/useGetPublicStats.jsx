@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { STATS_API_END_POINT } from "@/utils/constant";
+import { statsApi } from "@/api";
 
 const defaultStats = {
   totalJobs: 0,
@@ -16,7 +15,7 @@ const useGetPublicStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get(`${STATS_API_END_POINT}/public`);
+        const response = await statsApi.public();
         if (response.data?.success && response.data?.stats) {
           setStats(response.data.stats);
         }

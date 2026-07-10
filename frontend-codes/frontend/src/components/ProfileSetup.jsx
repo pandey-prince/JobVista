@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "./shared/Navbar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -64,7 +63,6 @@ const ProfileSetup = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="max-w-5xl mx-auto my-6 border border-gray-200 rounded-md p-6 bg-white">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>

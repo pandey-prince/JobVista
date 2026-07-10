@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { RadioGroup } from '../ui/radio-group'
@@ -55,7 +54,6 @@ const Login = () => {
     },[])
     return (
         <div>
-            <Navbar />
             <div className='mx-auto flex max-w-7xl items-center justify-center px-4 sm:px-6'>
                 <form onSubmit={submitHandler} className='my-10 w-full max-w-md rounded-md border border-gray-200 p-4 sm:p-6'>
                     <h1 className='mb-5 text-xl font-bold'>Login</h1>

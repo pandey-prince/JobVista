@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../shared/Navbar";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -215,7 +214,6 @@ const ScrapeSources = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="max-w-6xl mx-auto my-10">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>

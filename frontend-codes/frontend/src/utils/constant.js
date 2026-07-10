@@ -25,3 +25,12 @@ export const CAREER_SOURCE_API_END_POINT =
 
 export const STATS_API_END_POINT =
   import.meta.env.VITE_STATS_API_END_POINT || `${API_ROOT}/stats`;
+
+export const SAVED_JOBS_API_END_POINT =
+  import.meta.env.VITE_SAVED_JOBS_API_END_POINT || `${API_ROOT}/saved-jobs`;
+
+export const ALERTS_API_END_POINT =
+  import.meta.env.VITE_ALERTS_API_END_POINT || `${API_ROOT}/alerts`;
+
+export const TRACKED_APPLICATIONS_API_END_POINT =
+  import.meta.env.VITE_TRACKED_APPLICATIONS_API_END_POINT || `${API_ROOT}/tracked-applications`;
