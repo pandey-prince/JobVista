@@ -3,7 +3,6 @@ import HeroSection from './HeroSection'
 import CategoryCarousel from './CategoryCarousel'
 import HowItWorks from './HowItWorks'
 import LatestJobs from './LatestJobs'
-import Footer from './shared/Footer'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,7 +20,6 @@ const Home = () => {
       <HowItWorks />
       <CategoryCarousel />
       <LatestJobs />
-      <Footer />
     </div>
   )
 }
