@@ -18,6 +18,7 @@ import alertRoute from "./routes/alert.route.js";
 import trackedApplicationRoute from "./routes/trackedApplication.route.js";
 import { startScrapeScheduler } from "./jobs/scrapeScheduler.js";
 import { startAlertScheduler } from "./jobs/alertScheduler.js";
+import { startLinkCheckScheduler } from "./jobs/linkCheckScheduler.js";
 import { seedDefaultJobSources } from "./utils/seedJobSources.js";
 dotenv.config({});
 const app = express();
@@ -77,5 +78,6 @@ app.listen(PORT, async () => {
   await seedDefaultJobSources();
   startScrapeScheduler();
   startAlertScheduler();
+  startLinkCheckScheduler();
   console.log(`server is listening at ${PORT}`);
 });

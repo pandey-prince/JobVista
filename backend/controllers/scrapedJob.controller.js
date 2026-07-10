@@ -4,6 +4,8 @@ import {
   syncAllSources,
   syncSourceById,
 } from "../services/scrapeSync.service.js";
+import { checkAllActiveJobLinks } from "../services/linkCheck.service.js";
+import { hardDeleteScrapedJobsByQuery } from "../services/scrapedJobCleanup.service.js";
 import {
   detectScraperType,
   extractCompanySlugFromUrl,
@@ -177,7 +179,7 @@ export const deleteJobSource = async (req, res) => {
       });
     }
 
-    await ScrapedJob.deleteMany({ source: source._id });
+    await hardDeleteScrapedJobsByQuery({ source: source._id }, "source_deleted");
 
     res.status(200).json({
       success: true,
@@ -214,6 +216,22 @@ export const triggerSourceSync = async (req, res) => {
       success: true,
       message: result.success ? "Source synced" : "Source sync failed",
       result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const triggerLinkCheck = async (req, res) => {
+  try {
+    const summary = await checkAllActiveJobLinks();
+    res.status(200).json({
+      success: true,
+      message: "Link check completed",
+      summary,
     });
   } catch (error) {
     res.status(500).json({

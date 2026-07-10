@@ -10,8 +10,9 @@ import { emptyJobFilters } from "@/utils/jobFilters";
 import usePaginatedJobs from "@/hooks/usePaginatedJobs";
 import Pagination from "@/components/shared/Pagination";
 import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
-import JobSearchBar from "@/components/shared/JobSearchBar";
-import { Loader2, X } from "lucide-react";
+import ExpandableJobSearch from "@/components/shared/ExpandableJobSearch";
+import LoadingState from "@/components/shared/LoadingState";
+import { X } from "lucide-react";
 
 const JOBS_PER_PAGE = 12;
 
@@ -52,35 +53,43 @@ const Jobs = () => {
     <div>
       <div className="mx-auto mt-5 max-w-7xl px-4 sm:px-6">
         <div className="mb-5 flex flex-col gap-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
               <p className="text-sm text-muted-foreground">
                 India IT roles from company career pages and JobVista recruiters. Use filters for city, experience, and work mode.
               </p>
             </div>
-            <Button variant="outline" onClick={() => navigate("/alerts")}>
-              Create job alert
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <JobSearchBar
-              className="max-w-2xl"
-              defaultQuery={searchedQuery}
-              onSearch={handleSearch}
-            />
-            {searchedQuery ? (
-              <Button type="button" variant="ghost" onClick={clearSearch} className="shrink-0">
-                <X className="mr-1 h-4 w-4" />
-                Clear search
+            <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
+              <ExpandableJobSearch
+                className="w-full sm:w-auto sm:min-w-[3rem]"
+                defaultQuery={searchedQuery}
+                onSearch={handleSearch}
+              />
+              <Button variant="outline" onClick={() => navigate("/alerts")} className="hidden sm:inline-flex">
+                Create job alert
               </Button>
-            ) : null}
+            </div>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/alerts")}
+            className="w-full sm:hidden"
+          >
+            Create job alert
+          </Button>
           {searchedQuery ? (
-            <p className="text-sm text-muted-foreground">
-              Showing results for <span className="font-medium text-foreground">&quot;{searchedQuery}&quot;</span>
-              {pagination?.total != null ? ` (${pagination.total} jobs)` : ""}
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                Showing results for{" "}
+                <span className="font-medium text-foreground">&quot;{searchedQuery}&quot;</span>
+                {pagination?.total != null ? ` (${pagination.total} jobs)` : ""}
+              </p>
+              <Button type="button" variant="ghost" size="sm" onClick={clearSearch} className="h-8 px-2">
+                <X className="mr-1 h-4 w-4" />
+                Clear
+              </Button>
+            </div>
           ) : null}
         </div>
         <div className="flex flex-col gap-5 lg:flex-row">
@@ -93,10 +102,13 @@ const Jobs = () => {
           </div>
 
           {loading ? (
-            <div className="flex flex-1 items-center justify-center py-20 text-muted-foreground">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Loading jobs...
-            </div>
+            <LoadingState
+              variant="cards"
+              message="Finding fresh IT jobs"
+              description="Pulling the latest roles from career pages and recruiters."
+              skeletonCount={6}
+              className="flex-1"
+            />
           ) : jobs.length === 0 ? (
             <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">No jobs match your filters</h2>

@@ -3,16 +3,26 @@ import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { runScraper } from "./scrapers/index.js";
 import { filterItJobs, isItJob } from "../utils/itJobFilter.js";
 import { processWatchlistAlerts } from "./watchlistAlert.service.js";
+import { hardDeleteScrapedJob } from "./scrapedJobCleanup.service.js";
+import { checkActiveJobLinks } from "./linkCheck.service.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const SCRAPE_DELAY_MS = Number(process.env.SCRAPE_DELAY_MS || 1500);
 const PUPPETEER_DELAY_MS = Number(process.env.PUPPETEER_DELAY_MS || 3000);
-const MAX_JOBS_PER_SOURCE = Number(process.env.MAX_JOBS_PER_SOURCE || 15);
+const MAX_UPSERTS_PER_SOURCE = Number(
+  process.env.MAX_UPSERTS_PER_SOURCE || process.env.MAX_JOBS_PER_SOURCE || 0,
+);
+const LINK_CHECK_AFTER_SYNC = process.env.LINK_CHECK_AFTER_SYNC !== "false";
 
 const shouldSkipPuppeteer = () =>
   process.env.SKIP_PUPPETEER_SCRAPERS === "true" ||
   process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD === "true";
+
+const limitUpserts = (jobs) => {
+  if (!MAX_UPSERTS_PER_SOURCE || MAX_UPSERTS_PER_SOURCE <= 0) return jobs;
+  return jobs.slice(0, MAX_UPSERTS_PER_SOURCE);
+};
 
 export const syncSource = async (source) => {
   if (
@@ -51,15 +61,11 @@ export const syncSource = async (source) => {
   const newJobs = [];
 
   try {
-    const scrapedJobs = filterItJobs(await runScraper(source)).slice(
-      0,
-      MAX_JOBS_PER_SOURCE
-    );
-    const seenExternalIds = new Set();
+    const allScrapedJobs = filterItJobs(await runScraper(source));
+    const seenExternalIds = new Set(allScrapedJobs.map((job) => job.externalId));
+    const jobsToUpsert = limitUpserts(allScrapedJobs);
 
-    for (const job of scrapedJobs) {
-      seenExternalIds.add(job.externalId);
-
+    for (const job of jobsToUpsert) {
       const existing = await ScrapedJob.findOne({
         source: source._id,
         externalId: job.externalId,
@@ -92,28 +98,29 @@ export const syncSource = async (source) => {
       }
     }
 
-    const removedResult = await ScrapedJob.updateMany(
-      {
-        source: source._id,
-        status: "active",
-        externalId: { $nin: [...seenExternalIds] },
-      },
-      { status: "removed", lastSeenAt: now }
-    );
+    const staleJobs = await ScrapedJob.find({
+      source: source._id,
+      status: "active",
+      externalId: { $nin: [...seenExternalIds] },
+    });
 
-    removedJobsCount = removedResult.modifiedCount || 0;
+    for (const staleJob of staleJobs) {
+      await hardDeleteScrapedJob(staleJob, "missing_from_board");
+      removedJobsCount += 1;
+    }
 
     source.lastScrapedAt = now;
     source.lastScrapeStatus = "success";
     source.lastScrapeError = "";
-    source.jobsFoundCount = scrapedJobs.length;
+    source.jobsFoundCount = allScrapedJobs.length;
     await source.save();
 
     return {
       sourceId: source._id,
       sourceName: source.name,
       success: true,
-      jobsFound: scrapedJobs.length,
+      jobsFound: allScrapedJobs.length,
+      jobsUpserted: jobsToUpsert.length,
       newJobsCount,
       updatedJobsCount,
       removedJobsCount,
@@ -140,10 +147,12 @@ export const syncSource = async (source) => {
 export const syncAllSources = async () => {
   const sources = await JobSource.find({ isActive: true });
   const results = [];
+  let removedFromBoard = 0;
 
   for (const source of sources) {
     const result = await syncSource(source);
     results.push(result);
+    removedFromBoard += result.removedJobsCount || 0;
     const delayMs =
       source.scraperType === "auto-puppeteer" || source.scraperType === "puppeteer"
         ? PUPPETEER_DELAY_MS
@@ -151,7 +160,19 @@ export const syncAllSources = async () => {
     await delay(delayMs);
   }
 
-  await cleanupNonItScrapedJobs();
+  const nonItRemoved = await cleanupNonItScrapedJobs();
+
+  let linkCheckSummary = null;
+  if (LINK_CHECK_AFTER_SYNC) {
+    try {
+      linkCheckSummary = await checkActiveJobLinks({
+        limit: Number(process.env.LINK_CHECK_POST_SYNC_BATCH || 30),
+        onlyStaleHours: 24,
+      });
+    } catch (error) {
+      console.error("[ScrapeSync] Post-sync link check failed:", error.message);
+    }
+  }
 
   const summary = {
     totalSources: sources.length,
@@ -159,11 +180,16 @@ export const syncAllSources = async () => {
     skipped: results.filter((r) => r.skipped).length,
     failed: results.filter((r) => !r.success).length,
     newJobsCount: results.reduce((sum, r) => sum + (r.newJobsCount || 0), 0),
+    removedFromBoard,
+    removedNonIt: nonItRemoved,
+    removedDeadLinks: linkCheckSummary?.deleted || 0,
+    linkChecksRun: linkCheckSummary?.checked || 0,
     results,
+    linkCheckSummary,
   };
 
   console.log(
-    `[ScrapeSync] Completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs`
+    `[ScrapeSync] Completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board, ${summary.removedDeadLinks} dead links removed`,
   );
 
   try {
@@ -191,12 +217,14 @@ export const syncSourceById = async (sourceId) => {
 
 const cleanupNonItScrapedJobs = async () => {
   const activeJobs = await ScrapedJob.find({ status: "active" });
+  let removedCount = 0;
 
   for (const job of activeJobs) {
     if (!isItJob(job)) {
-      job.status = "removed";
-      job.lastSeenAt = new Date();
-      await job.save();
+      await hardDeleteScrapedJob(job, "non_it");
+      removedCount += 1;
     }
   }
+
+  return removedCount;
 };

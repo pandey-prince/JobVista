@@ -21,7 +21,7 @@ import {
   MapPin,
   Users,
 } from "lucide-react";
-import CompanyLogo from "@/components/CompanyLogo";
+import LoadingState from "@/components/shared/LoadingState";
 import JobFreshnessBadges from "@/components/shared/JobFreshnessBadges";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
@@ -171,10 +171,11 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Loading full job details...
-            </div>
+            <LoadingState
+              variant="inline"
+              message="Loading full job details"
+              className="mx-auto my-6"
+            />
           ) : (
             <>
               {descriptionParagraphs.length > 0 && (

@@ -7,7 +7,7 @@ import { emptyJobFilters } from "@/utils/jobFilters";
 import usePaginatedJobs from "@/hooks/usePaginatedJobs";
 import Pagination from "@/components/shared/Pagination";
 import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
-import { Loader2 } from "lucide-react";
+import LoadingState from "@/components/shared/LoadingState";
 
 const JOBS_PER_PAGE = 12;
 
@@ -58,10 +58,13 @@ const Browse = () => {
             />
           </div>
           {loading ? (
-            <div className="flex flex-1 items-center justify-center py-20 text-muted-foreground">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Loading jobs...
-            </div>
+            <LoadingState
+              variant="cards"
+              message="Loading search results"
+              description="Matching roles from career pages and recruiters."
+              skeletonCount={6}
+              className="flex-1"
+            />
           ) : jobs.length === 0 ? (
             <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">No jobs match your search</h2>

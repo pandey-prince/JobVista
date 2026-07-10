@@ -83,7 +83,16 @@ SECRET_KEY=your-local-secret
 FRONTEND_URL=http://localhost:5173
 SCRAPE_ENABLED=true
 SCRAPE_ON_BOOT=false
+LINK_CHECK_ENABLED=true
+LINK_CHECK_CRON=0 3 * * *
+LINK_CHECK_FAIL_THRESHOLD=3
 ```
+
+Scraped jobs are kept fresh by:
+- **Scrape sync** (default every 6 hours) — re-reads career boards and hard-deletes jobs no longer listed
+- **Link check** (default daily) — validates `applicationUrl` and hard-deletes confirmed 404 / "job not found" pages after 3 failures
+
+Recruiters can trigger manually: `POST /api/v1/scraped-jobs/link-check`
 
 Optional company logo uploads (otherwise files save to `backend/uploads/`):
 
