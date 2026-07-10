@@ -109,9 +109,10 @@ const run = async () => {
     const cs = await fetch(`${API}/api/v1/career-sources/`);
     const csData = await cs.json();
     const sources = csData.sources || csData;
-    Array.isArray(sources) && sources.length >= 90
-      ? pass("GET /career-sources", `${sources.length} companies`)
-      : fail("GET /career-sources");
+    const sourceTotal = csData.pagination?.total ?? (Array.isArray(sources) ? sources.length : 0);
+    sourceTotal >= 90
+      ? pass("GET /career-sources", `${sourceTotal} companies`)
+      : fail("GET /career-sources", `total ${sourceTotal}`);
 
     // Chatbot
     const bot = await fetch(`${API}/api/v1/chatbot/message`, {
