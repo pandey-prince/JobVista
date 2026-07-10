@@ -10,7 +10,7 @@ import {
   detectScraperType,
   extractCompanySlugFromUrl,
 } from "../services/scrapers/index.js";
-import { mapScrapedJobForList } from "./scrapedJob.controller.js";
+import { mapScrapedJobForList } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
 
 export const listPublicSources = async (req, res) => {
@@ -54,6 +54,7 @@ export const submitCareerSource = async (req, res) => {
           companyName: source.companyName,
           careerUrl: source.url,
           listType: "watchlist",
+          alertEnabled: true,
         },
         { upsert: true, new: true }
       );
@@ -260,6 +261,7 @@ export const addUserCompanyList = async (req, res) => {
       careerUrl: careerUrl || source?.url || "",
       listType,
       notes: notes || "",
+      alertEnabled: listType === "watchlist",
     });
 
     const populated = await UserCompanyList.findById(list._id).populate(
@@ -278,6 +280,38 @@ export const addUserCompanyList = async (req, res) => {
         message: "Company already exists in this list",
       });
     }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateUserCompanyList = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { alertEnabled } = req.body;
+
+    const list = await UserCompanyList.findOne({
+      _id: req.params.id,
+      user: userId,
+    });
+
+    if (!list) {
+      return res.status(404).json({
+        success: false,
+        message: "List entry not found",
+      });
+    }
+
+    if (typeof alertEnabled === "boolean") {
+      list.alertEnabled = alertEnabled;
+      await list.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Watchlist updated",
+      list,
+    });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };

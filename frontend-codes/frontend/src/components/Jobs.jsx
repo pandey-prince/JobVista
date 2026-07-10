@@ -1,28 +1,34 @@
 import React, { useState } from "react";
-import Navbar from "./shared/Navbar";
 import FilterCard from "./FilterCard";
 import Job from "./Job";
+import { Button } from "./ui/button";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import useGetAllJobs from "@/hooks/useGetAllJobs";
 import { emptyJobFilters, filterJobs } from "@/utils/jobFilters";
 
 const Jobs = () => {
   useGetAllJobs();
   const { allJobs = [], searchedQuery } = useSelector((store) => store.job);
+  const navigate = useNavigate();
   const [selectedFilters, setSelectedFilters] = useState(emptyJobFilters);
 
   const filteredJobs = filterJobs(allJobs, searchedQuery, selectedFilters);
 
   return (
     <div>
-      <Navbar />
       <div className="mx-auto mt-5 max-w-7xl px-4 sm:px-6">
-        <div className="mb-5">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
           <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
           <p className="text-sm text-gray-500">
             Fresher and 0–3 year roles from company career pages, recruiters, and remote feeds.
           </p>
+          </div>
+          <Button variant="outline" onClick={() => navigate("/alerts")}>
+            Create job alert
+          </Button>
         </div>
         <div className="flex flex-col gap-5 lg:flex-row">
           <div className="w-full lg:w-72 lg:shrink-0">

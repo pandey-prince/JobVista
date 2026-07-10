@@ -2,6 +2,7 @@ import { JobSource } from "../models/jobSource.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { runScraper } from "./scrapers/index.js";
 import { filterItJobs, isItJob } from "../utils/itJobFilter.js";
+import { processWatchlistAlerts } from "./watchlistAlert.service.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -47,6 +48,7 @@ export const syncSource = async (source) => {
   let newJobsCount = 0;
   let updatedJobsCount = 0;
   let removedJobsCount = 0;
+  const newJobs = [];
 
   try {
     const scrapedJobs = filterItJobs(await runScraper(source)).slice(
@@ -78,13 +80,14 @@ export const syncSource = async (source) => {
         await existing.save();
         updatedJobsCount += 1;
       } else {
-        await ScrapedJob.create({
+        const created = await ScrapedJob.create({
           ...job,
           source: source._id,
           firstSeenAt: now,
           lastSeenAt: now,
           status: "active",
         });
+        newJobs.push(created);
         newJobsCount += 1;
       }
     }
@@ -114,6 +117,7 @@ export const syncSource = async (source) => {
       newJobsCount,
       updatedJobsCount,
       removedJobsCount,
+      newJobs,
     };
   } catch (error) {
     source.lastScrapedAt = now;
@@ -162,6 +166,12 @@ export const syncAllSources = async () => {
     `[ScrapeSync] Completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs`
   );
 
+  try {
+    await processWatchlistAlerts(results);
+  } catch (error) {
+    console.error("[ScrapeSync] Watchlist alerts failed:", error.message);
+  }
+
   return summary;
 };
 
@@ -170,7 +180,13 @@ export const syncSourceById = async (sourceId) => {
   if (!source) {
     throw new Error("Job source not found");
   }
-  return syncSource(source);
+  const result = await syncSource(source);
+  try {
+    await processWatchlistAlerts([result]);
+  } catch (error) {
+    console.error("[ScrapeSync] Watchlist alerts failed:", error.message);
+  }
+  return result;
 };
 
 const cleanupNonItScrapedJobs = async () => {

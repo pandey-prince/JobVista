@@ -32,6 +32,10 @@ const userCompanyListSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    alertEnabled: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

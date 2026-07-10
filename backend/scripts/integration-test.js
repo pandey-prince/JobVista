@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { JobSource } from "../models/jobSource.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { syncAllSources } from "../services/scrapeSync.service.js";
-import { getScrapedJobsForList } from "../controllers/scrapedJob.controller.js";
+import { getScrapedJobsForList } from "../services/job-catalog/index.js";
 import { runScraper } from "../services/scrapers/index.js";
 
 dotenv.config();

@@ -11,6 +11,7 @@ import {
   listUserCompanyLists,
   removeUserCompanyList,
   submitCareerSource,
+  updateUserCompanyList,
 } from "../controllers/careerSource.controller.js";
 
 const router = express.Router();
@@ -32,6 +33,7 @@ router
   .get(isAuthenticated, listUserCompanyLists)
   .post(isAuthenticated, addUserCompanyList);
 router.route("/lists/jobs").get(isAuthenticated, getUserCompanyListJobs);
+router.route("/lists/:id").patch(isAuthenticated, updateUserCompanyList);
 router.route("/lists/:id").delete(isAuthenticated, removeUserCompanyList);
 
 export default router;

@@ -1,6 +1,7 @@
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
 import { getOwnedApplication, getOwnedJob } from "../utils/jobOwnership.js";
+import { syncInternalApplicationToTracker } from "../services/trackedApplication.service.js";
 
 const isInternalJobId = (jobId = "") =>
   !jobId.startsWith("scraped-") &&
@@ -53,6 +54,8 @@ export const applyJob = async (req, res) => {
 
     job.applications.push(newApplication._id);
     await job.save();
+
+    await syncInternalApplicationToTracker(userId, jobId, newApplication._id);
 
     return res.status(201).json({
       message: "Job applied successfully",
