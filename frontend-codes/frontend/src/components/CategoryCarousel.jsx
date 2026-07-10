@@ -8,9 +8,12 @@ import { setSearchedQuery } from '@/redux/jobSlice';
 const category = [
     "Frontend Developer",
     "Backend Developer",
+    "FullStack Developer",
+    "React Developer",
+    "Python Developer",
     "Data Science",
-    "Graphic Designer",
-    "FullStack Developer"
+    "DevOps Engineer",
+    "SDE Intern",
 ]
 
 const CategoryCarousel = () => {
@@ -22,13 +25,23 @@ const CategoryCarousel = () => {
     }
 
     return (
-        <div>
-            <Carousel className="w-full max-w-xl mx-auto my-20">
+        <section className="mx-auto my-16 max-w-4xl px-4 sm:px-6">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold">Popular IT roles</h2>
+                <p className="mt-2 text-sm text-gray-500">Tap a role to search fresher and early-career openings</p>
+            </div>
+            <Carousel className="mx-auto mt-6 w-full max-w-2xl">
                 <CarouselContent>
                     {
-                        category.map((cat, index) => (
-                            <CarouselItem key={cat} className="md:basis-1/2 lg-basis-1/3">
-                                <Button onClick={()=>searchJobHandler(cat)} variant="outline" className="rounded-full">{cat}</Button>
+                        category.map((cat) => (
+                            <CarouselItem key={cat} className="basis-1/2 md:basis-1/3">
+                                <Button
+                                    onClick={() => searchJobHandler(cat)}
+                                    variant="outline"
+                                    className="w-full rounded-full border-violet-200 hover:bg-violet-50"
+                                >
+                                    {cat}
+                                </Button>
                             </CarouselItem>
                         ))
                     }
@@ -36,7 +49,7 @@ const CategoryCarousel = () => {
                 <CarouselPrevious />
                 <CarouselNext />
             </Carousel>
-        </div>
+        </section>
     )
 }
 

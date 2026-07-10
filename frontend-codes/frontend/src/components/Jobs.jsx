@@ -19,9 +19,9 @@ const Jobs = () => {
       <Navbar />
       <div className="mx-auto mt-5 max-w-7xl px-4 sm:px-6">
         <div className="mb-5">
-          <h1 className="text-2xl font-bold">Find Jobs</h1>
+          <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
           <p className="text-sm text-gray-500">
-            Browse JobVista jobs and remote openings from trusted external sources.
+            Fresher and 0–3 year roles from company career pages, recruiters, and remote feeds.
           </p>
         </div>
         <div className="flex flex-col gap-5 lg:flex-row">

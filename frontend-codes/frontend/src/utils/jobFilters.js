@@ -2,6 +2,7 @@ export const emptyJobFilters = {
   locations: [],
   roles: [],
   jobTypes: [],
+  experienceLevels: [],
 };
 
 const includesAny = (text, values) => {
@@ -19,6 +20,7 @@ export const filterJobs = (jobs, searchedQuery = "", selectedFilters = emptyJobF
       job?.description,
       job?.location,
       job?.jobType,
+      job?.experienceLevel,
       job?.company?.name,
       ...(job?.requirements || []),
     ]
@@ -30,7 +32,8 @@ export const filterJobs = (jobs, searchedQuery = "", selectedFilters = emptyJobF
     const matchesLocation = includesAny(job?.location, selectedFilters.locations);
     const matchesRole = includesAny(searchableText, selectedFilters.roles);
     const matchesJobType = includesAny(`${job?.jobType} ${job?.location}`, selectedFilters.jobTypes);
+    const matchesExperience = includesAny(searchableText, selectedFilters.experienceLevels);
 
-    return matchesSearch && matchesLocation && matchesRole && matchesJobType;
+    return matchesSearch && matchesLocation && matchesRole && matchesJobType && matchesExperience;
   });
 };

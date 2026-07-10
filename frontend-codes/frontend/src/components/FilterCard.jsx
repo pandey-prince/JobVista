@@ -18,6 +18,11 @@ const filterData = [
         filterType: "Job Type",
         array: ["Full Time", "Part Time", "Contractor", "Intern", "Remote"]
     },
+    {
+        key: "experienceLevels",
+        filterType: "Experience",
+        array: ["Fresher", "Intern", "0-1", "1-3", "Entry"]
+    },
 ]
 
 const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {

@@ -10,38 +10,41 @@ import {
 } from "../services/scrapers/index.js";
 import { filterItJobs, isItJob } from "../utils/itJobFilter.js";
 import { createOrGetJobSource } from "../services/careerSource.service.js";
+import {
+  attachBadgesToJob,
+  isScrapedJobNew,
+} from "../utils/jobBadges.js";
 
-const NEW_JOB_DAYS = 7;
+export { isScrapedJobNew };
 
-export const isScrapedJobNew = (firstSeenAt) => {
-  if (!firstSeenAt) return false;
-  const days =
-    (Date.now() - new Date(firstSeenAt).getTime()) / (1000 * 60 * 60 * 24);
-  return days <= NEW_JOB_DAYS;
-};
-
-export const mapScrapedJobForList = (job) => ({
-  _id: `scraped-${job._id}`,
-  title: job.title,
-  description: job.description.slice(0, 260),
-  requirements: job.requirements || [],
-  experienceLevel: job.jobType || "Open",
-  salary: job.salary || "Not disclosed",
-  location: job.location,
-  jobType: job.jobType,
-  position: 1,
-  company: {
-    name: job.companyName,
-    logo: job.companyLogo || "",
-  },
-  createdAt: job.firstSeenAt,
-  applications: [],
-  external: true,
-  externalSource: job.source?.name || job.companyName,
-  applicationLink: job.applicationUrl,
-  isNew: isScrapedJobNew(job.firstSeenAt),
-  scrapedJobId: job._id,
-});
+export const mapScrapedJobForList = (job) =>
+  attachBadgesToJob(
+    {
+      _id: `scraped-${job._id}`,
+      title: job.title,
+      description: job.description.slice(0, 260),
+      requirements: job.requirements || [],
+      experienceLevel: job.jobType || "Open",
+      salary: job.salary || "Not disclosed",
+      location: job.location,
+      jobType: job.jobType,
+      position: 1,
+      company: {
+        name: job.companyName,
+        logo: job.companyLogo || "",
+      },
+      createdAt: job.firstSeenAt,
+      applications: [],
+      external: true,
+      externalSource: job.source?.name || job.companyName,
+      applicationLink: job.applicationUrl,
+      scrapedJobId: job._id,
+    },
+    {
+      sourceType: "career_page",
+      sourceLabel: job.source?.name || job.companyName,
+    },
+  );
 
 export const getScrapedJobsForList = async (keyword = "") => {
   const query = { status: "active" };
@@ -93,31 +96,36 @@ export const getScrapedJobById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      job: {
-        _id: `scraped-${job._id}`,
-        scrapedJobId: job._id,
-        title: job.title,
-        description: job.description,
-        requirements: job.requirements,
-        experienceLevel: job.jobType,
-        salary: job.salary,
-        location: job.location,
-        jobType: job.jobType,
-        position: 1,
-        company: {
-          name: job.companyName,
-          logo: job.companyLogo,
+      job: attachBadgesToJob(
+        {
+          _id: `scraped-${job._id}`,
+          scrapedJobId: job._id,
+          title: job.title,
+          description: job.description,
+          requirements: job.requirements,
+          experienceLevel: job.jobType,
+          salary: job.salary,
+          location: job.location,
+          jobType: job.jobType,
+          position: 1,
+          company: {
+            name: job.companyName,
+            logo: job.companyLogo,
+          },
+          createdAt: job.firstSeenAt,
+          lastSeenAt: job.lastSeenAt,
+          applications: [],
+          external: true,
+          externalSource: job.source?.name || job.companyName,
+          applicationLink: job.applicationUrl,
+          sourceName: job.source?.name,
+          sourceUrl: job.source?.url,
         },
-        createdAt: job.firstSeenAt,
-        lastSeenAt: job.lastSeenAt,
-        applications: [],
-        external: true,
-        externalSource: job.source?.name || job.companyName,
-        applicationLink: job.applicationUrl,
-        sourceName: job.source?.name,
-        sourceUrl: job.source?.url,
-        isNew: isScrapedJobNew(job.firstSeenAt),
-      },
+        {
+          sourceType: "career_page",
+          sourceLabel: job.source?.name || job.companyName,
+        },
+      ),
     });
   } catch (error) {
     res.status(500).json({

@@ -108,6 +108,17 @@ const run = async () => {
       ? pass("POST /user/register (student)")
       : fail("POST /user/register (student)", studentReg.data?.message);
 
+    const me = await student.request("/api/v1/user/me");
+    me.response.ok && me.data.success && me.data.user?.email
+      ? pass("GET /user/me", me.data.user.email)
+      : fail("GET /user/me", me.data?.message);
+
+    const publicStats = await fetch(`${API_BASE}/api/v1/stats/public`);
+    const statsData = await publicStats.json();
+    publicStats.ok && statsData.success && typeof statsData.stats?.totalJobs === "number"
+      ? pass("GET /stats/public", `${statsData.stats.totalJobs} jobs`)
+      : fail("GET /stats/public", statsData?.message);
+
     const recruiterReg = await recruiter.request("/api/v1/user/register", {
       method: "POST",
       body: {
