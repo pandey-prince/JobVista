@@ -22,6 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import LoadingState from "@/components/shared/LoadingState";
+import CompanyLogo from "@/components/CompanyLogo";
 import JobFreshnessBadges from "@/components/shared/JobFreshnessBadges";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
