@@ -14,6 +14,8 @@ import {
 } from "../utils/pagination.js";
 import { attachBadgesToJob } from "../utils/jobBadges.js";
 
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const postJob = async (req, res) => {
   try {
     const {
@@ -76,20 +78,24 @@ export const postJob = async (req, res) => {
 
 export const getAllJobs = async (req, res) => {
   try {
-    const keyword = req.query.keyword || "";
+    const keyword = String(req.query.keyword || "").trim();
     const filters = parseJobListFilters(req.query);
     const paginationQuery = parsePagination(req.query, {
       defaultLimit: 12,
       maxLimit: 48,
     });
 
-    const jobs = await Job.find({
-      $or: [
-        { title: { $regex: keyword, $options: "i" } },
-        { description: { $regex: keyword, $options: "i" } },
-        { location: { $regex: keyword, $options: "i" } },
-      ],
-    }).populate("company");
+    const recruiterQuery = keyword
+      ? {
+          $or: [
+            { title: { $regex: escapeRegex(keyword), $options: "i" } },
+            { description: { $regex: escapeRegex(keyword), $options: "i" } },
+            { location: { $regex: escapeRegex(keyword), $options: "i" } },
+          ],
+        }
+      : {};
+
+    const jobs = await Job.find(recruiterQuery).populate("company");
 
     const itJobs = filterIndiaJobs(
       filterItJobs(jobs).map((job) =>
