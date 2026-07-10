@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Bot, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -9,17 +10,29 @@ const footerLinks = {
     { label: "Explore categories", to: "/browse" },
     { label: "Latest openings", to: "/jobs" },
   ],
-  candidates: [
+  candidatesGuest: [
     { label: "Create account", to: "/signup" },
     { label: "Saved jobs", to: "/saved-jobs" },
     { label: "Job alerts", to: "/alerts" },
     { label: "Your profile", to: "/profile" },
   ],
-  employers: [
+  candidatesStudent: [
+    { label: "Saved jobs", to: "/saved-jobs" },
+    { label: "Job alerts", to: "/alerts" },
+    { label: "Your profile", to: "/profile" },
+    { label: "My companies", to: "/my-companies" },
+  ],
+  employersGuest: [
     { label: "Recruiter signup", to: "/signup" },
     { label: "Post a job", to: "/admin/jobs/create" },
     { label: "Manage companies", to: "/admin/companies" },
     { label: "Applicant pipeline", to: "/admin/jobs" },
+  ],
+  employersRecruiter: [
+    { label: "Post a job", to: "/admin/jobs/create" },
+    { label: "Manage companies", to: "/admin/companies" },
+    { label: "Applicant pipeline", to: "/admin/jobs" },
+    { label: "Scrape sources", to: "/admin/scrape-sources" },
   ],
 };
 
@@ -44,6 +57,20 @@ const FooterLinkColumn = ({ title, links }) => (
 );
 
 const Footer = () => {
+  const { user, loading: authLoading } = useSelector((store) => store.auth);
+
+  const candidateLinks = useMemo(() => {
+    if (!user) return footerLinks.candidatesGuest;
+    if (user.role === "student") return footerLinks.candidatesStudent;
+    return footerLinks.candidatesGuest.filter((link) => link.to !== "/signup");
+  }, [user]);
+
+  const employerLinks = useMemo(() => {
+    if (!user) return footerLinks.employersGuest;
+    if (user.role === "recruiter") return footerLinks.employersRecruiter;
+    return footerLinks.employersGuest.filter((link) => link.to !== "/signup");
+  }, [user]);
+
   return (
     <footer className="mt-auto border-t border-border bg-card">
       <div className="border-b border-border bg-brand-muted/50">
@@ -63,9 +90,24 @@ const Footer = () => {
             <Button asChild variant="brand" className="rounded-full">
               <Link to="/jobs">Browse jobs</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-full">
-              <Link to="/signup">Create free account</Link>
-            </Button>
+            {authLoading ? null : !user ? (
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/signup">Create free account</Link>
+              </Button>
+            ) : user.role === "recruiter" ? (
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/admin/jobs">Manage job posts</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="outline" className="rounded-full">
+                  <Link to="/saved-jobs">View saved jobs</Link>
+                </Button>
+                <Button asChild variant="brand" className="rounded-full">
+                  <Link to="/alerts">Set job alerts</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -124,8 +166,8 @@ const Footer = () => {
           </div>
 
           <FooterLinkColumn title="Platform" links={footerLinks.platform} />
-          <FooterLinkColumn title="For job seekers" links={footerLinks.candidates} />
-          <FooterLinkColumn title="For employers" links={footerLinks.employers} />
+          <FooterLinkColumn title="For job seekers" links={candidateLinks} />
+          <FooterLinkColumn title="For employers" links={employerLinks} />
         </div>
       </div>
 
