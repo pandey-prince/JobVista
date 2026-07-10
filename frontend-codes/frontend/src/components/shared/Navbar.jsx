@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import UserAvatar from "./UserAvatar";
 import ThemeToggle from "./ThemeToggle";
 import UpdateProfileDialog from "../UpdateProfileDialog";
-import { LogOut, Menu, MoreVertical, User2, X } from "lucide-react";
+import { LogOut, Menu, User2, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -105,28 +105,18 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center gap-1">
               <ThemeToggle />
-              <button
-                type="button"
-                onClick={showProfileEditor ? openProfileEditor : () => setUserMenuOpen(true)}
-                className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                aria-label={showProfileEditor ? "Edit profile" : "Open account menu"}
-              >
-                <UserAvatar
-                  name={user?.fullname}
-                  className="cursor-pointer font-bold pb-1.5"
-                />
-              </button>
               <Popover open={userMenuOpen} onOpenChange={setUserMenuOpen}>
                 <PopoverTrigger asChild>
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 shrink-0"
-                    aria-label="Account options"
+                    className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label="Open account menu"
                   >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
+                    <UserAvatar
+                      name={user?.fullname}
+                      className="cursor-pointer font-bold pb-1.5"
+                    />
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-72" align="end">
                   <div>
@@ -213,19 +203,15 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="rounded-lg border border-border bg-muted/40 p-3">
-                <button
-                  type="button"
-                  onClick={showProfileEditor ? openProfileEditor : closeMobileMenu}
-                  className="flex w-full items-center gap-3 text-left"
-                >
-                  <UserAvatar name={user?.fullname} className="cursor-pointer font-bold" />
+                <div className="flex w-full items-center gap-3 text-left">
+                  <UserAvatar name={user?.fullname} className="font-bold" />
                   <div className="min-w-0">
                     <h4 className="truncate font-medium">{user?.fullname}</h4>
                     <p className="truncate text-sm text-muted-foreground">
-                      {showProfileEditor ? "Tap to edit profile" : user?.profile?.bio || user?.email}
+                      {user?.profile?.bio || user?.email}
                     </p>
                   </div>
-                </button>
+                </div>
                 <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
                   {showProfileEditor ? (
                     <button
