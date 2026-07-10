@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from './ui/button'
-import { BriefcaseBusiness, Building2, Bot, Search, Wifi, Sparkles } from 'lucide-react'
+import { BriefcaseBusiness, Building2, Bot, Search, Wifi } from 'lucide-react'
 import { useDispatch } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 import { useNavigate } from 'react-router-dom';
@@ -31,8 +31,7 @@ const HeroSection = () => {
     return (
         <div className='px-4 text-center sm:px-6'>
             <div className='mx-auto flex max-w-5xl flex-col gap-5 my-10'>
-                <span className='mx-auto inline-flex items-center gap-2 rounded-full bg-brand-muted px-4 py-2 text-sm font-medium text-brand '>
-                    <Sparkles className='h-4 w-4' />
+                <span className='mx-auto inline-flex items-center rounded-full bg-brand-muted px-4 py-2 text-sm font-medium text-brand'>
                     Fresh IT jobs from company career pages
                 </span>
                 <h1 className='text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl'>

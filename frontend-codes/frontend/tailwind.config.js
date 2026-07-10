@@ -56,8 +56,8 @@ module.exports = {
           foreground: "hsl(var(--brand-foreground))",
           muted: "hsl(var(--brand-muted))",
         },
+        "accent-amber": "hsl(var(--accent-amber))",
         "accent-orange": "hsl(var(--accent-orange))",
-        "accent-violet": "hsl(var(--accent-violet))",
       },
       borderRadius: {
         lg: "var(--radius)",

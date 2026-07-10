@@ -62,7 +62,7 @@ const Job = ({job}) => {
             <div className='mt-4 flex flex-wrap items-center gap-2'>
                 <Badge className='font-semibold text-blue-700' variant="ghost">{job?.position} Positions</Badge>
                 <Badge className='font-semibold text-accent-orange' variant="ghost">{job?.jobType}</Badge>
-                <Badge className='font-semibold text-accent-violet' variant="ghost">{salaryText}</Badge>
+                <Badge className='font-semibold text-accent-amber' variant="ghost">{salaryText}</Badge>
             </div>
 
             <div className='mt-4 flex items-center gap-3'>
@@ -81,7 +81,7 @@ const Job = ({job}) => {
                         e.stopPropagation();
                         handleSave(e);
                     }}
-                    className="flex-1 bg-accent-violet text-white hover:bg-accent-violet/90"
+                    className="flex-1 bg-accent-amber text-white hover:bg-accent-amber/90"
                 >
                     {saved ? "Saved" : "Save"}
                 </Button>

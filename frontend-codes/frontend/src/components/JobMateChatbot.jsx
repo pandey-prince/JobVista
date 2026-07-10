@@ -96,7 +96,7 @@ const JobMateChatbot = () => {
   }, [messages, loading, open]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 sm:bottom-5 sm:right-5">
+    <div className="fixed bottom-4 right-4 z-40 sm:bottom-5 sm:right-5">
       {open && (
         <div className="mb-3 flex h-[min(32rem,calc(100vh-7.5rem))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl sm:w-[340px] sm:max-w-[calc(100vw-2rem)]">
           <div className="flex items-center justify-between bg-brand px-3 py-3 text-white sm:px-4">

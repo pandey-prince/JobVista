@@ -6,7 +6,7 @@ const Pagination = ({ page, totalPages, total, onPageChange, className = "" }) =
 
   return (
     <div
-      className={`flex flex-col items-center justify-between gap-3 sm:flex-row ${className}`}
+      className={`flex flex-col items-center justify-between gap-3 pb-4 pr-[4.75rem] sm:flex-row sm:pr-24 ${className}`}
     >
       <p className="text-sm text-muted-foreground">
         Showing page {page} of {totalPages}
