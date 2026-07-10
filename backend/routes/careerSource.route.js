@@ -17,7 +17,7 @@ import {
 const router = express.Router();
 
 router.route("/").get(listPublicSources);
-router.route("/detect").post(detectCareerSourceType);
+router.route("/detect").post(isAuthenticated, requireRole("student"), detectCareerSourceType);
 router.route("/submit").post(isAuthenticated, submitCareerSource);
 router
   .route("/import/excel")

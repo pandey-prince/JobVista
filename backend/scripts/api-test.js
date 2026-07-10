@@ -89,16 +89,6 @@ const run = async () => {
       ? pass("GET /api/v1/career-sources", `${sourcesData.sources?.length || 0} companies`)
       : fail("GET /api/v1/career-sources");
 
-    const detectRes = await fetch(`${API_BASE}/api/v1/career-sources/detect`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: "https://boards.greenhouse.io/stripe" }),
-    });
-    const detectData = await detectRes.json();
-    detectRes.ok && detectData.scraperType === "greenhouse"
-      ? pass("POST /career-sources/detect", detectData.scraperType)
-      : fail("POST /career-sources/detect");
-
     const studentReg = await student.request("/api/v1/user/register", {
       method: "POST",
       body: {
@@ -112,6 +102,14 @@ const run = async () => {
     studentReg.response.ok && studentReg.data.success
       ? pass("POST /user/register (student)")
       : fail("POST /user/register (student)", studentReg.data?.message);
+
+    const detectRes = await student.request("/api/v1/career-sources/detect", {
+      method: "POST",
+      body: { url: "https://boards.greenhouse.io/stripe" },
+    });
+    detectRes.response.ok && detectRes.data.scraperType === "greenhouse"
+      ? pass("POST /career-sources/detect", detectRes.data.scraperType)
+      : fail("POST /career-sources/detect", detectRes.data?.message);
 
     const me = await student.request("/api/v1/user/me");
     me.response.ok && me.data.success && me.data.user?.email

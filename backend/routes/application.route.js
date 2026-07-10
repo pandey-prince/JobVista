@@ -9,8 +9,8 @@ import {
 } from "../controllers/application.controller.js";
 
 const router = express.Router();
-router.route("/apply/:id").get(isAuthenticated, requireRole("student"), applyJob);
-router.route("/get").get(isAuthenticated, getAppliedJobs);
+router.route("/apply/:id").post(isAuthenticated, requireRole("student"), applyJob);
+router.route("/get").get(isAuthenticated, requireRole("student"), getAppliedJobs);
 router.route("/:id/applicants").get(isAuthenticated, requireRole("recruiter"), getApplicants);
 router.route("/status/:id/update").post(isAuthenticated, requireRole("recruiter"), updateStatus);
 

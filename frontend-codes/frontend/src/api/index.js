@@ -53,7 +53,7 @@ export const jobsApi = {
 };
 
 export const applicationsApi = {
-  apply: (jobId) => apiClient.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`),
+  apply: (jobId) => apiClient.post(`${APPLICATION_API_END_POINT}/apply/${jobId}`),
 };
 
 export const careerSourceApi = {

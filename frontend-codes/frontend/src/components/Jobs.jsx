@@ -23,7 +23,7 @@ const Jobs = () => {
   const [selectedFilters, setSelectedFilters] = useState(emptyJobFilters);
   const [page, setPage] = useState(1);
 
-  const { jobs, pagination, loading } = usePaginatedJobs({
+  const { jobs, pagination, loading, error } = usePaginatedJobs({
     page,
     limit: JOBS_PER_PAGE,
     keyword: searchedQuery,
@@ -109,6 +109,13 @@ const Jobs = () => {
               skeletonCount={6}
               className="flex-1"
             />
+          ) : error ? (
+            <div className="flex-1 rounded-md border border-dashed border-destructive/40 bg-card p-10 text-center">
+              <h2 className="text-lg font-semibold">Could not load jobs</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                The job feed is temporarily unavailable. Please refresh or try again in a moment.
+              </p>
+            </div>
           ) : jobs.length === 0 ? (
             <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">No jobs match your filters</h2>

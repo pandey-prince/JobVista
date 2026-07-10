@@ -90,7 +90,6 @@ export const register = async (req, res) => {
     return res.status(500).json({
       message: "Internal server error",
       success: false,
-      error: error,
     });
   }
 };
@@ -227,6 +226,16 @@ export const getMe = async (req, res) => {
       });
     }
 
+    if (user.role === "recruiter") {
+      return res
+        .status(403)
+        .clearCookie("token", cookieOptions)
+        .json({
+          message: "Recruiter accounts are disabled. JobVista is for job seekers only.",
+          success: false,
+        });
+    }
+
     return res.status(200).json({
       success: true,
       user: getSafeUser(user),
@@ -313,6 +322,13 @@ export const updateProfile = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         message: "User not found",
+        success: false,
+      });
+    }
+
+    if (user.role === "recruiter") {
+      return res.status(403).json({
+        message: "Recruiter accounts are disabled. JobVista is for job seekers only.",
         success: false,
       });
     }

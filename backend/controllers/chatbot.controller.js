@@ -3,24 +3,20 @@ import { generateGeminiText, isGeminiConfigured } from "../services/gemini.servi
 const getTemplateReply = (message = "") => {
   const text = message.toLowerCase();
 
-  if (text.includes("screen") || (text.includes("candidate") && text.includes("question"))) {
-    return `Here are 10 candidate screening questions:
-1. What interested you in this role?
-2. Which of the required skills have you used in real projects?
-3. Can you describe one relevant project from start to finish?
-4. What tools, frameworks, or platforms are you strongest with?
-5. How many months or years of relevant experience do you have?
-6. What type of work environment do you perform best in?
-7. Are you available for the job location, timing, or shift requirements?
-8. What is your notice period or how soon can you join?
-9. What salary or stipend range are you expecting?
-10. Why should we shortlist you for the next round?
+  if (text.includes("screen") || (text.includes("interview") && text.includes("question"))) {
+    return `Here are 10 common interview questions to practice:
+1. Tell me about yourself.
+2. Why do you want this role?
+3. Which projects best show your skills for this job?
+4. What is your strongest technical skill and where have you used it?
+5. Describe a challenge you solved in a project or internship.
+6. How do you learn new tools or technologies?
+7. What kind of team environment helps you do your best work?
+8. Where do you see yourself in the next 2–3 years?
+9. Why should we hire you?
+10. What questions do you have for us?
 
-If you want, I can also give:
-* screening questions for freshers
-* technical screening questions
-* HR screening questions
-* role-specific questions for frontend, backend, sales, support, or design`;
+If you want, I can also give role-specific questions for frontend, backend, QA, or data roles.`;
   }
 
   if (text.includes("resume")) {

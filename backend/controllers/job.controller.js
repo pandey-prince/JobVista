@@ -3,18 +3,12 @@ import {
   fetchExternalJobById,
   getScrapedJobsForList,
   isExternalJobId,
-  sortJobsByDate,
 } from "../services/job-catalog/index.js";
-import { filterItJobs } from "../utils/itJobFilter.js";
-import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import { parseJobListFilters, filterJobList } from "../utils/jobListFilters.js";
 import {
   parsePagination,
   paginateArray,
 } from "../utils/pagination.js";
-import { attachBadgesToJob } from "../utils/jobBadges.js";
-
-const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export const postJob = async (req, res) => {
   try {
@@ -122,19 +116,9 @@ export const getJobById = async (req, res) => {
       });
     }
 
-    const job = await Job.findById(jobId).populate("company");
-    if (!job || !filterItJobs([job]).length) {
-      return res.status(404).json({
-        message: "Job not found",
-        success: false,
-      });
-    }
-    return res.status(200).json({
-      job: attachBadgesToJob(job, {
-        sourceType: "recruiter",
-        sourceLabel: "JobVista",
-      }),
-      success: true,
+    return res.status(404).json({
+      message: "Job not found",
+      success: false,
     });
   } catch (err) {
     console.log(err);

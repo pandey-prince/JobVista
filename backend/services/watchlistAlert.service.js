@@ -3,6 +3,7 @@ import { sendEmail } from "./email.service.js";
 import { buildWatchlistEmail } from "./emailTemplates.service.js";
 import { mapScrapedJobForList } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
+import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 
 export const processWatchlistAlerts = async (syncResults = []) => {
   if (!syncResults.length) return { sent: 0 };
@@ -14,7 +15,7 @@ export const processWatchlistAlerts = async (syncResults = []) => {
 
     const sourceId = result.sourceId;
     const companyName = result.sourceName;
-    const jobs = result.newJobs.map((job) => ({
+    const jobs = filterIndiaJobs(filterItJobs(result.newJobs)).map((job) => ({
       ...mapScrapedJobForList(job),
       jobKey: `scraped-${job._id}`,
       companyName: job.companyName || companyName,

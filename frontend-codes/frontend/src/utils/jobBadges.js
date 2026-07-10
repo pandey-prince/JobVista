@@ -31,7 +31,7 @@ export const getJobBadges = (job) => {
       )
     : null;
 
-  let sourceType = "recruiter";
+  let sourceType = "career_page";
   if (jobId.startsWith("scraped-")) sourceType = "career_page";
   else if (jobId.startsWith("remotive-")) sourceType = "remotive";
   else if (jobId.startsWith("arbeitnow-")) sourceType = "arbeitnow";
@@ -48,7 +48,7 @@ export const getJobBadges = (job) => {
 };
 
 export const getSourceBadgeStyle = (sourceType, sourceLabel) => {
-  const config = SOURCE_STYLES[sourceType] || SOURCE_STYLES.recruiter;
+  const config = SOURCE_STYLES[sourceType] || SOURCE_STYLES.career_page;
   const label =
     sourceType === "career_page" && sourceLabel
       ? `From ${sourceLabel}`

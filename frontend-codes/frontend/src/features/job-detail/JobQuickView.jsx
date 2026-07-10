@@ -27,6 +27,7 @@ import JobFreshnessBadges from "@/components/shared/JobFreshnessBadges";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
 import { jobsApi } from "@/api";
+import { toast } from "sonner";
 import {
   cleanJobText,
   formatJobPostedDate,
@@ -102,6 +103,8 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
     if (isExternalFeed || isScrapedJob) {
       if (displayJob.applicationLink) {
         window.open(displayJob.applicationLink, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error("Apply link is not available for this role.");
       }
       return;
     }
