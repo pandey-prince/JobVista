@@ -3,6 +3,7 @@ import { JobSource } from "../models/jobSource.model.js";
 import {
   syncAllSources,
   syncSourceById,
+  syncSourcesByMode,
 } from "../services/scrapeSync.service.js";
 import { checkAllActiveJobLinks } from "../services/linkCheck.service.js";
 import { hardDeleteScrapedJobsByQuery } from "../services/scrapedJobCleanup.service.js";
@@ -204,6 +205,33 @@ export const triggerFullSync = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const triggerOpsSync = async (req, res) => {
+  try {
+    const mode = String(req.query.mode || "api").toLowerCase();
+    if (!["api", "puppeteer", "all"].includes(mode)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid mode. Use api, puppeteer, or all.",
+      });
+    }
+
+    const summary = await syncSourcesByMode(mode, {
+      runPostSyncTasks: mode !== "puppeteer",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `${mode} sync completed`,
+      summary,
+    });
+  } catch (error) {
+    return res.status(500).json({
       success: false,
       message: error.message,
     });

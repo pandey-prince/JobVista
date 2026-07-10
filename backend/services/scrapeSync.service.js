@@ -144,8 +144,22 @@ export const syncSource = async (source) => {
   }
 };
 
-export const syncAllSources = async () => {
-  const sources = await JobSource.find({ isActive: true });
+const PUPPETEER_SCRAPER_TYPES = new Set(["auto-puppeteer", "puppeteer"]);
+
+export const isPuppeteerScraperType = (scraperType) =>
+  PUPPETEER_SCRAPER_TYPES.has(scraperType);
+
+const filterSourcesByMode = (sources, mode) => {
+  if (mode === "api") {
+    return sources.filter((source) => !isPuppeteerScraperType(source.scraperType));
+  }
+  if (mode === "puppeteer") {
+    return sources.filter((source) => isPuppeteerScraperType(source.scraperType));
+  }
+  return sources;
+};
+
+const runSyncLoop = async (sources) => {
   const results = [];
   let removedFromBoard = 0;
 
@@ -153,28 +167,41 @@ export const syncAllSources = async () => {
     const result = await syncSource(source);
     results.push(result);
     removedFromBoard += result.removedJobsCount || 0;
-    const delayMs =
-      source.scraperType === "auto-puppeteer" || source.scraperType === "puppeteer"
-        ? PUPPETEER_DELAY_MS
-        : SCRAPE_DELAY_MS;
+    const delayMs = isPuppeteerScraperType(source.scraperType)
+      ? PUPPETEER_DELAY_MS
+      : SCRAPE_DELAY_MS;
     await delay(delayMs);
   }
 
-  const nonItRemoved = await cleanupNonItScrapedJobs();
+  return { results, removedFromBoard };
+};
 
+export const syncSourcesByMode = async (mode = "all", options = {}) => {
+  const { runPostSyncTasks = mode !== "puppeteer" } = options;
+  const allSources = await JobSource.find({ isActive: true });
+  const sources = filterSourcesByMode(allSources, mode);
+  const { results, removedFromBoard } = await runSyncLoop(sources);
+
+  let nonItRemoved = 0;
   let linkCheckSummary = null;
-  if (LINK_CHECK_AFTER_SYNC) {
-    try {
-      linkCheckSummary = await checkActiveJobLinks({
-        limit: Number(process.env.LINK_CHECK_POST_SYNC_BATCH || 30),
-        onlyStaleHours: 24,
-      });
-    } catch (error) {
-      console.error("[ScrapeSync] Post-sync link check failed:", error.message);
+
+  if (runPostSyncTasks) {
+    nonItRemoved = await cleanupNonItScrapedJobs();
+
+    if (LINK_CHECK_AFTER_SYNC) {
+      try {
+        linkCheckSummary = await checkActiveJobLinks({
+          limit: Number(process.env.LINK_CHECK_POST_SYNC_BATCH || 30),
+          onlyStaleHours: 24,
+        });
+      } catch (error) {
+        console.error("[ScrapeSync] Post-sync link check failed:", error.message);
+      }
     }
   }
 
   const summary = {
+    mode,
     totalSources: sources.length,
     successful: results.filter((r) => r.success && !r.skipped).length,
     skipped: results.filter((r) => r.skipped).length,
@@ -189,17 +216,21 @@ export const syncAllSources = async () => {
   };
 
   console.log(
-    `[ScrapeSync] Completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board, ${summary.removedDeadLinks} dead links removed`,
+    `[ScrapeSync] ${mode} completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board`,
   );
 
-  try {
-    await processWatchlistAlerts(results);
-  } catch (error) {
-    console.error("[ScrapeSync] Watchlist alerts failed:", error.message);
+  if (runPostSyncTasks) {
+    try {
+      await processWatchlistAlerts(results);
+    } catch (error) {
+      console.error("[ScrapeSync] Watchlist alerts failed:", error.message);
+    }
   }
 
   return summary;
 };
+
+export const syncAllSources = async () => syncSourcesByMode("all");
 
 export const syncSourceById = async (sourceId) => {
   const source = await JobSource.findById(sourceId);

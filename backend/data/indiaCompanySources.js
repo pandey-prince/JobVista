@@ -109,7 +109,7 @@ export const INDIA_COMPANY_SOURCES = [
   { companyName: "Netflix", name: "Netflix Careers", careersUrl: "https://jobs.netflix.com" },
   { companyName: "Spotify", name: "Spotify Careers", careersUrl: "https://www.lifeatspotify.com", ...lever("spotify") },
   { companyName: "Stripe", name: "Stripe Careers", careersUrl: "https://stripe.com/jobs", ...greenhouse("stripe") },
-  { companyName: "Atlassian", name: "Atlassian Careers", careersUrl: "https://www.atlassian.com/company/careers" },
+  { companyName: "Atlassian", name: "Atlassian Careers", careersUrl: "https://www.atlassian.com/company/careers", ...lever("atlassian") },
   { companyName: "ServiceNow", name: "ServiceNow Careers", careersUrl: "https://careers.servicenow.com" },
   { companyName: "Intuit", name: "Intuit Careers", careersUrl: "https://www.intuit.com/careers" },
   { companyName: "PayPal", name: "PayPal Careers", careersUrl: "https://careers.pypl.com" },

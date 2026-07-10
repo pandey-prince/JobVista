@@ -1,0 +1,58 @@
+name: Scrape Puppeteer Sources
+
+on:
+  schedule:
+    # Sundays 02:30 UTC (8:00 AM IST)
+    - cron: "30 2 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: scrape-puppeteer
+  cancel-in-progress: false
+
+jobs:
+  puppeteer-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Puppeteer Chrome
+        working-directory: backend
+        run: npx puppeteer browsers install chrome
+
+      - name: Re-probe auto-puppeteer sources
+        working-directory: backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: node scripts/reprobe-sources.js
+        continue-on-error: true
+
+      - name: Sync Puppeteer career sources
+        working-directory: backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          SKIP_PUPPETEER_SCRAPERS: "false"
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
+        run: node scripts/sync-puppeteer.js
+
+      - name: Source health report
+        if: always()
+        working-directory: backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: node scripts/source-health.js --report-only
+        continue-on-error: true

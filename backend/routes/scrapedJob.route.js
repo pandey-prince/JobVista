@@ -1,6 +1,7 @@
 import express from "express";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import requireRole from "../middlewares/requireRole.js";
+import requireCronSecret from "../middlewares/requireCronSecret.js";
 import {
   createJobSource,
   deleteJobSource,
@@ -10,6 +11,7 @@ import {
   listScrapedJobs,
   triggerFullSync,
   triggerLinkCheck,
+  triggerOpsSync,
   triggerSourceSync,
   updateJobSource,
 } from "../controllers/scrapedJob.controller.js";
@@ -18,6 +20,7 @@ const router = express.Router();
 
 router.route("/").get(listScrapedJobs);
 router.route("/sync").post(isAuthenticated, requireRole("recruiter"), triggerFullSync);
+router.route("/sync/ops").post(requireCronSecret, triggerOpsSync);
 router
   .route("/sources")
   .get(isAuthenticated, requireRole("recruiter"), listJobSources)

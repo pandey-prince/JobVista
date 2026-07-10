@@ -1,7 +1,11 @@
 import cron from "node-cron";
-import { syncAllSources } from "../services/scrapeSync.service.js";
+import { syncSourcesByMode } from "../services/scrapeSync.service.js";
 
 let isRunning = false;
+
+const shouldSkipPuppeteer = () =>
+  process.env.SKIP_PUPPETEER_SCRAPERS === "true" ||
+  process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD === "true";
 
 const runSyncSafely = async (label) => {
   if (isRunning) {
@@ -12,7 +16,8 @@ const runSyncSafely = async (label) => {
   isRunning = true;
   try {
     console.log(`[ScrapeScheduler] Starting ${label}`);
-    await syncAllSources();
+    const mode = shouldSkipPuppeteer() ? "api" : "all";
+    await syncSourcesByMode(mode);
   } catch (error) {
     console.error(`[ScrapeScheduler] ${label} failed:`, error.message);
   } finally {
