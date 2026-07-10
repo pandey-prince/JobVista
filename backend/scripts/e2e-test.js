@@ -209,7 +209,9 @@ const run = async () => {
 
     // Block apply on scraped job (career-page listings)
     if (scrapedJobId) {
-      r = await student.req(`/api/v1/application/apply/${scrapedJobId}`);
+      r = await student.req(`/api/v1/application/apply/${scrapedJobId}`, {
+        method: "POST",
+      });
       r.res.status === 400 ? pass("Block apply on scraped job") : fail("Block apply on scraped job", `status ${r.res.status}`);
     } else {
       fail("Block apply on scraped job", "No scraped job in feed");
