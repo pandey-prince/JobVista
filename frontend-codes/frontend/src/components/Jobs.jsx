@@ -23,7 +23,7 @@ const Jobs = () => {
           <div>
           <h1 className="text-2xl font-bold">Fresh IT Jobs</h1>
           <p className="text-sm text-gray-500">
-            Fresher and 0–3 year roles from company career pages, recruiters, and remote feeds.
+            India IT roles from company career pages and JobVista recruiters. Use filters for city, experience, and work mode.
           </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/alerts")}>

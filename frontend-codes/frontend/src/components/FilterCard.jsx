@@ -5,23 +5,53 @@ import { Button } from './ui/button'
 const filterData = [
     {
         key: "locations",
-        filterType: "Location",
-        array: ["Remote", "Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
+        filterType: "City / Location",
+        array: [
+            "Bangalore",
+            "Hyderabad",
+            "Pune",
+            "Mumbai",
+            "Delhi NCR",
+            "Chennai",
+            "Kolkata",
+            "Ahmedabad",
+            "Remote",
+        ],
     },
     {
-        key: "roles",
-        filterType: "Role",
-        array: ["Frontend Developer", "Backend Developer", "FullStack Developer", "React", "Node", "Python"]
-    },
-    {
-        key: "jobTypes",
-        filterType: "Job Type",
-        array: ["Full Time", "Part Time", "Contractor", "Intern", "Remote"]
+        key: "workModes",
+        filterType: "Work Mode",
+        array: ["Remote", "Hybrid", "On-site"],
     },
     {
         key: "experienceLevels",
         filterType: "Experience",
-        array: ["Fresher", "Intern", "0-1", "1-3", "Entry"]
+        array: ["Fresher", "0-1 year", "1-3 years", "3-5 years", "5+ years", "Internship"],
+    },
+    {
+        key: "roles",
+        filterType: "Role / Skill",
+        array: [
+            "Software Engineer",
+            "Frontend / React",
+            "Backend / Node",
+            "Full Stack",
+            "DevOps / Cloud",
+            "Data / ML / AI",
+            "QA / Testing",
+            "Java",
+            "Python",
+        ],
+    },
+    {
+        key: "jobTypes",
+        filterType: "Job Type",
+        array: ["Full-time", "Internship", "Contract", "Part-time"],
+    },
+    {
+        key: "postedWithin",
+        filterType: "Posted",
+        array: ["Last 24 hours", "Last 7 days", "Last 30 days"],
     },
 ]
 
@@ -35,20 +65,32 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {
         onFilterChange({ ...selectedFilters, [groupKey]: nextValues });
     }
 
+    const activeCount = Object.values(selectedFilters).reduce(
+        (count, values) => count + (values?.length || 0),
+        0,
+    );
+
     return (
-        <div className='w-full bg-white p-3 rounded-md'>
+        <div className='w-full bg-white p-3 rounded-md border border-gray-100 shadow-sm'>
             <div className='flex items-center justify-between gap-2'>
-                <h1 className='font-bold text-lg'>Filter Jobs</h1>
-                <Button type="button" variant="link" className="px-0 text-sm" onClick={onClear}>Clear</Button>
+                <div>
+                    <h1 className='font-bold text-lg'>Filter Jobs</h1>
+                    {activeCount > 0 && (
+                        <p className="text-xs text-gray-500">{activeCount} active</p>
+                    )}
+                </div>
+                <Button type="button" variant="link" className="px-0 text-sm" onClick={onClear}>
+                    Clear all
+                </Button>
             </div>
             <hr className='mt-3' />
             {
                 filterData.map((data, index) => (
                     <div key={data.key} className='mt-4'>
-                        <h1 className='font-bold text-base'>{data.filterType}</h1>
+                        <h2 className='font-bold text-base'>{data.filterType}</h2>
                         {
                             data.array.map((item, idx) => {
-                                const itemId = `id${index}-${idx}`
+                                const itemId = `filter-${data.key}-${idx}`
                                 return (
                                     <div key={item} className='flex items-center space-x-2 my-2'>
                                         <input
@@ -58,7 +100,7 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {
                                             onChange={() => changeHandler(data.key, item)}
                                             className='h-4 w-4 accent-[#6A38C2] cursor-pointer'
                                         />
-                                        <Label htmlFor={itemId} className="cursor-pointer">{item}</Label>
+                                        <Label htmlFor={itemId} className="cursor-pointer text-sm">{item}</Label>
                                     </div>
                                 )
                             })

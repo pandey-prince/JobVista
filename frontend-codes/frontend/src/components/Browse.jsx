@@ -28,7 +28,7 @@ const Browse = () => {
           Search Results ({filteredJobs.length})
         </h1>
         <p className="-mt-8 mb-6 text-sm text-gray-500">
-          Includes JobVista jobs and remote openings from trusted external sources.
+          India IT jobs from career pages and JobVista recruiters.
         </p>
 
         <div className="flex flex-col gap-5 lg:flex-row">
