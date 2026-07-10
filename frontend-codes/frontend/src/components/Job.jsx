@@ -24,7 +24,7 @@ const Job = ({job}) => {
     return (
         <>
         <div
-            className='flex h-full flex-col rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer'
+            className='flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer'
             onClick={() => setQuickViewOpen(true)}
         >
             <div className='flex items-center justify-between gap-3'>
@@ -44,7 +44,7 @@ const Job = ({job}) => {
                 <CompanyLogo company={job?.company} className="h-14 w-14" />
                 <div className="min-w-0">
                     <h2 className='truncate font-medium text-lg'>{job?.company?.name}</h2>
-                    <p className='text-sm text-gray-500'>{job?.location || "India"}</p>
+                    <p className='text-sm text-gray-500 dark:text-muted-foreground'>{job?.location || "India"}</p>
                 </div>
             </div>
 
@@ -53,7 +53,7 @@ const Job = ({job}) => {
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>
-                <p className='mt-3 text-sm text-gray-600 line-clamp-3'>{job?.description}</p>
+                <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>{job?.description}</p>
             </div>
 
             <div className='mt-4 flex flex-wrap items-center gap-2'>

@@ -71,7 +71,7 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear }) => {
     );
 
     return (
-        <div className='w-full bg-white p-3 rounded-md border border-gray-100 shadow-sm'>
+        <div className='w-full rounded-md border border-border bg-card p-3 shadow-sm'>
             <div className='flex items-center justify-between gap-2'>
                 <div>
                     <h1 className='font-bold text-lg'>Filter Jobs</h1>

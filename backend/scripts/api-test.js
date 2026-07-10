@@ -151,17 +151,17 @@ const run = async () => {
       ? pass("GET /career-sources/lists (watchlist)", `${watchlist.data.lists.length} entries`)
       : fail("GET /career-sources/lists (watchlist)");
 
-    const wishlistAdd = await student.request("/api/v1/career-sources/lists", {
+    const manualAdd = await student.request("/api/v1/career-sources/lists", {
       method: "POST",
       body: {
-        listType: "wishlist",
+        listType: "watchlist",
         companyName: "Dream Company",
         notes: "Future goal",
       },
     });
-    wishlistAdd.response.ok && wishlistAdd.data.success
-      ? pass("POST /career-sources/lists (wishlist)")
-      : fail("POST /career-sources/lists (wishlist)", wishlistAdd.data?.message);
+    manualAdd.response.ok && manualAdd.data.success
+      ? pass("POST /career-sources/lists (watchlist manual)")
+      : fail("POST /career-sources/lists (watchlist manual)", manualAdd.data?.message);
 
     const watchlistJobs = await student.request(
       "/api/v1/career-sources/lists/jobs?type=watchlist"

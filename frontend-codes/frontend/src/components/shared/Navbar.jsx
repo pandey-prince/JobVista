@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import UserAvatar from "./UserAvatar";
+import ThemeToggle from "./ThemeToggle";
 import { LogOut, Menu, User2, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -63,7 +64,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="border-b border-gray-100 bg-white">
+    <div className="border-b border-border bg-card">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div
           onClick={() => {
@@ -87,6 +88,7 @@ const Navbar = () => {
           </ul>
           {!user ? (
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Link to="/login">
                 <Button variant="outline">Login</Button>
               </Link>
@@ -97,6 +99,8 @@ const Navbar = () => {
               </Link>
             </div>
           ) : (
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
             <Popover>
               <PopoverTrigger asChild>
                 <UserAvatar
@@ -133,9 +137,12 @@ const Navbar = () => {
                 </div>
               </PopoverContent>
             </Popover>
+            </div>
           )}
         </div>
 
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
         <Button
           type="button"
           variant="ghost"
@@ -146,10 +153,11 @@ const Navbar = () => {
         >
           {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
+        </div>
       </div>
 
       {isMobileMenuOpen ? (
-        <div className="mx-auto max-w-7xl border-t border-gray-100 px-4 py-4 md:hidden sm:px-6">
+        <div className="mx-auto max-w-7xl border-t border-border px-4 py-4 md:hidden sm:px-6">
           <div className="flex flex-col gap-4">
             <ul className="flex flex-col gap-3 font-medium">
               {navigationLinks.map((item) => (
@@ -175,7 +183,7 @@ const Navbar = () => {
                 </Link>
               </div>
             ) : (
-              <div className="rounded-lg border border-gray-200 p-3">
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
                 <div className="flex items-center gap-3">
                   <UserAvatar name={user?.fullname} className="cursor-pointer font-bold" />
                   <div className="min-w-0">
@@ -185,7 +193,7 @@ const Navbar = () => {
                     </p>
                   </div>
                 </div>
-                <div className="mt-3 flex flex-col gap-2 text-gray-600">
+                <div className="mt-3 flex flex-col gap-2 text-muted-foreground">
                   <Link
                     to="/profile"
                     onClick={closeMobileMenu}

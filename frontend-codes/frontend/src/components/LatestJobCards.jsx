@@ -14,7 +14,7 @@ const LatestJobCards = ({job}) => {
         <>
         <div
             onClick={() => setQuickViewOpen(true)}
-            className='cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md'
+            className='cursor-pointer rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md'
         >
             <div className='flex items-center justify-between gap-2'>
                 <p className='text-xs font-medium text-gray-500'>{badges.freshnessLabel}</p>

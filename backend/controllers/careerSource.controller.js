@@ -154,10 +154,14 @@ export const detectCareerSourceType = async (req, res) => {
 export const listUserCompanyLists = async (req, res) => {
   try {
     const userId = req.id;
-    const listType = req.query.type;
+    const listType = req.query.type || "watchlist";
 
     const query = { user: userId };
-    if (listType) query.listType = listType;
+    if (listType === "watchlist") {
+      query.listType = { $in: ["watchlist", "wishlist"] };
+    } else if (listType) {
+      query.listType = listType;
+    }
 
     const lists = await UserCompanyList.find(query)
       .populate("jobSource")
@@ -189,7 +193,7 @@ export const addUserCompanyList = async (req, res) => {
   try {
     const userId = req.id;
     const {
-      listType,
+      listType: requestedListType = "watchlist",
       jobSourceId,
       companyName,
       careerUrl,
@@ -197,7 +201,9 @@ export const addUserCompanyList = async (req, res) => {
       createSource = true,
     } = req.body;
 
-    if (!["watchlist", "wishlist"].includes(listType)) {
+    const listType = "watchlist";
+
+    if (requestedListType && !["watchlist", "wishlist"].includes(requestedListType)) {
       return res.status(400).json({
         success: false,
         message: "listType must be watchlist or wishlist",
