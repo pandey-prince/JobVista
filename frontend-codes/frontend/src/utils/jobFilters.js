@@ -7,6 +7,14 @@ export const emptyJobFilters = {
   postedWithin: [],
 };
 
+export const filtersToQueryParams = (filters = emptyJobFilters) => {
+  const params = {};
+  Object.entries(filters).forEach(([key, values]) => {
+    if (values?.length) params[key] = values.join(",");
+  });
+  return params;
+};
+
 const LOCATION_ALIASES = {
   Bangalore: ["bangalore", "bengaluru", "blr"],
   Hyderabad: ["hyderabad", "secunderabad", "cyberabad"],
@@ -19,8 +27,7 @@ const LOCATION_ALIASES = {
   Remote: ["remote", "work from home", "wfh", "anywhere in india"],
 };
 
-const ROLE_KEYWORDS = {
-  "Software Engineer": ["software engineer", "sde", "software developer"],
+const ROLE_KEYWORDS = {  "Software Engineer": ["software engineer", "sde", "software developer"],
   "Frontend / React": ["frontend", "front-end", "react", "ui developer"],
   "Backend / Node": ["backend", "back-end", "node", "java developer", "spring"],
   "Full Stack": ["full stack", "fullstack", "full-stack"],

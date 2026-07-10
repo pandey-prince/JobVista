@@ -8,7 +8,7 @@ const CompanyLogo = ({ company, className = "h-14 w-14", fallbackClassName = "" 
   const hasLogo = Boolean(company?.logo) && !imageFailed;
 
   return (
-    <Avatar className={`rounded-md border border-gray-200 bg-white ${className}`}>
+    <Avatar className={`rounded-md border border-border bg-card ${className}`}>
       {hasLogo && (
         <AvatarImage
           src={company.logo}
@@ -18,7 +18,7 @@ const CompanyLogo = ({ company, className = "h-14 w-14", fallbackClassName = "" 
         />
       )}
       <AvatarFallback
-        className={`rounded-md bg-[#f3edff] text-[#6A38C2] font-bold ${fallbackClassName}`}
+        className={`rounded-md bg-brand-muted text-brand font-bold ${fallbackClassName}`}
       >
         {initial}
       </AvatarFallback>

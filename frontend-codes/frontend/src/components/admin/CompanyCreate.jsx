@@ -36,7 +36,7 @@ const CompanyCreate = () => {
             <div className='max-w-4xl mx-auto'>
                 <div className='my-10'>
                     <h1 className='font-bold text-2xl'>Create Company Profile</h1>
-                    <p className='text-gray-500'>Enter your company name. You can update company details later.</p>
+                    <p className='text-muted-foreground'>Enter your company name. You can update company details later.</p>
                 </div>
 
                 <Label>Company Name</Label>

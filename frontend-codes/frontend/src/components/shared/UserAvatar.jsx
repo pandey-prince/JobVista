@@ -6,7 +6,7 @@ export const getUserInitial = (name) =>
 const UserAvatar = ({
   name,
   className = "",
-  fallbackClassName = "bg-[#f3edff] font-bold text-[#6A38C2]",
+  fallbackClassName = "bg-brand-muted font-bold text-brand",
 }) => (
   <Avatar className={className}>
     <AvatarFallback className={fallbackClassName}>{getUserInitial(name)}</AvatarFallback>

@@ -3,7 +3,6 @@ import { JobSource } from "../models/jobSource.model.js";
 import { UserCompanyList } from "../models/userCompanyList.model.js";
 import {
   createOrGetJobSource,
-  listPublicJobSources,
 } from "../services/careerSource.service.js";
 import { parseCareerSourcesSpreadsheet } from "../utils/parseCareerSourcesSpreadsheet.js";
 import {
@@ -12,11 +11,36 @@ import {
 } from "../services/scrapers/index.js";
 import { mapScrapedJobForList } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
+import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
+import {
+  parsePagination,
+  buildPaginationMeta,
+} from "../utils/pagination.js";
 
 export const listPublicSources = async (req, res) => {
   try {
-    const sources = await listPublicJobSources();
-    res.status(200).json({ success: true, sources });
+    const search = String(req.query.search || req.query.keyword || "").trim();
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 20,
+      maxLimit: 50,
+    });
+
+    const query = { isPublic: true };
+    if (search) {
+      const regex = { $regex: search, $options: "i" };
+      query.$or = [{ companyName: regex }, { name: regex }];
+    }
+
+    const [total, sources] = await Promise.all([
+      JobSource.countDocuments(query),
+      JobSource.find(query).sort({ companyName: 1 }).skip(skip).limit(limit),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      sources,
+      pagination: buildPaginationMeta({ page, limit, total }),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -155,6 +179,10 @@ export const listUserCompanyLists = async (req, res) => {
   try {
     const userId = req.id;
     const listType = req.query.type || "watchlist";
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 10,
+      maxLimit: 50,
+    });
 
     const query = { user: userId };
     if (listType === "watchlist") {
@@ -163,9 +191,12 @@ export const listUserCompanyLists = async (req, res) => {
       query.listType = listType;
     }
 
+    const total = await UserCompanyList.countDocuments(query);
     const lists = await UserCompanyList.find(query)
       .populate("jobSource")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     const enriched = await Promise.all(
       lists.map(async (entry) => {
@@ -183,7 +214,11 @@ export const listUserCompanyLists = async (req, res) => {
       })
     );
 
-    res.status(200).json({ success: true, lists: enriched });
+    res.status(200).json({
+      success: true,
+      lists: enriched,
+      pagination: buildPaginationMeta({ page, limit, total }),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -351,10 +386,17 @@ export const getUserCompanyListJobs = async (req, res) => {
     const userId = req.id;
     const listType = req.query.type || "watchlist";
     const keyword = req.query.keyword || "";
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 8,
+      maxLimit: 24,
+    });
 
-    const lists = await UserCompanyList.find({ user: userId, listType }).populate(
-      "jobSource"
-    );
+    const listQuery =
+      listType === "watchlist"
+        ? { user: userId, listType: { $in: ["watchlist", "wishlist"] } }
+        : { user: userId, listType };
+
+    const lists = await UserCompanyList.find(listQuery).populate("jobSource");
 
     const sourceIds = lists
       .map((entry) => entry.jobSource?._id)
@@ -365,6 +407,7 @@ export const getUserCompanyListJobs = async (req, res) => {
         success: true,
         jobs: [],
         lists,
+        pagination: buildPaginationMeta({ page, limit, total: 0 }),
       });
     }
 
@@ -379,17 +422,20 @@ export const getUserCompanyListJobs = async (req, res) => {
       ];
     }
 
+    const total = await ScrapedJob.countDocuments(query);
     const scrapedJobs = await ScrapedJob.find(query)
       .populate("source")
       .sort({ firstSeenAt: -1 })
-      .limit(100);
+      .skip(skip)
+      .limit(limit);
 
-    const jobs = filterItJobs(scrapedJobs).map(mapScrapedJobForList);
+    const jobs = filterIndiaJobs(filterItJobs(scrapedJobs)).map(mapScrapedJobForList);
 
     res.status(200).json({
       success: true,
       jobs,
       lists,
+      pagination: buildPaginationMeta({ page, limit, total }),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -58,7 +58,7 @@ const Signup = () => {
       <div className="mx-auto flex max-w-7xl items-center justify-center px-4 sm:px-6">
         <form
           onSubmit={submitHandler}
-          className="my-10 w-full max-w-xl rounded-md border border-gray-200 p-4 sm:p-6"
+          className="my-10 w-full max-w-xl rounded-md border border-border p-4 sm:p-6"
         >
           <h1 className="mb-5 text-xl font-bold">Sign Up</h1>
           <div className="my-2">

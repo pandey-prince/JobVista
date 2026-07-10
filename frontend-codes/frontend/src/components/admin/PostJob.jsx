@@ -61,10 +61,10 @@ const PostJob = () => {
     return (
         <div>
             <div className='flex items-center justify-center w-screen my-5'>
-                <form onSubmit = {submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
+                <form onSubmit = {submitHandler} className='p-8 max-w-4xl border border-border shadow-lg rounded-md'>
                     <div className='mb-5'>
                         <h1 className='font-bold text-2xl'>Post Job</h1>
-                        <p className='text-sm text-gray-500'>Add clear role details so candidates can quickly decide if the job matches them.</p>
+                        <p className='text-sm text-muted-foreground'>Add clear role details so candidates can quickly decide if the job matches them.</p>
                     </div>
                     <div className='grid grid-cols-2 gap-2'>
                         <div>

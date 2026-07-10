@@ -26,13 +26,13 @@ const HowItWorks = () => {
   return (
     <section className="mx-auto my-20 max-w-7xl px-4 sm:px-6">
       <div className="text-center">
-        <span className="rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-[#6A38C2]">
+        <span className="rounded-full bg-brand-muted px-4 py-2 text-sm font-medium text-brand">
           How JobVista works
         </span>
         <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
-          Fresh IT jobs, <span className="text-[#6A38C2]">straight from the source</span>
+          Fresh IT jobs, <span className="text-brand">straight from the source</span>
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+        <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
           Not another generic job board. JobVista focuses on IT roles in India pulled directly from
           company career pages, recruiter posts, and trusted remote feeds.
         </p>
@@ -42,14 +42,14 @@ const HowItWorks = () => {
         {steps.map((step, index) => (
           <div
             key={step.title}
-            className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm"
+            className="rounded-xl border border-border bg-card p-6 shadow-sm"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f3edff] text-[#6A38C2]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-muted text-brand">
               <step.icon className="h-5 w-5" />
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#6A38C2]">Step {index + 1}</p>
+            <p className="mt-4 text-sm font-semibold text-brand">Step {index + 1}</p>
             <h3 className="mt-1 text-lg font-bold">{step.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-gray-600">{step.description}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
           </div>
         ))}
       </div>

@@ -47,7 +47,7 @@ const JobAlerts = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Job Alerts</h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-muted-foreground">
             Daily digest at 8 PM IST. Watchlist companies send instant alerts when they post new jobs.
           </p>
         </div>
@@ -56,7 +56,7 @@ const JobAlerts = () => {
             <Send className="mr-2 h-4 w-4" />
             Test email
           </Button>
-          <Button className="bg-[#6A38C2]" onClick={() => setShowForm((prev) => !prev)}>
+          <Button className="bg-brand" onClick={() => setShowForm((prev) => !prev)}>
             <Plus className="mr-2 h-4 w-4" />
             New alert
           </Button>
@@ -64,7 +64,7 @@ const JobAlerts = () => {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
+        <form onSubmit={handleCreate} className="mt-6 rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="text-lg font-semibold">Create alert</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
@@ -121,7 +121,7 @@ const JobAlerts = () => {
             </div>
           </div>
           <div className="mt-4 flex gap-2">
-            <Button type="submit" disabled={saving} className="bg-[#6A38C2]">
+            <Button type="submit" disabled={saving} className="bg-brand">
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save alert
             </Button>
@@ -133,21 +133,21 @@ const JobAlerts = () => {
       )}
 
       {loading ? (
-        <div className="mt-16 flex justify-center text-gray-500">
+        <div className="mt-16 flex justify-center text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : alerts.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center">
-          <Bell className="mx-auto h-10 w-10 text-[#6A38C2]" />
+        <div className="mt-10 rounded-xl border border-dashed border-border bg-card p-10 text-center">
+          <Bell className="mx-auto h-10 w-10 text-brand" />
           <h2 className="mt-4 text-xl font-semibold">No alerts yet</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             Create keyword alerts for roles you care about. You'll get a daily email at 8 PM IST when new jobs match.
           </p>
         </div>
       ) : (
         <div className="mt-8 space-y-4">
           {alerts.map((alert) => (
-            <div key={alert._id} className="rounded-xl border bg-white p-5 shadow-sm">
+            <div key={alert._id} className="rounded-xl border bg-card p-5 shadow-sm">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -157,7 +157,7 @@ const JobAlerts = () => {
                     </Badge>
                     <Badge variant="outline">Daily 8 PM IST</Badge>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
+                  <div className="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
                     {alert.keyword && <span>Keyword: {alert.keyword}</span>}
                     {alert.location && <span>· {alert.location}</span>}
                     {alert.experienceLevel && <span>· {alert.experienceLevel}</span>}

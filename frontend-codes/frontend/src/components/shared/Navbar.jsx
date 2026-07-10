@@ -74,7 +74,7 @@ const Navbar = () => {
           className="cursor-pointer"
         >
           <h1 className="text-xl font-bold sm:text-2xl">
-            Job<span className="text-[#F83002]">Vista</span>
+            Job<span className="text-accent-orange">Vista</span>
           </h1>
         </div>
 
@@ -93,7 +93,7 @@ const Navbar = () => {
                 <Button variant="outline">Login</Button>
               </Link>
               <Link to="/signup">
-                <Button className="bg-[#6A38C2] hover:bg-[#5b30a6]">
+                <Button variant="brand">
                   Signup
                 </Button>
               </Link>
@@ -119,7 +119,7 @@ const Navbar = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="my-2 flex flex-col text-gray-600">
+                  <div className="my-2 flex flex-col text-muted-foreground">
                     <div className="flex w-fit items-center gap-2 cursor-pointer">
                       <User2 />
                       <Button variant="link">
@@ -177,7 +177,7 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/signup" onClick={closeMobileMenu}>
-                  <Button className="w-full bg-[#6A38C2] hover:bg-[#5b30a6]">
+                  <Button variant="brand" className="w-full">
                     Signup
                   </Button>
                 </Link>

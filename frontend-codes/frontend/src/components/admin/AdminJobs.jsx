@@ -21,7 +21,7 @@ const AdminJobs = () => {
       <div className='max-w-6xl mx-auto my-10'>
         <div className='mb-6'>
           <h1 className='font-bold text-2xl'>Recruiter Dashboard</h1>
-          <p className='text-sm text-gray-500'>Post jobs, manage openings, and review applicants from one place.</p>
+          <p className='text-sm text-muted-foreground'>Post jobs, manage openings, and review applicants from one place.</p>
         </div>
         <div className='flex items-center justify-between my-5'>
           <Input

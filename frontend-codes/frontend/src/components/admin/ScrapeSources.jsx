@@ -218,10 +218,10 @@ const ScrapeSources = () => {
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <h1 className="font-bold text-2xl">Career Page Sources</h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               {sources.length} companies configured · {activeCount} active scrapers · {pendingCount} pending setup
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground/70 mt-1">
               IT jobs are synced automatically from companies with Greenhouse, Lever, or Ashby career pages.
             </p>
           </div>
@@ -235,9 +235,9 @@ const ScrapeSources = () => {
           </Button>
         </div>
 
-        <div className="bg-[#f7f4ff] border border-[#e4d8ff] rounded-lg p-6 mb-8">
+        <div className="mb-8 rounded-lg border border-brand/20 bg-brand-muted p-6">
           <h2 className="font-semibold text-lg">Bulk import from Excel / CSV</h2>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-muted-foreground mt-2">
             Upload a spreadsheet with columns: <strong>companyName</strong>, <strong>careerUrl</strong> (optional: name, scraperType).
             Imported companies are public for all users.
           </p>
@@ -262,7 +262,7 @@ const ScrapeSources = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white border border-gray-200 rounded-lg p-6 mb-8 space-y-4"
+          className="bg-card border border-border rounded-lg p-6 mb-8 space-y-4"
         >
           <h2 className="font-semibold text-lg">Add career page</h2>
           <div className="grid md:grid-cols-2 gap-4">
@@ -372,7 +372,7 @@ const ScrapeSources = () => {
         </form>
 
         {loading ? (
-          <div className="flex items-center justify-center text-gray-500 py-10">
+          <div className="flex items-center justify-center text-muted-foreground py-10">
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
             Loading sources
           </div>
@@ -395,7 +395,7 @@ const ScrapeSources = () => {
                   <TableCell>
                     <div>
                       <p className="font-medium">{source.name}</p>
-                      <p className="text-xs text-gray-500 truncate max-w-xs">
+                      <p className="text-xs text-muted-foreground truncate max-w-xs">
                         {source.url}
                       </p>
                     </div>
@@ -408,7 +408,7 @@ const ScrapeSources = () => {
                       className={
                         source.isActive
                           ? "text-green-700"
-                          : "text-gray-600"
+                          : "text-muted-foreground"
                       }
                       variant="ghost"
                     >
@@ -420,7 +420,7 @@ const ScrapeSources = () => {
                           ? "text-green-700"
                           : source.lastScrapeStatus === "error"
                             ? "text-red-700"
-                            : "text-gray-600"
+                            : "text-muted-foreground"
                       }
                       variant="ghost"
                     >
