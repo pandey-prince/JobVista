@@ -17,6 +17,7 @@ import Applicants from './components/admin/Applicants'
 import ScrapeSources from './components/admin/ScrapeSources'
 import CompanyLists from './components/CompanyLists'
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import AuthRoute from './components/shared/AuthRoute'
 import JobMateChatbot from './components/JobMateChatbot'
 
 
@@ -47,17 +48,17 @@ const appRouter = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <Profile />
+    element: <AuthRoute><Profile /></AuthRoute>
   },
   {
     path: "/profile/setup",
-    element: <ProfileSetup />
+    element: <AuthRoute roles={["student"]}><ProfileSetup /></AuthRoute>
   },
   {
     path: "/my-companies",
-    element: <CompanyLists />
+    element: <AuthRoute><CompanyLists /></AuthRoute>
   },
-  // admin ke liye yha se start hoga
+  // recruiter dashboard
   {
     path:"/admin/companies",
     element: <ProtectedRoute><Companies/></ProtectedRoute>

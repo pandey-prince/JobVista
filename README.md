@@ -1,124 +1,129 @@
 # JobVista
 
-A modern job portal platform connecting job seekers with employers, featuring job listings, applications, and user management.
+A job portal for IT roles in India — internal recruiter postings, scraped company career pages (100 sources), and live Remotive/Arbeitnow feeds.
 
-## Live Demo
+## Live
 
-[https://job-vista-eta.vercel.app](https://job-vista-eta.vercel.app)
+| Service | URL |
+|---------|-----|
+| Frontend | https://job-vista-eta.vercel.app |
+| Backend API | https://jobvista-ahek.onrender.com |
 
-## Tech Stack
+## Tech stack
 
-**Frontend:**
-- React.js
-- JavaScript
-- Responsive Design
-- Modern UI Components
-
-**Backend:**
-- Node.js/Express
-- RESTful API Architecture
-- Database Integration
+- **Frontend:** React (Vite), Redux, Tailwind, shadcn/ui
+- **Backend:** Node.js 20, Express 5, MongoDB (Mongoose)
+- **Deploy:** Vercel (frontend), Render (backend), MongoDB Atlas
 
 ## Features
 
-- **Job Listings**: Browse and search through available job opportunities
-- **JobMate AI Assistant**: A Gemini-powered career assistant for guidance and job Q&A
-- **External Job Aggregation**: Pulls live remote IT roles from external sources (Remotive, Arbeitnow) alongside recruiter-posted jobs
-- **User Authentication**: Secure JWT login with student and recruiter roles
-- **Application Management**: Apply to jobs and track application status
-- **Employer Dashboard**: Post and manage job listings
-- **Advanced Search**: Filter jobs by location, category, salary, and more
-- **Responsive Design**: Seamless experience across all devices
+- Student & recruiter auth (JWT cookies)
+- Merged job feed: internal + scraped + Remotive + Arbeitnow
+- **JobMate AI Assistant:** Gemini-powered career assistant (optional `GEMINI_API_KEY`)
+- 100 Indian company career sources (Greenhouse, Lever, Workday, TCS, etc.)
+- Watchlist / wishlist / submit career URLs
+- Recruiter dashboard: companies, jobs, applicants, scrape admin
+- First-letter profile avatars (no photo upload required)
+- Docker Compose for local full stack
 
-## Project Structure
+## Project structure
 
 ```
 JobVista/
-├── backend/              # Backend API server
-│   ├── controllers/      # Request handlers
-│   ├── models/          # Database models
-│   ├── routes/          # API routes
-│   └── middleware/      # Authentication & validation
-└── frontend-codes/      # React frontend application
-    ├── src/
-    │   ├── components/  # Reusable UI components
-    │   ├── pages/       # Application pages
-    │   ├── services/    # API integration
-    │   └── utils/       # Helper functions
+├── backend/                 # Express API
+├── frontend-codes/frontend/ # React app (Vercel root)
+├── docker-compose.yml
+└── render.yaml              # Render backend blueprint
 ```
 
-## Getting Started
+## Local development
 
-### Prerequisites
+### 1. Backend
 
-- Node.js (v16 or higher)
-- npm or yarn
-- MongoDB or preferred database
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/pandey-prince/JobVista.git
-cd JobVista
-```
-
-2. Install backend dependencies:
 ```bash
 cd backend
 npm install
 ```
 
-3. Install frontend dependencies:
-```bash
-cd ../frontend-codes
-npm install
+Create `backend/.env`:
+
+```env
+MONGO_URI=mongodb://127.0.0.1:27017/jobvista
+SECRET_KEY=your-local-secret
+FRONTEND_URL=http://localhost:5173
+SCRAPE_ENABLED=true
+SCRAPE_ON_BOOT=false
 ```
 
-4. Configure environment variables:
-   - Create `.env` file in the backend directory
-   - Add database connection string, JWT secret, and other configurations
+Optional company logo uploads (otherwise files save to `backend/uploads/`):
 
-5. (Optional) Seed demo data so the job board is populated with sample IT openings:
+```env
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+API_BASE_URL=http://localhost:8000
+```
+
+Optional — seed demo jobs so the board is never empty:
+
 ```bash
-cd backend
 npm run seed
 ```
-This creates a demo recruiter, a few companies, and ~15 realistic IT jobs. It reads `MONGO_URI` from your environment/`.env` and is safe to run multiple times (it only replaces its own demo jobs).
 
-6. Start the development servers:
+Creates a demo recruiter, companies, and ~15 IT jobs. Idempotent (only replaces its own demo data).
 
-Backend:
+```bash
+npm run dev
+```
+
+### 2. Frontend
+
+```bash
+cd frontend-codes/frontend
+npm install
+npm run dev
+```
+
+API URLs default to `http://localhost:8000/api/v1` in dev. Override with `VITE_*` vars — see `vercel.env.example`.
+
+### 3. Docker
+
+```bash
+docker compose up --build
+```
+
+Frontend: http://localhost:3000 · Backend: http://localhost:8000
+
+## API routes (`/api/v1`)
+
+| Prefix | Purpose |
+|--------|---------|
+| `/user` | Register, login, logout, profile |
+| `/job` | List/create jobs |
+| `/application` | Apply, applicants, status |
+| `/company` | Recruiter companies |
+| `/scraped-jobs` | Scraped jobs + admin sources |
+| `/career-sources` | Public directory, watchlist, Excel import |
+| `/chatbot` | JobMate messages |
+
+## Scraping on Render
+
+Render free tier sets `SKIP_PUPPETEER_SCRAPERS=true` — **~45 API-based sources** sync; **55 auto-puppeteer sources** are skipped. Use recruiter **Sync All** for API scrapers, or run a local sync against Atlas for Puppeteer companies.
+
+## Tests
+
 ```bash
 cd backend
-npm run dev
+npm test                                    # API suite (server running)
+npm run test:integration                    # MongoDB + scrapers (slow)
+TEST_API_BASE=http://localhost:8000 node scripts/e2e-test.js
 ```
-
-Frontend:
-```bash
-cd frontend-codes
-npm run dev
-```
-
-The application will be available at `http://localhost:3000`.
-
-## API Endpoints
-
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/jobs` - Get all jobs
-- `POST /api/jobs` - Create new job (employers only)
-- `POST /api/applications` - Apply for a job
-- `GET /api/applications/user` - Get user applications
 
 ## Deployment
 
-Deployed on Vercel with continuous deployment from the main branch.
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
+- **Render:** Connect repo, root `backend`, set `MONGO_URI`, `SECRET_KEY`, `FRONTEND_URL`
+- **Vercel:** Root `frontend-codes/frontend`, env vars from `vercel.env.example`
 
 ## License
 
-This project is licensed under the MIT License.
+MIT

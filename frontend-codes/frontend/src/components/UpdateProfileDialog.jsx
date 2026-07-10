@@ -22,11 +22,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
         setInput({ ...input, [e.target.name]: e.target.value });
     }
 
-    const fileChangeHandler = (e) => {
-        const file = e.target.files?.[0];
-        setInput({ ...input, file })
-    }
-
     const submitHandler = async (e) => {
         e.preventDefault();
         const formData = buildProfileFormData(input);
@@ -136,17 +131,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
                             <div className={fieldRowClassName}>
                                 <Label htmlFor="projects" className={labelClassName}>Projects</Label>
                                 <textarea id="projects" name="projects" value={input.projects} onChange={changeEventHandler} className={textareaClassName} placeholder="Project | Link | Description" />
-                            </div>
-                            <div className={fieldRowClassName}>
-                                <Label htmlFor="file" className={labelClassName}>Resume</Label>
-                                <Input
-                                    id="file"
-                                    name="file"
-                                    type="file"
-                                    accept="application/pdf"
-                                    onChange={fileChangeHandler}
-                                    className={inputClassName}
-                                />
                             </div>
                         </div>
                         <DialogFooter>

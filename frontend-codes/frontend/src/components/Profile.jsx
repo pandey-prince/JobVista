@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Navbar from './shared/Navbar'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import UserAvatar from './shared/UserAvatar'
 import { Button } from './ui/button'
 import { Briefcase, Contact, GraduationCap, Link as LinkIcon, Mail, MapPin, Pen } from 'lucide-react'
 import { Badge } from './ui/badge'
@@ -14,7 +14,6 @@ const Profile = () => {
     useGetAppliedJobs();
     const [open, setOpen] = useState(false);
     const {user} = useSelector(store=>store.auth);
-    const profileInitial = user?.fullname?.charAt(0)?.toUpperCase() || "U";
 
     return (
         <div>
@@ -22,12 +21,11 @@ const Profile = () => {
             <div className='mx-auto my-5 max-w-4xl rounded-2xl border border-gray-200 bg-white p-5 sm:p-8'>
                 <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
                     <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center'>
-                        <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
-                            <AvatarImage src={user?.profile?.profilePhoto} alt={user?.fullname || "profile"} />
-                            <AvatarFallback className="bg-[#f3edff] font-bold text-[#6A38C2]">
-                                {profileInitial}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                            name={user?.fullname}
+                            className="h-20 w-20 sm:h-24 sm:w-24"
+                            fallbackClassName="bg-[#f3edff] text-2xl font-bold text-[#6A38C2] sm:text-3xl"
+                        />
                         <div className='min-w-0'>
                             <h1 className='text-xl font-medium'>{user?.fullname}</h1>
                             <p className='break-words text-sm text-gray-600 sm:text-base'>{user?.profile?.bio}</p>

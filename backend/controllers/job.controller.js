@@ -165,6 +165,36 @@ const fetchExternalJobs = async (keyword = "") => {
 const sortJobsByDate = (jobs = []) =>
   [...jobs].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
+const fetchExternalJobById = async (jobId) => {
+  if (jobId.startsWith("remotive-")) {
+    const remoteId = jobId.replace("remotive-", "");
+    try {
+      const response = await fetch("https://remotive.com/api/remote-jobs");
+      if (!response.ok) return null;
+      const data = await response.json();
+      const job = (data.jobs || []).find((item) => String(item.id) === remoteId);
+      return job ? mapRemotiveJob(job) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (jobId.startsWith("arbeitnow-")) {
+    const slug = jobId.replace("arbeitnow-", "");
+    try {
+      const response = await fetch("https://arbeitnow.com/api/job-board-api");
+      if (!response.ok) return null;
+      const data = await response.json();
+      const job = (data.data || []).find((item) => item.slug === slug);
+      return job ? mapArbeitnowJob(job) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+};
+
 export const postJob = async (req, res) => {
   try {
     const {
@@ -192,7 +222,7 @@ export const postJob = async (req, res) => {
       !companyId ||
       !experience
     ) {
-      res.status(400).json({
+      return res.status(400).json({
         message: "Something is missing",
         success: false,
       });
@@ -211,13 +241,17 @@ export const postJob = async (req, res) => {
       created_by: userId,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "New job created Successfully",
       success: true,
       job,
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({
+      message: "Unable to create job",
+      success: false,
+    });
   }
 };
 
@@ -260,10 +294,19 @@ export const getAllJobs = async (req, res) => {
 export const getJobById = async (req, res) => {
   try {
     const jobId = req.params.id;
+
     if (jobId.startsWith("remotive-") || jobId.startsWith("arbeitnow-")) {
-      return res.status(404).json({
-        message: "External jobs open on the source website",
-        success: false,
+      const externalJob = await fetchExternalJobById(jobId);
+      if (!externalJob) {
+        return res.status(404).json({
+          message: "External job not found",
+          success: false,
+        });
+      }
+
+      return res.status(200).json({
+        job: externalJob,
+        success: true,
       });
     }
 
@@ -274,12 +317,16 @@ export const getJobById = async (req, res) => {
         success: false,
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       job,
       success: true,
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({
+      message: "Unable to fetch job",
+      success: false,
+    });
   }
 };
 
@@ -287,17 +334,15 @@ export const getAdminJobs = async (req, res) => {
   try {
     const adminId = req.id;
     const jobs = await Job.find({ created_by: adminId }).populate("company").sort({ createdAt: -1 });
-    if (!jobs) {
-      res.status(404).json({
-        message: "Job not found",
-        success: false,
-      });
-    }
-    res.status(200).json({
-      jobs,
+    return res.status(200).json({
+      jobs: jobs || [],
       success: true,
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({
+      message: "Unable to fetch recruiter jobs",
+      success: false,
+    });
   }
 };
