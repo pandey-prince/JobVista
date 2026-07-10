@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { BriefcaseBusiness, Building2, Bot, Search, Wifi } from 'lucide-react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 import { useNavigate } from 'react-router-dom';
 import useGetPublicStats from '@/hooks/useGetPublicStats';
@@ -14,6 +14,7 @@ const formatCount = (value) => {
 
 const HeroSection = () => {
     const [query, setQuery] = useState("");
+    const { user, loading: authLoading } = useSelector((store) => store.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { stats, loading } = useGetPublicStats();
@@ -58,9 +59,24 @@ const HeroSection = () => {
                     <Button onClick={browseFreshJobs} variant="outline" className="rounded-full">
                         Browse fresh IT jobs
                     </Button>
-                    <Button onClick={() => navigate("/signup")} className="rounded-full bg-brand hover:bg-brand/90">
-                        Create free account
-                    </Button>
+                    {authLoading ? null : !user ? (
+                        <Button onClick={() => navigate("/signup")} className="rounded-full bg-brand hover:bg-brand/90">
+                            Create free account
+                        </Button>
+                    ) : user.role === "recruiter" ? (
+                        <Button onClick={() => navigate("/admin/jobs")} className="rounded-full bg-brand hover:bg-brand/90">
+                            Manage job posts
+                        </Button>
+                    ) : (
+                        <>
+                            <Button onClick={() => navigate("/saved-jobs")} variant="outline" className="rounded-full">
+                                View saved jobs
+                            </Button>
+                            <Button onClick={() => navigate("/alerts")} className="rounded-full bg-brand hover:bg-brand/90">
+                                Set job alerts
+                            </Button>
+                        </>
+                    )}
                 </div>
                 <div className='mx-auto mt-2 grid max-w-4xl grid-cols-2 gap-3 text-left md:grid-cols-4'>
                     <div className='rounded-xl border border-border bg-card p-4 shadow-sm'>

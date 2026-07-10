@@ -26,7 +26,7 @@ const Job = ({job}) => {
     return (
         <>
         <div
-            className='flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer'
+            className='group flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:border-brand/35 hover:shadow-lg hover:shadow-brand/10'
             onClick={() => setQuickViewOpen(true)}
         >
             <div className='flex items-center justify-between gap-3'>
@@ -51,7 +51,7 @@ const Job = ({job}) => {
             </div>
 
             <div className='mt-4'>
-                <h3 className='font-bold text-lg leading-snug'>{job?.title}</h3>
+                <h3 className='font-bold text-lg leading-snug transition-colors group-hover:text-brand'>{job?.title}</h3>
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>

@@ -15,7 +15,7 @@ const LatestJobCards = ({job}) => {
         <>
         <div
             onClick={() => setQuickViewOpen(true)}
-            className='cursor-pointer rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md'
+            className='group cursor-pointer rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand/35 hover:shadow-lg hover:shadow-brand/10'
         >
             <div className='flex items-center justify-between gap-2'>
                 <p className='text-xs font-medium text-muted-foreground'>{badges.freshnessLabel}</p>
@@ -28,7 +28,7 @@ const LatestJobCards = ({job}) => {
                 </div>
             </div>
             <div className='mt-4'>
-                <h3 className='font-bold text-lg leading-snug'>{job?.title}</h3>
+                <h3 className='font-bold text-lg leading-snug transition-colors group-hover:text-brand'>{job?.title}</h3>
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>
