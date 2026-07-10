@@ -129,9 +129,9 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="overflow-hidden bg-black pb-0">
+      <div className="overflow-hidden bg-background pb-0">
         <p
-          className="pointer-events-none m-0 select-none whitespace-nowrap pb-0 text-center font-black uppercase leading-[0.72] tracking-[-0.05em] text-[clamp(4.5rem,15vw,13.5rem)] text-transparent bg-gradient-to-b from-neutral-600 via-neutral-800 to-black bg-clip-text"
+          className="pointer-events-none m-0 select-none whitespace-nowrap pb-0 text-center font-black uppercase leading-[0.72] tracking-[-0.05em] text-[clamp(4.5rem,15vw,13.5rem)] text-transparent bg-gradient-to-b from-foreground/25 via-foreground/15 to-foreground/5 bg-clip-text"
           aria-hidden="true"
         >
           JOBVISTA
