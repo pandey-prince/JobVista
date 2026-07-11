@@ -3,7 +3,6 @@ import UserAvatar from './shared/UserAvatar'
 import { Button } from './ui/button'
 import { Briefcase, Contact, GraduationCap, Link as LinkIcon, Mail, MapPin, Pen } from 'lucide-react'
 import { Badge } from './ui/badge'
-import { Label } from './ui/label'
 import ApplicationTracker from './ApplicationTracker'
 import UpdateProfileDialog from './UpdateProfileDialog'
 import { useSelector } from 'react-redux'
@@ -114,9 +113,9 @@ const Profile = () => {
                     )) : <span>NA</span>}
                 </div>
                 <div className='grid w-full max-w-sm items-center gap-1.5'>
-                    <Label className="text-md font-bold">Resume</Label>
+                    <h2 className="text-md font-bold">Resume</h2>
                     {
-                        user?.profile?.resume ? <a target='blank' href={user?.profile?.resume} className='w-full cursor-pointer break-all text-blue-500 hover:underline'>{user?.profile?.resumeOriginalName || "View Resume"}</a> : <span>NA</span>
+                        user?.profile?.resume ? <a target='blank' rel="noopener noreferrer" href={user?.profile?.resume} className='w-full cursor-pointer break-all text-blue-500 hover:underline'>{user?.profile?.resumeOriginalName || "View Resume"}</a> : <span className="text-muted-foreground">NA</span>
                     }
                 </div>
             </div>

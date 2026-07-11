@@ -135,12 +135,25 @@ const run = async () => {
     publicStats.ok &&
     statsData.success &&
     typeof statsData.stats?.sourcesSyncedSuccessfully === "number" &&
-    typeof statsData.stats?.companiesWithJobs === "number"
+    typeof statsData.stats?.companiesWithJobs === "number" &&
+    ("lastSyncAt" in (statsData.stats || {}))
       ? pass(
           "GET /stats/public sync fields",
           `${statsData.stats.sourcesSyncedSuccessfully} synced, ${statsData.stats.companiesWithJobs} with jobs`,
         )
       : fail("GET /stats/public sync fields");
+
+    publicStats.ok &&
+    statsData.success &&
+    (statsData.stats?.lastSyncAt === null || typeof statsData.stats?.lastSyncAt === "string")
+      ? pass("GET /stats/public lastSyncAt", statsData.stats.lastSyncAt || "none yet")
+      : fail("GET /stats/public lastSyncAt");
+
+    const jobsNewest = await fetch(`${API_BASE}/api/v1/job/get?sortBy=newest&limit=5`);
+    const jobsNewestData = await jobsNewest.json();
+    jobsNewest.ok && jobsNewestData.success && Array.isArray(jobsNewestData.jobs)
+      ? pass("GET /job/get sortBy=newest", `${jobsNewestData.jobs.length} jobs`)
+      : fail("GET /job/get sortBy=newest");
 
     const jobsSorted = await fetch(`${API_BASE}/api/v1/job/get?sortBy=company&limit=5`);
     const jobsSortedData = await jobsSorted.json();

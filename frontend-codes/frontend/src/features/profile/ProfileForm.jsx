@@ -29,8 +29,9 @@ const textareaClassName =
 const FieldError = ({ message }) =>
   message ? <p className="mt-1 text-sm text-destructive">{message}</p> : null;
 
-const ChipInput = ({ label, hint, values, onChange, error, placeholder }) => {
+const ChipInput = ({ id, label, hint, values, onChange, error, placeholder }) => {
   const [draft, setDraft] = useState("");
+  const inputId = id || `chip-input-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
   const addValue = () => {
     const next = draft.trim();
@@ -49,11 +50,12 @@ const ChipInput = ({ label, hint, values, onChange, error, placeholder }) => {
   return (
     <div className="space-y-2">
       <div>
-        <Label>{label}</Label>
+        <Label htmlFor={inputId}>{label}</Label>
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </div>
       <div className="flex gap-2">
         <Input
+          id={inputId}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -91,7 +93,7 @@ const ChipInput = ({ label, hint, values, onChange, error, placeholder }) => {
 };
 
 const WorkItemCard = ({ title, item, index, prefix, onChange, onRemove, errors }) => (
-  <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+  <div className="space-y-3 rounded-lg border border-border bg-card p-4">
     <div className="flex items-center justify-between gap-2">
       <p className="text-sm font-medium">{title}</p>
       <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
@@ -143,7 +145,7 @@ const WorkItemCard = ({ title, item, index, prefix, onChange, onRemove, errors }
 );
 
 const ProjectItemCard = ({ item, index, onChange, onRemove, errors }) => (
-  <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+  <div className="space-y-3 rounded-lg border border-border bg-card p-4">
     <div className="flex items-center justify-between gap-2">
       <p className="text-sm font-medium">Project {index + 1}</p>
       <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
@@ -408,6 +410,7 @@ const ProfileForm = ({
           <div className="space-y-6">
             <p className="text-sm text-muted-foreground">{currentStep.hint}</p>
             <ChipInput
+              id="profile-skills"
               label="Skills"
               hint="Press Enter or + to add each skill"
               values={input.skills}
@@ -416,6 +419,7 @@ const ProfileForm = ({
               placeholder="React, Node.js, MongoDB"
             />
             <ChipInput
+              id="profile-preferred-roles"
               label="Preferred job roles"
               values={input.preferredJobRoles}
               onChange={(preferredJobRoles) => updateField("preferredJobRoles", preferredJobRoles)}
@@ -423,9 +427,9 @@ const ProfileForm = ({
               placeholder="Frontend Developer, SDE Intern"
             />
             <div>
-              <Label>Experience level</Label>
+              <Label htmlFor="experienceLevel">Experience level</Label>
               <Select value={input.experienceLevel} onValueChange={(value) => updateField("experienceLevel", value)}>
-                <SelectTrigger>
+                <SelectTrigger id="experienceLevel">
                   <SelectValue placeholder="Select your experience level" />
                 </SelectTrigger>
                 <SelectContent>

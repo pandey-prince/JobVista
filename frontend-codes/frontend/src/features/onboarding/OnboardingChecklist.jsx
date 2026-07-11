@@ -29,7 +29,7 @@ const OnboardingChecklist = ({
     return (
       <div
         className={cn(
-          "border-b border-brand/20 bg-brand/5 px-4 py-3 sm:px-6",
+          "border-b border-border bg-card px-4 py-3 sm:px-6",
           className,
         )}
       >
@@ -112,7 +112,7 @@ const OnboardingChecklist = ({
                 "flex items-start gap-3 rounded-xl border p-4",
                 step.complete
                   ? "border-emerald-500/30 bg-emerald-500/5"
-                  : "border-border bg-background",
+                  : "border-border bg-card",
               )}
             >
               <div className="mt-0.5 shrink-0">
