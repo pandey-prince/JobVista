@@ -1,4 +1,5 @@
 import { KNOWN_CAREER_BOARDS } from "../data/knownCareerBoards.js";
+import { mergePuppeteerSelectors } from "../data/puppeteerSelectors.js";
 import { slugsFromCompanyName } from "./probeCareerSource.js";
 
 const UA =
@@ -167,13 +168,19 @@ export const resolveCareerBoard = async (company) => {
 
   const known = KNOWN_CAREER_BOARDS[company.companyName];
   if (known) {
-    return {
-      name: company.name,
-      companyName: company.companyName,
+    const merged = mergePuppeteerSelectors(company.companyName, {
       url: known.url,
       scraperType: known.scraperType,
       selectors: known.selectors || {},
-      isActive: true,
+      isActive: known.isActive !== false,
+    });
+    return {
+      name: company.name,
+      companyName: company.companyName,
+      url: merged.url,
+      scraperType: merged.scraperType || known.scraperType,
+      selectors: merged.selectors || {},
+      isActive: known.isActive === false ? false : merged.isActive !== false,
     };
   }
 
@@ -225,12 +232,18 @@ export const resolveCareerBoard = async (company) => {
   }
 
   if (page.html) {
-    return {
-      name: company.name,
-      companyName: company.companyName,
+    const puppeteerMerged = mergePuppeteerSelectors(company.companyName, {
       url: page.finalUrl || careersUrl,
       scraperType: "auto-puppeteer",
       selectors: {},
+      isActive: true,
+    });
+    return {
+      name: company.name,
+      companyName: company.companyName,
+      url: puppeteerMerged.url,
+      scraperType: "auto-puppeteer",
+      selectors: puppeteerMerged.selectors || {},
       isActive: true,
     };
   }

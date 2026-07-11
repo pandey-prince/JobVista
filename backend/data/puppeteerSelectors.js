@@ -1,0 +1,276 @@
+/**
+ * Per-company Puppeteer scrape configs for auto-puppeteer sources.
+ * Merged into JobSource.selectors on reprobe / seed resolve.
+ */
+export const PUPPETEER_SELECTOR_OVERRIDES = {
+  AMD: {
+    url: "https://careers.amd.com/careers-home/jobs",
+    selectors: {
+      jobList: "a.job-title-link",
+      title: "",
+      location: ".job-location, .location",
+      link: "",
+      waitMs: 8000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "/careers-home/jobs/",
+      minTitleLength: 8,
+    },
+  },
+  Amazon: {
+    url: "https://www.amazon.jobs/en/search?loc_query=India&country=IND",
+    selectors: {
+      jobList: "a.job-link",
+      title: "",
+      location: ".location-and-id, .location",
+      link: "",
+      waitMs: 8000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "/en/jobs/",
+      minTitleLength: 10,
+    },
+  },
+  GitHub: {
+    url: "https://www.github.careers/careers-home/jobs",
+    selectors: {
+      jobList: "a.job-title-link, a[href*='/jobs/'][class*='job']",
+      title: "",
+      location: ".job-location, .location",
+      link: "",
+      waitMs: 8000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "/careers-home/jobs/",
+      minTitleLength: 8,
+    },
+  },
+  "Dell Technologies": {
+    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    selectors: {
+      jobList: ".job-tile",
+      title: ".job-list-item__content span",
+      location: ".job-list-item__content span:nth-of-type(2)",
+      link: "a.job-list-item__link, a[href*='/job/']",
+      waitMs: 15000,
+      waitUntil: "domcontentloaded",
+      scroll: true,
+      hrefPattern: "/job/",
+      minTitleLength: 5,
+    },
+  },
+  Hexaware: {
+    url: "https://jobs.hexaware.com/#en/sites/CX_1/jobs",
+    selectors: {
+      jobList: ".job-tile",
+      title: ".job-list-item__content span",
+      location: ".job-list-item__content span:nth-of-type(2)",
+      link: "a.job-list-item__link, a[href*='job/']",
+      waitMs: 20000,
+      waitUntil: "networkidle2",
+      scroll: true,
+      hrefPattern: "job/",
+      minTitleLength: 5,
+      timeoutMs: 120000,
+    },
+  },
+  IBM: {
+    url: "https://www.ibm.com/careers/search?field_keyword_05[0]=India",
+    selectors: {
+      jobList: "a[href*='JobDetail?jobId='], a[href*='careers.ibm.com/en_US/careers/JobDetail']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 15000,
+      waitUntil: "networkidle2",
+      hrefPattern: "JobDetail",
+      minTitleLength: 12,
+      scroll: true,
+      timeoutMs: 90000,
+    },
+  },
+  Shopify: {
+    url: "https://www.shopify.com/careers/search?locations%5B%5D=India",
+    selectors: {
+      jobList: "a[href*='/careers/'][href*='-'], .careers-job-card a, article a[href*='/careers/']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 10000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "/careers/",
+      minTitleLength: 12,
+      scroll: true,
+    },
+  },
+  Splunk: {
+    url: "https://careers.cisco.com/global/en/search-results",
+    selectors: {
+      jobList: "[data-automation-id='jobTitle'], .job-listing__title, a[href*='/job/']",
+      title: "",
+      location: "[data-automation-id='locations'], .job-location",
+      link: "a[href*='/job/']",
+      waitMs: 12000,
+      waitUntil: "domcontentloaded",
+      scroll: true,
+      hrefPattern: "/job/",
+      minTitleLength: 8,
+    },
+  },
+  HashiCorp: {
+    url: "https://www.ibm.com/careers/search?keyword=HashiCorp&field_keyword_05[0]=India",
+    selectors: {
+      jobList: "a[href*='JobDetail?jobId='], a[href*='careers.ibm.com/en_US/careers/JobDetail']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 15000,
+      waitUntil: "networkidle2",
+      hrefPattern: "JobDetail",
+      minTitleLength: 12,
+      scroll: true,
+      timeoutMs: 90000,
+    },
+  },
+  Zoho: {
+    url: "https://www.zoho.com/careers/",
+    selectors: {
+      jobList: "a[href*='job-openings'], a[href*='/careers/'][href*='job'], table tr a",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 8000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "job",
+      minTitleLength: 8,
+      scroll: true,
+    },
+  },
+  Chargebee: {
+    url: "https://jobs.chargebee.com/",
+    selectors: {
+      jobList: "a[href*='/job/'], .job-title a, tr a[href*='job'], .opening a",
+      title: "",
+      location: ".location, .job-location",
+      link: "",
+      waitMs: 12000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "/job",
+      minTitleLength: 8,
+      scroll: true,
+    },
+  },
+  Lenskart: {
+    url: "https://careers.lenskart.com",
+    selectors: {
+      jobList: "a[href*='job'], .job-card a, .opening a, table a, [class*='position'] a",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 12000,
+      waitUntil: "domcontentloaded",
+      timeoutMs: 90000,
+      scroll: true,
+      hrefPattern: "job",
+      minTitleLength: 8,
+    },
+  },
+  Nykaa: {
+    url: "https://careers.nykaa.com/",
+    selectors: {
+      jobList: "a[href^='/'][href*='-']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 20000,
+      waitUntil: "domcontentloaded",
+      timeoutMs: 90000,
+      scroll: true,
+      hrefPattern: "",
+      minTitleLength: 10,
+    },
+  },
+  "Bajaj Finserv": {
+    url: "https://www.bajajfinserv.in/careers",
+    selectors: {
+      jobList: "a[href*='career'], a[href*='job'], .job-card a, table a",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 10000,
+      waitUntil: "domcontentloaded",
+      scroll: true,
+      hrefPattern: "job",
+      minTitleLength: 8,
+    },
+  },
+  "Tata Digital": {
+    url: "https://www.tataneu.com/careers",
+    selectors: {
+      jobList: "a[href*='job'], a[href*='career'], .job-listing a",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 10000,
+      waitUntil: "domcontentloaded",
+      scroll: true,
+      hrefPattern: "job",
+      minTitleLength: 8,
+    },
+  },
+  Ola: {
+    url: "https://www.olacabs.com/careers",
+    selectors: {
+      jobList: "a[href*='job'], a[href*='career'], a[href*='lever'], a[href*='greenhouse']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 8000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "job",
+      minTitleLength: 8,
+    },
+  },
+  "Kotak Mahindra Bank": {
+    url: "https://www.kotak.bank.in/en/about-us/careers.html",
+    selectors: {
+      jobList: "a[href*='job'], a[href*='career'], a[href*='icims'], a[href*='workday']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 8000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "job",
+      minTitleLength: 8,
+    },
+  },
+  Udaan: {
+    url: "https://careers.udaan.com/",
+    selectors: {
+      jobList: "a[href*='job'], li.opening a, .posting a, [class*='job'] a",
+      title: "",
+      location: ".location, .sort-by-location",
+      link: "",
+      waitMs: 12000,
+      waitUntil: "domcontentloaded",
+      timeoutMs: 90000,
+      scroll: true,
+      hrefPattern: "job",
+      minTitleLength: 8,
+    },
+  },
+};
+
+export const getPuppeteerOverride = (companyName) =>
+  PUPPETEER_SELECTOR_OVERRIDES[companyName] || null;
+
+export const mergePuppeteerSelectors = (companyName, base = {}) => {
+  const override = getPuppeteerOverride(companyName);
+  if (!override) return base;
+
+  return {
+    ...base,
+    url: override.url || base.url,
+    selectors: {
+      ...(base.selectors || {}),
+      ...(override.selectors || {}),
+    },
+  };
+};
