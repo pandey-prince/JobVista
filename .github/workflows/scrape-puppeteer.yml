@@ -11,9 +11,39 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  puppeteer-sync:
+  reprobe:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Re-probe auto-puppeteer sources
+        working-directory: backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: node scripts/reprobe-sources.js
+        continue-on-error: true
+
+  puppeteer-sync:
+    needs: reprobe
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
 
     steps:
       - name: Checkout
@@ -22,7 +52,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -34,14 +64,7 @@ jobs:
         working-directory: backend
         run: npx puppeteer browsers install chrome
 
-      - name: Re-probe auto-puppeteer sources
-        working-directory: backend
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: node scripts/reprobe-sources.js
-        continue-on-error: true
-
-      - name: Sync Puppeteer career sources
+      - name: Sync Puppeteer career sources (shard ${{ matrix.shard }})
         working-directory: backend
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
@@ -49,10 +72,32 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
           PUPPETEER_FAIL_ON_PARTIAL: "false"
           PUPPETEER_MIN_SUCCESS: "1"
+          PUPPETEER_SHARD: ${{ matrix.shard }}
+          PUPPETEER_SHARD_COUNT: "3"
         run: node scripts/sync-puppeteer.js
 
+  health-report:
+    needs: puppeteer-sync
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
       - name: Source health report
-        if: always()
         working-directory: backend
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
