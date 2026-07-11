@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { jobsApi } from "@/api";
 import { filtersToQueryParams } from "@/utils/jobFilters";
 
@@ -13,8 +13,13 @@ const usePaginatedJobs = ({
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const filterKey = useMemo(() => JSON.stringify(filters), [filters]);
+
+  const refetch = useCallback(() => {
+    setRefetchKey((key) => key + 1);
+  }, []);
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -50,9 +55,9 @@ const usePaginatedJobs = ({
     return () => {
       cancelled = true;
     };
-  }, [page, limit, keyword, filterKey, enabled]);
+  }, [page, limit, keyword, filterKey, enabled, refetchKey]);
 
-  return { jobs, pagination, loading, error };
+  return { jobs, pagination, loading, error, refetch };
 };
 
 export default usePaginatedJobs;

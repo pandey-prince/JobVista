@@ -301,21 +301,45 @@ const JobDescription = () => {
 
             {isScrapedJob || isExternalJob ? (
               <>
-              <Button
-                onClick={applyOnCompanySite}
-                disabled={!singleJob?.applicationLink}
-                className="rounded-lg min-w-36 bg-accent-amber text-white hover:bg-accent-amber/90 disabled:opacity-60"
-              >
-                Apply on {singleJob?.company?.name || singleJob.externalSource || "company"} site
-              </Button>
-              <Button
-                variant="outline"
-                onClick={markAsApplied}
-                disabled={isTracked || tracking}
-              >
-                {tracking && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {isTracked ? "Tracked in pipeline" : "Mark as applied"}
-              </Button>
+                <div className="space-y-2">
+                  <Button
+                    onClick={applyOnCompanySite}
+                    disabled={!singleJob?.applicationLink}
+                    className="w-full rounded-lg min-w-36 bg-accent-amber text-white hover:bg-accent-amber/90 disabled:opacity-60"
+                  >
+                    Apply on company site
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Opens company site — come back to track status
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={markAsApplied}
+                  disabled={isTracked || tracking}
+                  className="w-full"
+                >
+                  {tracking && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  {isTracked ? "Tracked in pipeline" : "Track application"}
+                </Button>
+                {badges.isCareerPage ? (
+                  <p className="text-xs text-muted-foreground">
+                    Sourced from official careers page
+                    {singleJob.sourceUrl ? (
+                      <>
+                        {" · "}
+                        <a
+                          href={singleJob.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-brand hover:underline"
+                        >
+                          View source
+                        </a>
+                      </>
+                    ) : null}
+                  </p>
+                ) : null}
               </>
             ) : (
               <Button

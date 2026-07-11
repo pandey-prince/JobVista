@@ -8,15 +8,30 @@ import JobQuickView from '@/features/job-detail/JobQuickView'
 import { getJobBadges } from '@/utils/jobBadges'
 import { cleanJobText } from '@/utils/jobText'
 import useSavedJobs from '@/hooks/useSavedJobs'
+import { useSelector } from 'react-redux'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
 const Job = ({job}) => {
     const [quickViewOpen, setQuickViewOpen] = useState(false);
+    const { user } = useSelector((store) => store.auth);
+    const navigate = useNavigate();
     const { isSaved, toggleSaveJob } = useSavedJobs();
     const badges = getJobBadges(job);
     const saved = isSaved(job?._id);
 
     const handleSave = async (e) => {
         e.stopPropagation();
+        if (!user) {
+            toast.message("Sign up to save jobs", {
+                description: "Create a free account to bookmark roles and get alerts.",
+                action: {
+                    label: "Sign up",
+                    onClick: () => navigate("/signup"),
+                },
+            });
+            return;
+        }
         await toggleSaveJob(job);
     }
 
