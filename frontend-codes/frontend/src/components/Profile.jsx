@@ -7,6 +7,8 @@ import { Label } from './ui/label'
 import ApplicationTracker from './ApplicationTracker'
 import UpdateProfileDialog from './UpdateProfileDialog'
 import { useSelector } from 'react-redux'
+import { isProfileIncomplete } from '@/utils/profileValidation'
+import { Link } from 'react-router-dom'
 
 const Profile = () => {
     const [open, setOpen] = useState(false);
@@ -23,8 +25,22 @@ const Profile = () => {
                             fallbackClassName="bg-brand-muted text-2xl font-bold text-brand sm:text-3xl"
                         />
                         <div className='min-w-0'>
-                            <h1 className='text-xl font-medium'>{user?.fullname}</h1>
+                            <div className='flex flex-wrap items-center gap-2'>
+                                <h1 className='text-xl font-medium'>{user?.fullname}</h1>
+                                {isProfileIncomplete(user) ? (
+                                    <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                                        Profile incomplete
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="secondary">Profile complete</Badge>
+                                )}
+                            </div>
                             <p className='break-words text-sm text-muted-foreground sm:text-base'>{user?.profile?.bio}</p>
+                            {isProfileIncomplete(user) ? (
+                                <Link to="/profile/setup" className="mt-2 inline-block text-sm font-medium text-brand hover:underline">
+                                    Complete your profile
+                                </Link>
+                            ) : null}
                         </div>
                     </div>
                     <Button onClick={() => setOpen(true)} className="self-start text-right" variant="outline"><Pen /></Button>
