@@ -1,11 +1,12 @@
 /**
- * Re-probe auto-puppeteer sources and upgrade to API scrapers when found.
+ * Re-probe auto-puppeteer sources: upgrade to API scrapers or refresh URL/selectors.
  */
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { JobSource } from "../models/jobSource.model.js";
 import { INDIA_COMPANY_SOURCES } from "../data/indiaCompanySources.js";
 import { resolveCareerBoard } from "../utils/resolveCareerBoard.js";
+import { getPuppeteerOverride } from "../data/puppeteerSelectors.js";
 
 dotenv.config();
 
@@ -22,6 +23,24 @@ const findSeedCompany = (source) =>
     name: source.name,
     careersUrl: source.url,
   };
+
+const applyResolved = (source, resolved) => {
+  const urlChanged = resolved.url && resolved.url !== source.url;
+  const typeChanged = resolved.scraperType !== source.scraperType;
+  const selectorsChanged =
+    JSON.stringify(resolved.selectors || {}) !== JSON.stringify(source.selectors || {});
+
+  if (!urlChanged && !typeChanged && !selectorsChanged) {
+    return false;
+  }
+
+  if (resolved.url) source.url = resolved.url;
+  if (resolved.scraperType) source.scraperType = resolved.scraperType;
+  source.selectors = resolved.selectors || {};
+  source.isActive = resolved.isActive !== false;
+  source.lastScrapeError = "";
+  return true;
+};
 
 const run = async () => {
   const mongoUri = process.env.MONGO_URI;
@@ -40,6 +59,7 @@ const run = async () => {
   }).sort({ companyName: 1 });
 
   let upgraded = 0;
+  let patched = 0;
   let unchanged = 0;
   let failed = 0;
 
@@ -47,22 +67,41 @@ const run = async () => {
     const company = findSeedCompany(source);
     try {
       const resolved = await resolveCareerBoard(company);
-      if (!resolved || resolved.scraperType === "auto-puppeteer") {
+      if (!resolved) {
         unchanged += 1;
-        console.log(`• ${source.companyName} — still ${source.scraperType}`);
+        console.log(`• ${source.companyName} — no resolution`);
         continue;
       }
 
-      source.name = resolved.name || source.name;
-      source.url = resolved.url;
-      source.scraperType = resolved.scraperType;
-      source.selectors = resolved.selectors || {};
-      source.isActive = resolved.isActive !== false;
-      source.lastScrapeError = "";
-      await source.save();
+      if (resolved.scraperType !== "auto-puppeteer") {
+        if (applyResolved(source, resolved)) {
+          await source.save();
+          upgraded += 1;
+          console.log(`✓ ${source.companyName} → ${resolved.scraperType} (${resolved.url})`);
+        } else {
+          unchanged += 1;
+        }
+        continue;
+      }
 
-      upgraded += 1;
-      console.log(`✓ ${source.companyName} → ${resolved.scraperType} (${resolved.url})`);
+      const override = getPuppeteerOverride(source.companyName);
+      const patch = {
+        ...resolved,
+        url: override?.url || resolved.url,
+        selectors: {
+          ...(resolved.selectors || {}),
+          ...(override?.selectors || {}),
+        },
+      };
+
+      if (applyResolved(source, patch)) {
+        await source.save();
+        patched += 1;
+        console.log(`↻ ${source.companyName} — puppeteer URL/selectors updated`);
+      } else {
+        unchanged += 1;
+        console.log(`• ${source.companyName} — still auto-puppeteer`);
+      }
     } catch (error) {
       failed += 1;
       console.error(`✗ ${source.companyName} — ${error.message}`);
@@ -71,7 +110,9 @@ const run = async () => {
     await delay(800);
   }
 
-  console.log(`\nDone: ${upgraded} upgraded, ${unchanged} unchanged, ${failed} failed\n`);
+  console.log(
+    `\nDone: ${upgraded} upgraded to API, ${patched} puppeteer patches, ${unchanged} unchanged, ${failed} failed\n`,
+  );
   await mongoose.disconnect();
   process.exit(failed > 0 ? 1 : 0);
 };

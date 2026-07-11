@@ -110,17 +110,17 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   AMD: {
-    url: "https://careers-amd.icims.com/jobs/search?ss=1&searchRelation=keyword_all",
+    url: "https://careers.amd.com/careers-home/jobs",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
   GitHub: {
-    url: "https://careers-githubinc.icims.com/jobs/search?ss=1&searchRelation=keyword_all",
+    url: "https://www.github.careers/careers-home/jobs",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
   "Dell Technologies": {
-    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -140,7 +140,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Amazon: {
-    url: "https://www.amazon.jobs/en/search",
+    url: "https://www.amazon.jobs/en/search?loc_query=India&country=IND",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -155,7 +155,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   IBM: {
-    url: "https://www.ibm.com/careers/search",
+    url: "https://www.ibm.com/careers/search?field_keyword_05[0]=India",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -170,7 +170,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Splunk: {
-    url: "https://careers.cisco.com/global/en/splunk",
+    url: "https://careers.cisco.com/global/en/search-results",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -185,12 +185,12 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Shopify: {
-    url: "https://www.shopify.com/careers/search",
+    url: "https://www.shopify.com/careers/search?locations%5B%5D=India",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
   HashiCorp: {
-    url: "https://www.hashicorp.com/en/careers/jobs",
+    url: "https://www.ibm.com/careers/search?keyword=HashiCorp&field_keyword_05[0]=India",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -210,9 +210,9 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Chargebee: {
-    url: "https://www.chargebee.com/careers/jobs/",
+    url: "https://jobs.chargebee.com/jobs",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Delhivery: {
     url: "https://www.delhivery.com/careers",
@@ -220,7 +220,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Lenskart: {
-    url: "https://www.lenskart.com/careers",
+    url: "https://careers.lenskart.com",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -235,7 +235,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Zoho: {
-    url: "https://www.zoho.com/careers/job-openings.html",
+    url: "https://www.zoho.com/careers/",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -245,9 +245,9 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Ola: {
-    url: "https://ola.careers/",
+    url: "https://www.olacabs.com/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Policybazaar: {
     url: "https://www.policybazaar.com/careers/",
@@ -255,7 +255,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Nykaa: {
-    url: "https://www.nykaafashion.com/careers",
+    url: "https://careers.nykaa.com/",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -275,8 +275,8 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   VMware: {
-    url: "https://careers.vmware.com/main/jobs",
-    scraperType: "auto-puppeteer",
+    url: "https://broadcom.wd1.myworkdayjobs.com/en-US/External_Career",
+    scraperType: "workday",
     isActive: true,
   },
   "Tech Mahindra": {
@@ -305,7 +305,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   Hexaware: {
-    url: "https://jobs.hexaware.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+    url: "https://jobs.hexaware.com/#en/sites/CX_1/jobs",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -350,7 +350,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Kotak Mahindra Bank": {
-    url: "https://careers.kotak.com/",
+    url: "https://www.kotak.bank.in/en/about-us/careers.html",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -362,7 +362,7 @@ export const KNOWN_CAREER_BOARDS = {
   "Tata Digital": {
     url: "https://www.tataneu.com/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   "Reliance Retail": {
     url: "https://www.ril.com/Careers/Retail",
@@ -375,13 +375,13 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Bajaj Finserv": {
-    url: "https://www.bajajfinserv.in/careers-with-us",
+    url: "https://www.bajajfinserv.in/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Udaan: {
     url: "https://careers.udaan.com/",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
 };

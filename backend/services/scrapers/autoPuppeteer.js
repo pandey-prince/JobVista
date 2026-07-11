@@ -1,50 +1,73 @@
 import puppeteer from "puppeteer";
 import { stripHtml } from "./normalize.js";
+import { getPuppeteerOverride } from "../../data/puppeteerSelectors.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const SELECTOR_PRESETS = [
   {
-    jobList: "a.job[href*='reqid/']",
-    title: ".job-title",
-    location: ".job-location",
+    jobList: "a.job-title-link",
+    title: "",
+    location: ".job-location, .location",
     link: "",
+    hrefPattern: "/jobs/",
+    minTitleLength: 8,
   },
   {
-    jobList: ".job-listing__link, .job-listing, [data-automation-id='jobTitle']",
-    title: ".job-listing__title, [data-automation-id='jobTitle']",
-    location: ".job-listing__location, [data-automation-id='locations']",
-    link: "a[href]",
+    jobList: "a.job-link",
+    title: "",
+    location: ".location-and-id, .location",
+    link: "",
+    hrefPattern: "/jobs/",
+    minTitleLength: 10,
   },
   {
-    jobList: "article, .job, .job-tile, .posting",
-    title: "h2, h3, .job-title, .posting-title",
-    location: ".location, .job-location",
-    link: "a[href]",
+    jobList: "[data-automation-id='jobTitle']",
+    title: "",
+    location: "[data-automation-id='locations']",
+    link: "a[href*='/job/']",
+    hrefPattern: "/job/",
+    minTitleLength: 8,
   },
   {
-    jobList: ".iCIMS_JobsTable .row, tr[data-job-id]",
-    title: ".title, .jobTitle",
-    location: ".location, .jobLocation",
+    jobList: ".job-tile",
+    title: ".job-list-item__content span",
+    location: ".job-list-item__content span:nth-of-type(2)",
+    link: "a.job-list-item__link, a[href*='/job/']",
+    waitMs: 15000,
+    scroll: true,
+    hrefPattern: "/job/",
+    minTitleLength: 5,
+  },
+  {
+    jobList: ".iCIMS_JobContainer, .iCIMS_JobsTable tr",
+    title: ".iCIMS_InfoTitle a, .title",
+    location: ".iCIMS_JobHeaderData, .location",
     link: "a[href*='/jobs/']",
-  },
-  {
-    jobList: "[data-testid='job-card'], .job-card, .jobs-card",
-    title: "h2, h3, .job-title",
-    location: ".location, .job-location",
-    link: "a[href]",
+    hrefPattern: "/jobs/",
+    minTitleLength: 8,
   },
   {
     jobList: "li.opening, .opening",
     title: ".posting-title, h3, a",
     location: ".sort-by-location, .location",
     link: "a[href]",
+    hrefPattern: "job",
+    minTitleLength: 8,
   },
   {
-    jobList: "a[href*='job'], a[href*='career'], a[href*='opening']",
-    title: "",
-    location: "",
-    link: "",
+    jobList: "[data-testid='job-card'], .job-card, .jobs-card",
+    title: "h2, h3, .job-title",
+    location: ".location, .job-location",
+    link: "a[href]",
+    minTitleLength: 8,
+  },
+  {
+    jobList: "article, .job, .posting",
+    title: "h2, h3, .job-title, .posting-title",
+    location: ".location, .job-location",
+    link: "a[href]",
+    minTitleLength: 8,
   },
 ];
 
@@ -55,46 +78,164 @@ const launchBrowser = async () =>
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
   });
 
-const scrapeWithSelectors = async (page, source, selectors) => {
-  const waitMs = Number(selectors.waitMs || process.env.PUPPETEER_WAIT_MS || 6000);
-    await page.goto(source.url, { waitUntil: "networkidle2", timeout: 60000 });
-    await delay(waitMs);
-
-    const iframeSrc = await page.evaluate(() => {
-      const frame = document.querySelector("iframe[src*='job'], iframe[src*='career'], iframe[src*='icims']");
-      return frame?.src || "";
-    });
-    if (iframeSrc && iframeSrc.startsWith("http")) {
-      await page.goto(iframeSrc, { waitUntil: "networkidle2", timeout: 60000 });
-      await delay(waitMs);
+const dismissCookieBanners = async (page) => {
+  await page.evaluate(() => {
+    const labels = ["accept", "agree", "allow all", "got it", "i agree", "ok"];
+    for (const button of document.querySelectorAll("button, a[role='button']")) {
+      const text = (button.textContent || "").trim().toLowerCase();
+      if (labels.some((label) => text.includes(label))) {
+        button.click();
+        break;
+      }
     }
+  });
+};
+
+const autoScroll = async (page) => {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => {
+      let total = 0;
+      const step = 600;
+      const timer = setInterval(() => {
+        window.scrollBy(0, step);
+        total += step;
+        if (total >= document.body.scrollHeight || total > 4800) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 250);
+    });
+  });
+};
+
+const buildSelectorPlan = (source) => {
+  const override = getPuppeteerOverride(source.companyName);
+  const merged = {
+    ...(override?.selectors || {}),
+    ...(source.selectors?.jobList ? source.selectors : {}),
+  };
+
+  const custom = merged.jobList ? [merged] : [];
+  return {
+    url: override?.url || source.url,
+    presets: custom.length ? custom : SELECTOR_PRESETS,
+  };
+};
+
+const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
+  const waitMs = Number(selectors.waitMs || process.env.PUPPETEER_WAIT_MS || 6000);
+  const waitUntil = selectors.waitUntil || "domcontentloaded";
+  const timeoutMs = Number(selectors.timeoutMs || 60000);
+  const hrefPattern = selectors.hrefPattern || "";
+  const minTitleLength = Number(selectors.minTitleLength || 3);
+
+  await page.goto(baseUrl, { waitUntil, timeout: timeoutMs });
+  await delay(waitMs);
+  await dismissCookieBanners(page);
+  if (selectors.scroll) {
+    await autoScroll(page);
+    await delay(2000);
+  }
+
+  try {
+    await page.waitForSelector(selectors.jobList, { timeout: Math.min(timeoutMs, 25000) });
+  } catch {
+    // Some boards render lazily; continue with best-effort scrape.
+  }
+
+  const iframeSrc = await page.evaluate(() => {
+    const allow = (src) => {
+      if (!src.startsWith("http")) return false;
+      if (/doubleclick|flashtalking|googletagmanager|facebook\.com/i.test(src)) {
+        return false;
+      }
+      return /icims|greenhouse|lever\.co|myworkdayjobs|ashbyhq|oraclecloud\.com\/hcmUI/i.test(
+        src,
+      );
+    };
+
+    for (const frame of document.querySelectorAll("iframe[src]")) {
+      const src = frame.getAttribute("src") || "";
+      if (allow(src)) return src;
+    }
+    return "";
+  });
+
+  if (iframeSrc && iframeSrc.startsWith("http")) {
+    await page.goto(iframeSrc, { waitUntil, timeout: timeoutMs });
+    await delay(waitMs);
+    if (selectors.scroll) {
+      await autoScroll(page);
+      await delay(1500);
+    }
+  }
 
   return page.evaluate(
-    ({ jobList, title, location, link, baseUrl }) => {
+    ({ jobList, title, location, link, pageUrl, hrefPattern, minTitleLength }) => {
       const resolveUrl = (href = "") => {
         try {
-          return new URL(href, baseUrl).toString();
+          return new URL(href, pageUrl).toString();
         } catch {
           return href;
         }
       };
 
+      const isNavJunk = (text) =>
+        /^(home|careers|login|sign in|apply now|read more|skip|menu|search|benefits|teams|locations|job categories|sitemap|join talent|my application|cookie|privacy|terms)/i.test(
+          text,
+        );
+
+      const matchesHref = (href) => {
+        if (!hrefPattern) return true;
+        return href.toLowerCase().includes(hrefPattern.toLowerCase());
+      };
+
+      const seen = new Set();
+
+      const resolveLinkEl = (container, linkSelector) => {
+        if (!linkSelector) {
+          if (container.matches("a[href]")) return container;
+          return container.querySelector("a[href]");
+        }
+        return (
+          container.querySelector(linkSelector) ||
+          (container.matches("a[href]") ? container : null)
+        );
+      };
+
       return Array.from(document.querySelectorAll(jobList))
         .map((container) => {
           const titleEl = title ? container.querySelector(title) : container;
-          const titleText = titleEl?.textContent?.trim() || "";
+          let titleText = titleEl?.textContent?.trim() || "";
           const locationText = location
             ? container.querySelector(location)?.textContent?.trim() || "Not specified"
             : "Not specified";
-          const linkEl = link
-            ? container.querySelector(link)
-            : container.matches("a[href]")
-              ? container
-              : container.querySelector("a[href]");
+          const linkEl = resolveLinkEl(container, link);
           const href = linkEl?.getAttribute("href") || "";
           const applicationUrl = resolveUrl(href);
 
-          if (!titleText || !applicationUrl || titleText.length < 3) return null;
+          if (!titleText && linkEl) {
+            titleText = linkEl.textContent?.trim() || "";
+          }
+          if (!titleText) {
+            const span = container.querySelector(
+              ".job-list-item__content span, [data-automation-id='jobTitle'], h2, h3",
+            );
+            titleText = span?.textContent?.trim() || "";
+          }
+
+          if (
+            !titleText ||
+            !applicationUrl ||
+            titleText.length < minTitleLength ||
+            isNavJunk(titleText) ||
+            !matchesHref(applicationUrl)
+          ) {
+            return null;
+          }
+
+          if (seen.has(applicationUrl)) return null;
+          seen.add(applicationUrl);
 
           return {
             externalId: applicationUrl,
@@ -110,9 +251,11 @@ const scrapeWithSelectors = async (page, source, selectors) => {
       jobList: selectors.jobList,
       title: selectors.title || "",
       location: selectors.location || "",
-      link: selectors.link || "a[href]",
-      baseUrl: source.url,
-    }
+      link: selectors.link ?? "",
+      pageUrl: page.url(),
+      hrefPattern,
+      minTitleLength,
+    },
   );
 };
 
@@ -122,14 +265,13 @@ export const scrapeAutoPuppeteer = async (source) => {
   try {
     const page = await browser.newPage();
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     );
 
-    const customSelectors = source.selectors?.jobList ? [source.selectors] : [];
-    const presets = [...customSelectors, ...SELECTOR_PRESETS];
+    const { url, presets } = buildSelectorPlan(source);
 
     for (const selectors of presets) {
-      const jobs = await scrapeWithSelectors(page, source, selectors);
+      const jobs = await scrapeWithSelectors(page, source, selectors, url);
       if (jobs.length >= 1) {
         return jobs.map((job) => ({
           ...job,
