@@ -57,7 +57,7 @@ const JobFiltersPanel = ({ selectedFilters, onFilterChange, onClear }) => {
         </Button>
 
         <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+          <DialogContent className="max-h-[90vh] overflow-y-auto border-border bg-card sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Filter jobs</DialogTitle>
             </DialogHeader>

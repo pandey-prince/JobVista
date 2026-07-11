@@ -27,6 +27,47 @@ A job portal for **job seekers** — IT roles in India from company career pages
 - First-letter profile avatars (no photo upload required)
 - Docker Compose for local full stack
 
+## Product UX (Phases 1–7)
+
+### Routes
+
+| Path | Description |
+|------|-------------|
+| `/jobs` | Main job feed with filters, sort, and mobile filter drawer (`/browse` redirects here) |
+| `/companies/:slug` | Company page — careers-page meta, sync status, and paginated openings for one company |
+| `/profile/setup` | Multi-step profile wizard after signup |
+| `/description/:id` | Job detail with apply-on-company-site CTA and JobMate context |
+
+### Job filters & sort
+
+On `/jobs`, filters sync to the URL and API query params:
+
+- **Company** — multi-select from monitored career sources (`companies` CSV on `GET /job/get`)
+- **Sort** — `newest` (default) or `company` (A–Z)
+- **Location, work mode, experience, role, job type, posted within** — same as before
+
+On viewports below `lg`, filters open in a drawer; on desktop they stay in the sidebar.
+
+### Onboarding checklist
+
+Logged-in students see a three-step checklist on **Home** (dismissible banner) and **Profile**:
+
+1. Complete profile (`/profile/setup`)
+2. Watch 3 companies (`/my-companies`)
+3. Create 1 email alert (`/alerts`)
+
+Progress is computed from existing profile, watchlist, and alerts data — no extra DB fields.
+
+### Recommended jobs
+
+- **Home — Jobs for you:** `GET /job/recommended` when logged in with skills or preferred roles
+- **Guests / empty profile:** CTA to complete profile instead of an empty grid
+- Match score uses simple keyword overlap against job title and description
+
+### Trust signals on job cards
+
+Job cards show **freshness badges** (Posted today, New, Career page) and a **source label** (e.g. “From Razorpay”) via `JobFreshnessBadges`.
+
 ## Project structure
 
 ```
@@ -139,11 +180,11 @@ Frontend: http://localhost:3000 · Backend: http://localhost:8000
 | Prefix | Purpose |
 |--------|---------|
 | `/user` | Register, login, logout, profile, **session (`GET /me`)** |
-| `/job` | List jobs (scraped feed) |
+| `/job` | List jobs (scraped feed), **sort** (`sortBy`), **company filter** (`companies`), **`GET /recommended`** |
 | `/application` | Apply to internal jobs (legacy; feed is scraped-only) |
 | `/company` | Recruiter companies (API only) |
 | `/scraped-jobs` | Scraped jobs + admin sources (admin API only) |
-| `/career-sources` | Public directory, watchlist, Excel import |
+| `/career-sources` | Public directory, watchlist, Excel import, **`GET /:slug/jobs`** company page API |
 | `/chatbot` | JobMate messages |
 | `/stats` | Public platform stats (job counts, companies monitored) |
 | `/saved-jobs` | Bookmark jobs (student) |
@@ -175,7 +216,7 @@ Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** s
 
 1. Repo **Settings → Secrets and variables → Actions**
 2. Add secret: `MONGO_URI` (same Atlas URI as Render)
-3. Workflow runs **weekly** (Sunday 08:00 IST) and supports **manual dispatch** from the Actions tab
+3. Workflow runs **daily** (08:00 IST) and supports **manual dispatch** from the Actions tab
 
 The workflow runs:
 1. `reprobe:sources` — tries to upgrade auto-puppeteer boards to API scrapers

@@ -131,7 +131,7 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear, hideHeaderAction
               Clear all
             </Button>
           </div>
-          <hr className="mt-3" />
+          <hr className="mt-3 border-border" />
         </>
       ) : null}
 
