@@ -47,6 +47,8 @@ jobs:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           SKIP_PUPPETEER_SCRAPERS: "false"
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
+          PUPPETEER_FAIL_ON_PARTIAL: "false"
+          PUPPETEER_MIN_SUCCESS: "1"
         run: node scripts/sync-puppeteer.js
 
       - name: Source health report
