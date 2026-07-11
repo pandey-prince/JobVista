@@ -82,47 +82,12 @@ export const getScrapedJobsForList = async (keyword = "") => {
     ];
   }
 
-  // #region agent log
-  fetch("http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "adbcde" },
-    body: JSON.stringify({
-      sessionId: "adbcde",
-      runId: "post-fix",
-      hypothesisId: "H1",
-      location: "jobMapper.service.js:getScrapedJobsForList:entry",
-      message: "getScrapedJobsForList called",
-      data: { keyword, hasNormalizeFn: typeof normalizeDedupeText === "function" },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   const jobs = await ScrapedJob.find(query)
     .populate("source")
     .sort({ firstSeenAt: -1 })
     .limit(500);
 
-  const filtered = dedupeScrapedJobs(filterIndiaJobs(filterItJobs(jobs)));
-  const mapped = filtered.map(mapScrapedJobForList);
-
-  // #region agent log
-  fetch("http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "adbcde" },
-    body: JSON.stringify({
-      sessionId: "adbcde",
-      runId: "post-fix",
-      hypothesisId: "H1",
-      location: "jobMapper.service.js:getScrapedJobsForList:exit",
-      message: "getScrapedJobsForList succeeded",
-      data: { rawCount: jobs.length, dedupedCount: filtered.length, mappedCount: mapped.length },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
-  return mapped;
+  return dedupeScrapedJobs(filterIndiaJobs(filterItJobs(jobs))).map(mapScrapedJobForList);
 };
 
 export const sortJobsByDate = (jobs = []) =>

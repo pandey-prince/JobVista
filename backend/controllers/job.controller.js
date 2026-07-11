@@ -95,21 +95,6 @@ export const getAllJobs = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    // #region agent log
-    fetch("http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "adbcde" },
-      body: JSON.stringify({
-        sessionId: "adbcde",
-        runId: "post-fix",
-        hypothesisId: "H1",
-        location: "job.controller.js:getAllJobs:catch",
-        message: "getAllJobs failed",
-        data: { errorName: err?.name, errorMessage: err?.message },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     return res.status(500).json({
       message: "Unable to fetch jobs",
       success: false,
