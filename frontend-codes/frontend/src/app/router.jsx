@@ -1,10 +1,9 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
 import Home from "@/components/Home";
 import Login from "@/components/auth/Login";
 import Signup from "@/components/auth/Signup";
 import Jobs from "@/components/Jobs";
-import Browse from "@/components/Browse";
 import Profile from "@/components/Profile";
 import ProfileSetup from "@/components/ProfileSetup";
 import JobDescription from "@/components/JobDescription";
@@ -24,7 +23,7 @@ export const appRouter = createBrowserRouter([
       { path: "/jobs", element: <Jobs /> },
       { path: "/companies/:slug", element: <CompanyJobsPage /> },
       { path: "/description/:id", element: <JobDescription /> },
-      { path: "/browse", element: <Browse /> },
+      { path: "/browse", element: <Navigate to="/jobs" replace /> },
       { path: "/profile", element: <AuthRoute roles={["student"]}><Profile /></AuthRoute> },
       {
         path: "/profile/setup",

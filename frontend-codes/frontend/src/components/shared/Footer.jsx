@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 const footerLinks = {
   platform: [
     { label: "Browse jobs", to: "/jobs" },
-    { label: "Explore categories", to: "/browse" },
+    { label: "Explore categories", to: "/jobs" },
     { label: "Latest openings", to: "/jobs" },
   ],
   candidatesGuest: [
