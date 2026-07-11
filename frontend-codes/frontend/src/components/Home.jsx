@@ -4,6 +4,8 @@ import HeroSection from './HeroSection'
 import CategoryCarousel from './CategoryCarousel'
 import HowItWorks from './HowItWorks'
 import LatestJobs from './LatestJobs'
+import NewTodayJobs from './NewTodayJobs'
+import RecommendedJobs from './RecommendedJobs'
 import OnboardingChecklist from '@/features/onboarding/OnboardingChecklist'
 import useOnboardingProgress from '@/features/onboarding/useOnboardingProgress'
 
@@ -41,6 +43,8 @@ const Home = () => {
         />
       ) : null}
       <HeroSection />
+      <NewTodayJobs />
+      <RecommendedJobs />
       <HowItWorks />
       <CategoryCarousel />
       <LatestJobs />

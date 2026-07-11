@@ -75,7 +75,7 @@ const fallbackReply = (message = "") =>
 
 export const chatWithJobMate = async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, jobTitle, jobCompany } = req.body;
 
     if (!message || !message.trim()) {
       return res.status(400).json({
@@ -83,6 +83,13 @@ export const chatWithJobMate = async (req, res) => {
         success: false,
       });
     }
+
+    const jobContextLine =
+      jobTitle || jobCompany
+        ? `The user is viewing a job posting${jobTitle ? ` for "${jobTitle}"` : ""}${
+            jobCompany ? ` at ${jobCompany}` : ""
+          }.`
+        : "";
 
     const templateReply = getTemplateReply(message);
     if (templateReply) {
@@ -105,7 +112,8 @@ export const chatWithJobMate = async (req, res) => {
       (await generateGeminiText({
         prompt: message,
         systemInstruction:
-          "You are JobMate, a friendly job portal assistant for job seekers. Help with job search, resume tips, cover letters, and interview preparation. Give direct, complete, practical answers. When the user asks for questions, provide a list of actual questions instead of a short summary.",
+          "You are JobMate, a friendly job portal assistant for job seekers. Help with job search, resume tips, cover letters, and interview preparation. Give direct, complete, practical answers. When the user asks for questions, provide a list of actual questions instead of a short summary." +
+          (jobContextLine ? ` ${jobContextLine} Tailor answers to this specific role when relevant.` : ""),
         temperature: 0.6,
         maxOutputTokens: 500,
       })) || fallbackReply(message);
