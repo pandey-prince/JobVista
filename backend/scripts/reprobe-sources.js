@@ -5,8 +5,10 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { JobSource } from "../models/jobSource.model.js";
 import { INDIA_COMPANY_SOURCES } from "../data/indiaCompanySources.js";
+import { KNOWN_CAREER_BOARDS } from "../data/knownCareerBoards.js";
 import { resolveCareerBoard } from "../utils/resolveCareerBoard.js";
 import { getPuppeteerOverride } from "../data/puppeteerSelectors.js";
+import { isPuppeteerScraperType } from "../services/scrapeSync.service.js";
 
 dotenv.config();
 
@@ -25,21 +27,80 @@ const findSeedCompany = (source) =>
   };
 
 const applyResolved = (source, resolved) => {
+  const nextActive = resolved.isActive !== false;
   const urlChanged = resolved.url && resolved.url !== source.url;
-  const typeChanged = resolved.scraperType !== source.scraperType;
+  const typeChanged =
+    resolved.scraperType && resolved.scraperType !== source.scraperType;
   const selectorsChanged =
-    JSON.stringify(resolved.selectors || {}) !== JSON.stringify(source.selectors || {});
+    JSON.stringify(resolved.selectors || {}) !==
+    JSON.stringify(source.selectors || {});
+  const activeChanged = nextActive !== source.isActive;
 
-  if (!urlChanged && !typeChanged && !selectorsChanged) {
+  if (!urlChanged && !typeChanged && !selectorsChanged && !activeChanged) {
     return false;
   }
 
   if (resolved.url) source.url = resolved.url;
   if (resolved.scraperType) source.scraperType = resolved.scraperType;
   source.selectors = resolved.selectors || {};
-  source.isActive = resolved.isActive !== false;
-  source.lastScrapeError = "";
+  source.isActive = nextActive;
+  if (nextActive) {
+    source.lastScrapeError = "";
+  }
   return true;
+};
+
+const deactivateFromKnownBoards = async () => {
+  let deactivated = 0;
+
+  for (const [companyName, known] of Object.entries(KNOWN_CAREER_BOARDS)) {
+    if (known.isActive !== false) continue;
+
+    const source = await JobSource.findOne({ companyName });
+    if (!source || !source.isActive) continue;
+
+    if (
+      applyResolved(source, {
+        url: known.url,
+        scraperType: known.scraperType,
+        selectors: known.selectors || {},
+        isActive: false,
+      })
+    ) {
+      await source.save();
+      deactivated += 1;
+      console.log(`⊘ ${companyName} — deactivated (known board inactive)`);
+    }
+  }
+
+  return deactivated;
+};
+
+const refreshApiSourceConfigs = async () => {
+  let refreshed = 0;
+
+  for (const [companyName, known] of Object.entries(KNOWN_CAREER_BOARDS)) {
+    if (known.isActive === false) continue;
+    if (isPuppeteerScraperType(known.scraperType)) continue;
+
+    const source = await JobSource.findOne({ companyName });
+    if (!source) continue;
+
+    if (
+      applyResolved(source, {
+        url: known.url,
+        scraperType: known.scraperType,
+        selectors: known.selectors || {},
+        isActive: true,
+      })
+    ) {
+      await source.save();
+      refreshed += 1;
+      console.log(`↻ ${companyName} — API config refreshed`);
+    }
+  }
+
+  return refreshed;
 };
 
 const run = async () => {
@@ -53,6 +114,9 @@ const run = async () => {
 
   await mongoose.connect(mongoUri);
 
+  const knownDeactivated = await deactivateFromKnownBoards();
+  const apiRefreshed = await refreshApiSourceConfigs();
+
   const sources = await JobSource.find({
     isActive: true,
     scraperType: { $in: ["auto-puppeteer", "unsupported"] },
@@ -60,6 +124,7 @@ const run = async () => {
 
   let upgraded = 0;
   let patched = 0;
+  let deactivated = 0;
   let unchanged = 0;
   let failed = 0;
 
@@ -73,11 +138,24 @@ const run = async () => {
         continue;
       }
 
+      if (resolved.isActive === false) {
+        if (applyResolved(source, resolved)) {
+          await source.save();
+          deactivated += 1;
+          console.log(`⊘ ${source.companyName} — deactivated`);
+        } else {
+          unchanged += 1;
+        }
+        continue;
+      }
+
       if (resolved.scraperType !== "auto-puppeteer") {
         if (applyResolved(source, resolved)) {
           await source.save();
           upgraded += 1;
-          console.log(`✓ ${source.companyName} → ${resolved.scraperType} (${resolved.url})`);
+          console.log(
+            `✓ ${source.companyName} → ${resolved.scraperType} (${resolved.url})`,
+          );
         } else {
           unchanged += 1;
         }
@@ -111,7 +189,7 @@ const run = async () => {
   }
 
   console.log(
-    `\nDone: ${upgraded} upgraded to API, ${patched} puppeteer patches, ${unchanged} unchanged, ${failed} failed\n`,
+    `\nDone: ${knownDeactivated} known deactivated, ${apiRefreshed} API refreshed, ${upgraded} upgraded to API, ${patched} puppeteer patches, ${deactivated} deactivated, ${unchanged} unchanged, ${failed} failed\n`,
   );
   await mongoose.disconnect();
   process.exit(failed > 0 ? 1 : 0);

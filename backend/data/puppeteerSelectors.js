@@ -143,6 +143,22 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
       scroll: true,
     },
   },
+  BrowserStack: {
+    url: "https://www.browserstack.com/careers/openings",
+    selectors: {
+      jobList:
+        "a[href*='myworkdayjobs.com'], a[href*='/job/'], a[href*='careers/openings']",
+      title: "",
+      location: "",
+      link: "",
+      waitMs: 15000,
+      waitUntil: "networkidle2",
+      hrefPattern: "/job/",
+      minTitleLength: 8,
+      scroll: true,
+      timeoutMs: 90000,
+    },
+  },
   Chargebee: {
     url: "https://jobs.chargebee.com/",
     selectors: {

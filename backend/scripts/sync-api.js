@@ -1,12 +1,14 @@
 /**
  * Sync API-based career sources (greenhouse, lever, workday, etc.).
- * Render cron uses syncAllSources which skips puppeteer when SKIP_PUPPETEER_SCRAPERS=true.
+ * Primary runner: GitHub Actions (.github/workflows/scrape-api.yml).
  */
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { syncSourcesByMode } from "../services/scrapeSync.service.js";
 
 dotenv.config();
+
+process.env.SKIP_PUPPETEER_SCRAPERS = "true";
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -20,9 +22,46 @@ const run = async () => {
 
   try {
     await mongoose.connect(MONGO_URI);
-    const summary = await syncSourcesByMode("api");
+    const summary = await syncSourcesByMode("api", { runPostSyncTasks: true });
     console.log("\nSummary:", JSON.stringify(summary, null, 2));
-    process.exit(summary.failed > 0 ? 1 : 0);
+
+    if (summary.totalSources === 0) {
+      console.log("No API sources to sync.");
+      process.exit(0);
+    }
+
+    const minSuccess = Number(process.env.API_MIN_SUCCESS || 1);
+    const failOnPartial = process.env.API_FAIL_ON_PARTIAL === "true";
+
+    if (summary.failed > 0) {
+      const failedNames = summary.results
+        .filter((r) => !r.success && !r.skipped)
+        .map((r) => `${r.sourceName}: ${r.error || "unknown"}`)
+        .slice(0, 15);
+      console.warn(
+        `\n${summary.failed}/${summary.totalSources} API source(s) failed:`,
+      );
+      for (const line of failedNames) console.warn(`  - ${line}`);
+      if (summary.failed > failedNames.length) {
+        console.warn(`  ... and ${summary.failed - failedNames.length} more`);
+      }
+    }
+
+    if (summary.successful < minSuccess) {
+      console.error(
+        `API sync unusable: only ${summary.successful}/${summary.totalSources} succeeded (need at least ${minSuccess}).`,
+      );
+      process.exit(1);
+    }
+
+    if (failOnPartial && summary.failed > 0) {
+      process.exit(1);
+    }
+
+    console.log(
+      `\nAPI sync finished: ${summary.successful}/${summary.totalSources} sources OK, ${summary.newJobsCount} new jobs.`,
+    );
+    process.exit(0);
   } catch (error) {
     console.error("API sync failed:", error.message);
     process.exit(1);
