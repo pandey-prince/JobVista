@@ -50,6 +50,8 @@ export const jobsApi = {
   getById: (id) => apiClient.get(`${JOB_API_END_POINT}/get/${id}`),
   getScrapedById: (id) => apiClient.get(`${SCRAPED_JOB_API_END_POINT}/${id}`),
   matchScore: (jobKey) => apiClient.post(`${JOB_API_END_POINT}/match-score`, { jobKey }),
+  recommended: ({ limit = 12 } = {}) =>
+    apiClient.get(`${JOB_API_END_POINT}/recommended`, { params: { limit } }),
 };
 
 export const applicationsApi = {
@@ -60,6 +62,10 @@ export const careerSourceApi = {
   listPublic: ({ page = 1, limit = 20, search = "" } = {}) =>
     apiClient.get(`${CAREER_SOURCE_API_END_POINT}/`, {
       params: { page, limit, search },
+    }),
+  getCompanyJobs: (slug, { page = 1, limit = 12, keyword = "" } = {}) =>
+    apiClient.get(`${CAREER_SOURCE_API_END_POINT}/${encodeURIComponent(slug)}/jobs`, {
+      params: { page, limit, keyword },
     }),
   listUserLists: (type, { page = 1, limit = 10 } = {}) =>
     apiClient.get(`${CAREER_SOURCE_API_END_POINT}/lists`, {

@@ -24,6 +24,7 @@ import MatchScorePanel from "@/features/job-detail/MatchScorePanel";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
 import usePageTitle from "@/hooks/usePageTitle";
+import { useJobMateContext } from "@/context/JobMateContext";
 import { cleanJobText, toDescriptionParagraphs } from "@/utils/jobText";
 
 const formatDate = (value) => {
@@ -47,6 +48,7 @@ const JobDescription = () => {
   const [matchScore, setMatchScore] = useState(null);
   const [matchLoading, setMatchLoading] = useState(false);
   const { isSaved, toggleSaveJob } = useSavedJobs();
+  const { setJobContext } = useJobMateContext();
 
   const params = useParams();
   const jobId = params.id;
@@ -164,6 +166,22 @@ const JobDescription = () => {
       setApplying(false);
     }
   };
+
+  useEffect(() => {
+    if (!singleJob?._id) {
+      setJobContext(null);
+      return undefined;
+    }
+
+    setJobContext({
+      jobId: singleJob._id,
+      title: singleJob.title,
+      company: singleJob.company?.name,
+      description: singleJob.description,
+    });
+
+    return () => setJobContext(null);
+  }, [singleJob?._id, singleJob?.title, singleJob?.company?.name, singleJob?.description, setJobContext]);
 
   useEffect(() => {
     const fetchSingleJob = async () => {

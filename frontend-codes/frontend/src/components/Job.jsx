@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Bookmark } from 'lucide-react'
 import { Badge } from './ui/badge'
@@ -8,6 +9,7 @@ import JobQuickView from '@/features/job-detail/JobQuickView'
 import { getJobBadges } from '@/utils/jobBadges'
 import { cleanJobText } from '@/utils/jobText'
 import useSavedJobs from '@/hooks/useSavedJobs'
+import { companyJobsPath } from '@/utils/companySlug'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
@@ -60,7 +62,13 @@ const Job = ({job}) => {
             <div className='mt-3 flex items-center gap-3'>
                 <CompanyLogo company={job?.company} className="h-14 w-14" />
                 <div className="min-w-0">
-                    <h2 className='truncate font-medium text-lg'>{job?.company?.name}</h2>
+                    <Link
+                        to={companyJobsPath(job?.company?.name)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="truncate font-medium text-lg transition-colors hover:text-brand"
+                    >
+                        {job?.company?.name}
+                    </Link>
                     <p className='text-sm text-muted-foreground'>{job?.location || "India"}</p>
                 </div>
             </div>

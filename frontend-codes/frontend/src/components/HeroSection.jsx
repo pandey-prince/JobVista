@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Button } from './ui/button'
-import { BriefcaseBusiness, Building2, Bot, Wifi } from 'lucide-react'
+import { BriefcaseBusiness, Building2, Bot, Wifi, RefreshCw } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 import { useNavigate } from 'react-router-dom';
 import useGetPublicStats from '@/hooks/useGetPublicStats';
 import JobSearchBar from './shared/JobSearchBar';
+import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
 const formatCount = (value) => {
   if (!value && value !== 0) return "—";
@@ -18,6 +19,15 @@ const HeroSection = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { stats, loading } = useGetPublicStats();
+
+    const lastSyncLabel = useMemo(() => {
+      const relative = formatRelativeTime(stats.lastSyncAt);
+      return relative ? `Synced ${relative}` : "Sync pending";
+    }, [stats.lastSyncAt]);
+
+    const isLowInventory =
+      !loading &&
+      (stats.totalJobs < 25 || stats.companiesMonitored < 10 || stats.jobsAddedToday === 0);
 
     const searchJobHandler = (query) => {
         dispatch(setSearchedQuery(query));
@@ -88,10 +98,30 @@ const HeroSection = () => {
                         <p className='text-sm text-muted-foreground'>Added today</p>
                     </div>
                     <div className='rounded-xl border border-border bg-card p-4 shadow-sm'>
-                        <Bot className='h-5 w-5 text-brand' />
-                        <h3 className='mt-2 text-lg font-bold'>JobMate</h3>
-                        <p className='text-sm text-muted-foreground'>AI career assistant</p>
+                        <RefreshCw className='h-5 w-5 text-brand' />
+                        <h3 className='mt-2 text-lg font-bold'>
+                            {loading ? "..." : lastSyncLabel}
+                        </h3>
+                        <p className='text-sm text-muted-foreground'>
+                            {loading
+                              ? "Checking sync health"
+                              : stats.sourcesSyncedSuccessfully > 0
+                                ? `${stats.sourcesSyncedSuccessfully} sources healthy`
+                                : "Waiting for first sync"}
+                        </p>
                     </div>
+                </div>
+                {isLowInventory ? (
+                  <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
+                    We&apos;re actively syncing more company career pages — counts update as new roles are discovered.
+                    {stats.companiesWithJobs > 0
+                      ? ` ${stats.companiesWithJobs} companies already have live openings.`
+                      : ""}
+                  </p>
+                ) : null}
+                <div className='mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground'>
+                    <Bot className='h-4 w-4 text-brand' />
+                    JobMate AI assistant — ask about resumes, interviews, and job search
                 </div>
             </div>
         </div>
