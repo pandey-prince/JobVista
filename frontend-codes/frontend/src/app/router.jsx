@@ -8,6 +8,7 @@ import Browse from "@/components/Browse";
 import Profile from "@/components/Profile";
 import ProfileSetup from "@/components/ProfileSetup";
 import JobDescription from "@/components/JobDescription";
+import CompanyJobsPage from "@/components/CompanyJobsPage";
 import CompanyLists from "@/components/CompanyLists";
 import SavedJobs from "@/components/SavedJobs";
 import JobAlerts from "@/components/JobAlerts";
@@ -21,6 +22,7 @@ export const appRouter = createBrowserRouter([
       { path: "/login", element: <Login /> },
       { path: "/signup", element: <Signup /> },
       { path: "/jobs", element: <Jobs /> },
+      { path: "/companies/:slug", element: <CompanyJobsPage /> },
       { path: "/description/:id", element: <JobDescription /> },
       { path: "/browse", element: <Browse /> },
       { path: "/profile", element: <AuthRoute roles={["student"]}><Profile /></AuthRoute> },

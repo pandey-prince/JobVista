@@ -12,11 +12,14 @@ import Pagination from "@/components/shared/Pagination";
 import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
 import ExpandableJobSearch from "@/components/shared/ExpandableJobSearch";
 import LoadingState from "@/components/shared/LoadingState";
+import usePageTitle from "@/hooks/usePageTitle";
 import { X } from "lucide-react";
 
 const JOBS_PER_PAGE = 12;
 
 const Jobs = () => {
+  usePageTitle("Browse IT Jobs");
+
   const { searchedQuery } = useSelector((store) => store.job);
   const dispatch = useDispatch();
   const navigate = useNavigate();

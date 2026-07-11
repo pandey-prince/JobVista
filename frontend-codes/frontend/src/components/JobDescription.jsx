@@ -23,6 +23,7 @@ import LoadingState from "@/components/shared/LoadingState";
 import MatchScorePanel from "@/features/job-detail/MatchScorePanel";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
+import usePageTitle from "@/hooks/usePageTitle";
 import { cleanJobText, toDescriptionParagraphs } from "@/utils/jobText";
 
 const formatDate = (value) => {
@@ -66,6 +67,16 @@ const JobDescription = () => {
     () => toDescriptionParagraphs(singleJob?.description, 20),
     [singleJob?.description],
   );
+
+  const pageTitle = useMemo(() => {
+    if (singleJob?.title && singleJob?.company?.name) {
+      return `${singleJob.title} at ${singleJob.company.name}`;
+    }
+    if (singleJob?.title) return singleJob.title;
+    return "Job Details";
+  }, [singleJob?.title, singleJob?.company?.name]);
+
+  usePageTitle(pageTitle);
 
   const applyOnCompanySite = () => {
     if (singleJob?.applicationLink) {
