@@ -116,11 +116,72 @@ const run = async () => {
       ? pass("GET /user/me", me.data.user.email)
       : fail("GET /user/me", me.data?.message);
 
+    const recommendedAuth = await student.request("/api/v1/job/recommended?limit=5");
+    recommendedAuth.response.ok &&
+    recommendedAuth.data.success &&
+    Array.isArray(recommendedAuth.data.jobs)
+      ? pass(
+          "GET /job/recommended (auth)",
+          recommendedAuth.data.personalized ? "personalized" : "generic",
+        )
+      : fail("GET /job/recommended (auth)", recommendedAuth.data?.message);
+
     const publicStats = await fetch(`${API_BASE}/api/v1/stats/public`);
     const statsData = await publicStats.json();
     publicStats.ok && statsData.success && typeof statsData.stats?.totalJobs === "number"
       ? pass("GET /stats/public", `${statsData.stats.totalJobs} jobs`)
       : fail("GET /stats/public", statsData?.message);
+
+    publicStats.ok &&
+    statsData.success &&
+    typeof statsData.stats?.sourcesSyncedSuccessfully === "number" &&
+    typeof statsData.stats?.companiesWithJobs === "number"
+      ? pass(
+          "GET /stats/public sync fields",
+          `${statsData.stats.sourcesSyncedSuccessfully} synced, ${statsData.stats.companiesWithJobs} with jobs`,
+        )
+      : fail("GET /stats/public sync fields");
+
+    const jobsSorted = await fetch(`${API_BASE}/api/v1/job/get?sortBy=company&limit=5`);
+    const jobsSortedData = await jobsSorted.json();
+    jobsSorted.ok && jobsSortedData.success && Array.isArray(jobsSortedData.jobs)
+      ? pass("GET /job/get sortBy=company", `${jobsSortedData.jobs.length} jobs`)
+      : fail("GET /job/get sortBy=company");
+
+    const sampleCompany = sourcesData.sources?.[0]?.companyName;
+    if (sampleCompany) {
+      const jobsByCompany = await fetch(
+        `${API_BASE}/api/v1/job/get?companies=${encodeURIComponent(sampleCompany)}&limit=5`,
+      );
+      const jobsByCompanyData = await jobsByCompany.json();
+      jobsByCompany.ok && jobsByCompanyData.success
+        ? pass("GET /job/get companies filter", sampleCompany)
+        : fail("GET /job/get companies filter");
+    } else {
+      skip("GET /job/get companies filter", "no public sources");
+    }
+
+    const recommendedGuest = await fetch(`${API_BASE}/api/v1/job/recommended?limit=5`);
+    const recommendedGuestData = await recommendedGuest.json();
+    recommendedGuest.ok &&
+    recommendedGuestData.success &&
+    Array.isArray(recommendedGuestData.jobs)
+      ? pass("GET /job/recommended (guest)", `${recommendedGuestData.jobs.length} jobs`)
+      : fail("GET /job/recommended (guest)");
+
+    if (sampleCompany) {
+      const { slugifyCompanyName } = await import("../utils/companySlug.js");
+      const companySlug = slugifyCompanyName(sampleCompany);
+      const companyJobs = await fetch(
+        `${API_BASE}/api/v1/career-sources/${encodeURIComponent(companySlug)}/jobs?limit=5`,
+      );
+      const companyJobsData = await companyJobs.json();
+      companyJobs.ok && companyJobsData.success && companyJobsData.source?.companyName
+        ? pass("GET /career-sources/:slug/jobs", companyJobsData.source.companyName)
+        : fail("GET /career-sources/:slug/jobs", companyJobsData?.message);
+    } else {
+      skip("GET /career-sources/:slug/jobs", "no public sources");
+    }
 
     const recruiterReg = await fetch(`${API_BASE}/api/v1/user/register`, {
       method: "POST",

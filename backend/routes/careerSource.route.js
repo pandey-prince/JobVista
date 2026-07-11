@@ -5,6 +5,7 @@ import { singleUpload } from "../middlewares/multer.js";
 import {
   addUserCompanyList,
   detectCareerSourceType,
+  getCompanySourceJobs,
   getUserCompanyListJobs,
   importCareerSourcesExcel,
   listPublicSources,
@@ -35,5 +36,6 @@ router
 router.route("/lists/jobs").get(isAuthenticated, getUserCompanyListJobs);
 router.route("/lists/:id").patch(isAuthenticated, updateUserCompanyList);
 router.route("/lists/:id").delete(isAuthenticated, removeUserCompanyList);
+router.route("/:slug/jobs").get(getCompanySourceJobs);
 
 export default router;

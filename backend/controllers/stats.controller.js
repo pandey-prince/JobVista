@@ -16,7 +16,22 @@ export const getPublicStats = async (req, res) => {
       (job) => job.createdAt && new Date(job.createdAt) >= today,
     ).length;
 
-    const companiesMonitored = await JobSource.countDocuments({ isActive: true });
+    const companiesWithJobs = new Set(
+      visibleJobs.map((job) => job.company?.name).filter(Boolean),
+    ).size;
+
+    const activeSources = await JobSource.find({ isActive: true }).select(
+      "lastScrapeStatus lastScrapedAt",
+    );
+    const companiesMonitored = activeSources.length;
+    const sourcesSyncedSuccessfully = activeSources.filter(
+      (source) => source.lastScrapeStatus === "success",
+    ).length;
+    const lastSyncAt = activeSources.reduce((latest, source) => {
+      if (!source.lastScrapedAt) return latest;
+      if (!latest || source.lastScrapedAt > latest) return source.lastScrapedAt;
+      return latest;
+    }, null);
 
     return res.status(200).json({
       success: true,
@@ -24,6 +39,9 @@ export const getPublicStats = async (req, res) => {
         totalJobs,
         scrapedJobs: totalJobs,
         companiesMonitored,
+        companiesWithJobs,
+        sourcesSyncedSuccessfully,
+        lastSyncAt: lastSyncAt ? lastSyncAt.toISOString() : null,
         jobsAddedToday,
         updatedAt: new Date().toISOString(),
       },
