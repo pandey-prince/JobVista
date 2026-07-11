@@ -38,8 +38,16 @@ const ProfileSetup = () => {
       );
       if (res.data.success) {
         dispatch(setUser(res.data.user));
-        toast.success(skipped ? "You can complete your profile later." : res.data.message);
-        navigate("/profile");
+        if (skipped) {
+          toast.success("You can complete your profile later.");
+          navigate("/profile");
+        } else {
+          toast.success(res.data.message);
+          toast.info("Next: watch 3 companies to get instant alerts when they post new jobs.", {
+            duration: 6000,
+          });
+          navigate("/my-companies");
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Unable to save profile");
