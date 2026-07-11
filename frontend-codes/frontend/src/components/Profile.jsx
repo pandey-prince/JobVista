@@ -9,6 +9,7 @@ import UpdateProfileDialog from './UpdateProfileDialog'
 import { useSelector } from 'react-redux'
 import { isProfileIncomplete } from '@/utils/profileValidation'
 import { Link } from 'react-router-dom'
+import OnboardingChecklist from '@/features/onboarding/OnboardingChecklist'
 
 const Profile = () => {
     const [open, setOpen] = useState(false);
@@ -16,6 +17,9 @@ const Profile = () => {
 
     return (
         <div>
+            <div className='mx-auto my-5 max-w-4xl px-2 sm:px-0'>
+                <OnboardingChecklist user={user} className="mb-5" />
+            </div>
             <div className='mx-auto my-5 max-w-4xl rounded-2xl border border-border bg-card p-5 sm:p-8'>
                 <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
                     <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center'>
