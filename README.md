@@ -223,9 +223,15 @@ Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** s
 2. **source health** — `node scripts/source-health.js --report-only` after sync
 
 **Puppeteer sync** ([`scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml)) runs daily (08:00 IST):
-1. **reprobe** — tries to upgrade auto-puppeteer boards to API scrapers (once per run)
-2. **puppeteer-sync** — 3 parallel matrix jobs (`PUPPETEER_SHARD` 0–2), ~18 sources each, 3h timeout per shard
-3. **health-report** — logs a status report after all shards finish
+1. **priority-puppeteer** — user-submitted `auto-puppeteer` sources queued via `priorityPuppeteerSync`
+2. **reprobe** — tries to upgrade auto-puppeteer boards to API scrapers (once per run)
+3. **puppeteer-sync** — 3 parallel matrix jobs (`PUPPETEER_SHARD` 0–2), ~18 sources each, 3h timeout per shard
+4. **health-report** — logs a status report after all shards finish
+
+**Priority Puppeteer sync** ([`scrape-puppeteer-priority.yml`](.github/workflows/scrape-puppeteer-priority.yml)) runs on demand when a user submits a generic career page:
+- Triggered via `repository_dispatch` when Render has `GITHUB_WORKFLOW_DISPATCH_TOKEN` + `GITHUB_REPO` set
+- Also supports manual dispatch from the Actions tab (~30 min timeout)
+- Without the token, sources stay queued until the next priority or daily Puppeteer run
 
 ### Ops sync endpoint (optional)
 
@@ -241,6 +247,7 @@ Do **not** run Puppeteer sync against production Atlas from your laptop. Product
 cd backend
 npm run sync:api              # API sources only (Render-style)
 npm run sync:puppeteer        # Local debugging only — CI uses the same script
+npm run sync:puppeteer-priority  # User-queued Puppeteer sources only
 npm run reprobe:sources       # Upgrade auto-puppeteer → API where possible
 npm run sync:health           # Report; add --report-only to never fail exit code
 ```

@@ -5,7 +5,11 @@ import {
 } from "./scrapers/index.js";
 import { probeCareerSource } from "../utils/probeCareerSource.js";
 import { resolveCareerBoard } from "../utils/resolveCareerBoard.js";
-import { syncSourceById } from "./scrapeSync.service.js";
+import {
+  isPuppeteerScraperType,
+  syncSourceById,
+} from "./scrapeSync.service.js";
+import { dispatchPuppeteerPriorityWorkflow } from "../utils/githubWorkflowDispatch.js";
 
 export const normalizeCareerUrl = (url = "") => {
   const trimmed = url.trim();
@@ -79,6 +83,41 @@ export const resolveScraperConfig = async (url, scraperType, companyName = "") =
   return { scraperType: "unsupported", isActive: false };
 };
 
+const queuePuppeteerPrioritySync = async (source) => {
+  source.priorityPuppeteerSync = true;
+  source.lastScrapeStatus = "pending";
+  source.lastScrapeError = "";
+  await source.save();
+  const dispatch = await dispatchPuppeteerPriorityWorkflow();
+  return dispatch;
+};
+
+export const buildCareerSubmitMessage = ({
+  created,
+  source,
+  queuedPuppeteer,
+  workflowDispatched,
+}) => {
+  if (!source.isActive || source.scraperType === "unsupported") {
+    return created
+      ? "Career page saved. Automatic scraping is not available for this portal yet."
+      : "Career page already exists — automatic scraping is not available for this portal yet.";
+  }
+
+  if (queuedPuppeteer) {
+    const timing = workflowDispatched
+      ? "Queued for Puppeteer scrape (CI run started — usually a few minutes)."
+      : "Queued for Puppeteer scrape (runs on the next priority or daily Puppeteer sync).";
+    return created
+      ? `Career page added — ${timing}`
+      : `Career page already exists — ${timing}`;
+  }
+
+  return created
+    ? "Career page added and sync started"
+    : "Career page already exists — sync refreshed";
+};
+
 export const createOrGetJobSource = async ({
   url,
   companyName,
@@ -97,15 +136,31 @@ export const createOrGetJobSource = async ({
 
   const existing = await JobSource.findOne({ url: normalizedUrl });
   if (existing) {
+    let queuedPuppeteer = false;
+    let workflowDispatched = false;
+
     if (triggerSync && existing.isActive) {
-      await syncSourceById(existing._id);
+      if (isPuppeteerScraperType(existing.scraperType)) {
+        const dispatch = await queuePuppeteerPrioritySync(existing);
+        queuedPuppeteer = true;
+        workflowDispatched = dispatch.dispatched;
+      } else {
+        await syncSourceById(existing._id);
+      }
     }
-    return { source: existing, created: false };
+
+    return {
+      source: existing,
+      created: false,
+      queuedPuppeteer,
+      workflowDispatched,
+    };
   }
 
   const slug = extractCompanySlugFromUrl(normalizedUrl);
   const resolved = await resolveScraperConfig(normalizedUrl, scraperType, companyName);
   const finalUrl = resolved.url || normalizedUrl;
+  const isPuppeteer = isPuppeteerScraperType(resolved.scraperType);
 
   const source = await JobSource.create({
     name: name || `${companyName || slug} Careers`,
@@ -117,17 +172,27 @@ export const createOrGetJobSource = async ({
     sourceOrigin,
     submittedBy,
     isPublic,
+    priorityPuppeteerSync: isPuppeteer && resolved.isActive,
     lastScrapeStatus: resolved.isActive ? "pending" : "never",
     lastScrapeError: resolved.isActive
       ? ""
       : "Career page saved. Automatic scraping is not available for this portal yet.",
   });
 
+  let queuedPuppeteer = false;
+  let workflowDispatched = false;
+
   if (triggerSync && source.isActive) {
-    await syncSourceById(source._id);
+    if (isPuppeteer) {
+      const dispatch = await queuePuppeteerPrioritySync(source);
+      queuedPuppeteer = true;
+      workflowDispatched = dispatch.dispatched;
+    } else {
+      await syncSourceById(source._id);
+    }
   }
 
-  return { source, created: true };
+  return { source, created: true, queuedPuppeteer, workflowDispatched };
 };
 
 export const listPublicJobSources = async () => {

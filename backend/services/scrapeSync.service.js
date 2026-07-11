@@ -273,6 +273,53 @@ export const syncSourceById = async (sourceId) => {
   return result;
 };
 
+export const syncPriorityPuppeteerSources = async (options = {}) => {
+  const { runPostSyncTasks = true } = options;
+  const sources = await JobSource.find({
+    isActive: true,
+    priorityPuppeteerSync: true,
+    scraperType: { $in: [...PUPPETEER_SCRAPER_TYPES] },
+  }).sort({ updatedAt: 1 });
+
+  const results = [];
+
+  for (const source of sources) {
+    const result = await syncSource(source);
+    results.push(result);
+
+    if (result.success && !result.skipped) {
+      source.priorityPuppeteerSync = false;
+      await source.save();
+    }
+
+    await delay(PUPPETEER_DELAY_MS);
+  }
+
+  const summary = {
+    mode: "puppeteer-priority",
+    totalSources: sources.length,
+    successful: results.filter((r) => r.success && !r.skipped).length,
+    skipped: results.filter((r) => r.skipped).length,
+    failed: results.filter((r) => !r.success).length,
+    newJobsCount: results.reduce((sum, r) => sum + (r.newJobsCount || 0), 0),
+    results,
+  };
+
+  console.log(
+    `[ScrapeSync] puppeteer-priority completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs`,
+  );
+
+  if (runPostSyncTasks && results.length > 0) {
+    try {
+      await processWatchlistAlerts(results);
+    } catch (error) {
+      console.error("[ScrapeSync] Watchlist alerts failed:", error.message);
+    }
+  }
+
+  return summary;
+};
+
 const cleanupNonItScrapedJobs = async () => {
   const activeJobs = await ScrapedJob.find({ status: "active" });
   let removedCount = 0;

@@ -13,6 +13,7 @@
     "test:link-validation": "node scripts/link-validation-test.js",
     "sync:api": "node scripts/sync-api.js",
     "sync:puppeteer": "node scripts/sync-puppeteer.js",
+    "sync:puppeteer-priority": "node scripts/sync-puppeteer-priority.js",
     "reprobe:sources": "node scripts/reprobe-sources.js",
     "sync:health": "node scripts/source-health.js"
   },
