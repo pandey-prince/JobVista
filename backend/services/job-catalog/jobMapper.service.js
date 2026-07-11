@@ -36,6 +36,32 @@ export const mapScrapedJobForList = (job) => {
   );
 };
 
+const dedupeScrapedJobs = (jobs = []) => {
+  const sorted = [...jobs].sort(
+    (a, b) => new Date(b.firstSeenAt || 0) - new Date(a.firstSeenAt || 0),
+  );
+  const seenCompanyTitle = new Set();
+  const seenUrls = new Set();
+  const deduped = [];
+
+  for (const job of sorted) {
+    const companyTitleKey = `${normalizeDedupeText(job.companyName)}::${normalizeDedupeText(job.title)}`;
+    const urlKey = normalizeDedupeText(job.applicationUrl);
+
+    if (seenCompanyTitle.has(companyTitleKey) || (urlKey && seenUrls.has(urlKey))) {
+      continue;
+    }
+
+    seenCompanyTitle.add(companyTitleKey);
+    if (urlKey) seenUrls.add(urlKey);
+    deduped.push(job);
+  }
+
+  return deduped;
+};
+
+export { dedupeScrapedJobs };
+
 export const getScrapedJobsForList = async (keyword = "") => {
   const query = { status: "active" };
 
@@ -54,7 +80,7 @@ export const getScrapedJobsForList = async (keyword = "") => {
     .sort({ firstSeenAt: -1 })
     .limit(500);
 
-  return filterIndiaJobs(filterItJobs(jobs)).map(mapScrapedJobForList);
+  return dedupeScrapedJobs(filterIndiaJobs(filterItJobs(jobs))).map(mapScrapedJobForList);
 };
 
 export const sortJobsByDate = (jobs = []) =>

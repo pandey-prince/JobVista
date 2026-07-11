@@ -4,6 +4,9 @@ import { statsApi } from "@/api";
 const defaultStats = {
   totalJobs: 0,
   companiesMonitored: 0,
+  companiesWithJobs: 0,
+  sourcesSyncedSuccessfully: 0,
+  lastSyncAt: null,
   jobsAddedToday: 0,
   scrapedJobs: 0,
 };

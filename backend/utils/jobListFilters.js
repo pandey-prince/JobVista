@@ -14,6 +14,8 @@ export const parseJobListFilters = (query = {}) => ({
   experienceLevels: splitCsv(query.experienceLevels),
   workModes: splitCsv(query.workModes),
   postedWithin: splitCsv(query.postedWithin),
+  companies: splitCsv(query.companies),
+  sortBy: query.sortBy === "company" ? "company" : "newest",
 });
 
 const LOCATION_ALIASES = {
@@ -174,6 +176,31 @@ export const filterJobList = (jobs = [], keyword = "", filters = {}) => {
       }
     }
 
+    if (filters.companies?.length) {
+      const companyName = String(job?.company?.name || "").toLowerCase();
+      const ok = filters.companies.some(
+        (company) => companyName === String(company).toLowerCase(),
+      );
+      if (!ok) return false;
+    }
+
     return true;
   });
+};
+
+export const sortJobList = (jobs = [], sortBy = "newest") => {
+  const sorted = [...jobs];
+
+  if (sortBy === "company") {
+    sorted.sort((a, b) => {
+      const companyA = String(a.company?.name || "").toLowerCase();
+      const companyB = String(b.company?.name || "").toLowerCase();
+      if (companyA !== companyB) return companyA.localeCompare(companyB);
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
+    return sorted;
+  }
+
+  sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  return sorted;
 };

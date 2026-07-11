@@ -1,4 +1,4 @@
-export { mapScrapedJobForList, getScrapedJobsForList, sortJobsByDate } from "./jobMapper.service.js";
+export { mapScrapedJobForList, getScrapedJobsForList, sortJobsByDate, dedupeScrapedJobs } from "./jobMapper.service.js";
 export {
   fetchExternalJobs,
   fetchExternalJobById,

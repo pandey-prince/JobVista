@@ -9,13 +9,80 @@ import {
   detectScraperType,
   extractCompanySlugFromUrl,
 } from "../services/scrapers/index.js";
-import { mapScrapedJobForList } from "../services/job-catalog/index.js";
+import { mapScrapedJobForList, dedupeScrapedJobs } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import {
   parsePagination,
   buildPaginationMeta,
+  paginateArray,
 } from "../utils/pagination.js";
+import { companyNameMatchesSlug } from "../utils/companySlug.js";
+import { parseJobListFilters, filterJobList, sortJobList } from "../utils/jobListFilters.js";
+
+export const getCompanySourceJobs = async (req, res) => {
+  try {
+    const slug = String(req.params.slug || "").trim();
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: "Company slug is required",
+      });
+    }
+
+    const sources = await JobSource.find({ isPublic: true, isActive: true });
+    const source = sources.find((entry) => companyNameMatchesSlug(entry.companyName, slug));
+
+    if (!source) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found",
+      });
+    }
+
+    const keyword = String(req.query.keyword || "").trim();
+    const filters = parseJobListFilters(req.query);
+    const paginationQuery = parsePagination(req.query, {
+      defaultLimit: 12,
+      maxLimit: 48,
+    });
+
+    const query = { source: source._id, status: "active" };
+    if (keyword) {
+      const regex = { $regex: keyword, $options: "i" };
+      query.$or = [
+        { title: regex },
+        { description: regex },
+        { location: regex },
+        { companyName: regex },
+      ];
+    }
+
+    const scrapedJobs = await ScrapedJob.find(query).populate("source").sort({ firstSeenAt: -1 });
+    const mappedJobs = dedupeScrapedJobs(filterIndiaJobs(filterItJobs(scrapedJobs))).map(
+      mapScrapedJobForList,
+    );
+    const filteredJobs = sortJobList(filterJobList(mappedJobs, keyword, filters), filters.sortBy);
+    const { data: jobs, pagination } = paginateArray(filteredJobs, paginationQuery);
+
+    res.status(200).json({
+      success: true,
+      source: {
+        _id: source._id,
+        companyName: source.companyName,
+        name: source.name,
+        url: source.url,
+        lastScrapedAt: source.lastScrapedAt,
+        lastScrapeStatus: source.lastScrapeStatus,
+        jobsFoundCount: source.jobsFoundCount,
+      },
+      jobs,
+      pagination,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const listPublicSources = async (req, res) => {
   try {

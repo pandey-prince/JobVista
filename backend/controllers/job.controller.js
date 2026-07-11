@@ -4,7 +4,9 @@ import {
   getScrapedJobsForList,
   isExternalJobId,
 } from "../services/job-catalog/index.js";
-import { parseJobListFilters, filterJobList } from "../utils/jobListFilters.js";
+import { parseJobListFilters, filterJobList, sortJobList } from "../utils/jobListFilters.js";
+import { recommendJobs } from "../utils/jobRecommendation.js";
+import { User } from "../models/user.model.js";
 import {
   parsePagination,
   paginateArray,
@@ -80,7 +82,10 @@ export const getAllJobs = async (req, res) => {
     });
 
     const scrapedJobs = await getScrapedJobsForList(keyword);
-    const filteredJobs = filterJobList(scrapedJobs, keyword, filters);
+    const filteredJobs = sortJobList(
+      filterJobList(scrapedJobs, keyword, filters),
+      filters.sortBy,
+    );
     const { data: jobsPage, pagination } = paginateArray(filteredJobs, paginationQuery);
 
     res.status(200).json({
@@ -124,6 +129,38 @@ export const getJobById = async (req, res) => {
     console.log(err);
     return res.status(500).json({
       message: "Unable to fetch job",
+      success: false,
+    });
+  }
+};
+
+export const getRecommendedJobs = async (req, res) => {
+  try {
+    const limit = Math.min(
+      24,
+      Math.max(1, parseInt(req.query.limit, 10) || 12),
+    );
+
+    let profile = {};
+    if (req.id) {
+      const user = await User.findById(req.id).select("profile.skills profile.preferredJobRoles");
+      profile = user?.profile || {};
+    }
+
+    const scrapedJobs = await getScrapedJobsForList("");
+    const jobs = recommendJobs(scrapedJobs, profile, { limit });
+
+    return res.status(200).json({
+      success: true,
+      jobs,
+      personalized: Boolean(
+        (profile.skills?.length || 0) > 0 || (profile.preferredJobRoles?.length || 0) > 0,
+      ),
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Unable to fetch recommended jobs",
       success: false,
     });
   }
