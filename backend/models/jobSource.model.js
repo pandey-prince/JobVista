@@ -81,6 +81,10 @@ const jobSourceSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    priorityPuppeteerSync: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

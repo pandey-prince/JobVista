@@ -1,0 +1,42 @@
+name: Scrape Puppeteer Priority
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [puppeteer-priority-sync]
+
+concurrency:
+  group: scrape-puppeteer-priority
+  cancel-in-progress: false
+
+jobs:
+  priority-puppeteer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Puppeteer Chrome
+        working-directory: backend
+        run: npx puppeteer browsers install chrome
+
+      - name: Sync priority Puppeteer career sources
+        working-directory: backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          SKIP_PUPPETEER_SCRAPERS: "false"
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
+        run: node scripts/sync-puppeteer-priority.js

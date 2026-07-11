@@ -2,6 +2,7 @@ import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { JobSource } from "../models/jobSource.model.js";
 import { UserCompanyList } from "../models/userCompanyList.model.js";
 import {
+  buildCareerSubmitMessage,
   createOrGetJobSource,
 } from "../services/careerSource.service.js";
 import { parseCareerSourcesSpreadsheet } from "../utils/parseCareerSourcesSpreadsheet.js";
@@ -125,7 +126,8 @@ export const submitCareerSource = async (req, res) => {
       });
     }
 
-    const { source, created } = await createOrGetJobSource({
+    const { source, created, queuedPuppeteer, workflowDispatched } =
+      await createOrGetJobSource({
       url,
       companyName,
       name,
@@ -153,11 +155,16 @@ export const submitCareerSource = async (req, res) => {
 
     res.status(created ? 201 : 200).json({
       success: true,
-      message: created
-        ? "Career page added and sync started"
-        : "Career page already exists — sync refreshed",
+      message: buildCareerSubmitMessage({
+        created,
+        source,
+        queuedPuppeteer,
+        workflowDispatched,
+      }),
       source,
       watchlistEntry,
+      queuedPuppeteer: Boolean(queuedPuppeteer),
+      workflowDispatched: Boolean(workflowDispatched),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
