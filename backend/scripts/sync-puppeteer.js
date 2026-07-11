@@ -13,17 +13,43 @@ process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "false";
 
 const MONGO_URI = process.env.MONGO_URI;
 
+const parseShardOptions = () => {
+  const shardIndex = Number(process.env.PUPPETEER_SHARD);
+  const shardCount = Number(process.env.PUPPETEER_SHARD_COUNT);
+
+  if (
+    Number.isInteger(shardIndex) &&
+    Number.isInteger(shardCount) &&
+    shardCount > 1 &&
+    shardIndex >= 0 &&
+    shardIndex < shardCount
+  ) {
+    return { shardIndex, shardCount };
+  }
+
+  return {};
+};
+
 const run = async () => {
   if (!MONGO_URI) {
     console.error("MONGO_URI is required");
     process.exit(1);
   }
 
-  console.log("\n=== JobVista Puppeteer source sync ===\n");
+  const shardOptions = parseShardOptions();
+  const shardLabel =
+    shardOptions.shardCount > 1
+      ? ` (shard ${shardOptions.shardIndex + 1}/${shardOptions.shardCount})`
+      : "";
+
+  console.log(`\n=== JobVista Puppeteer source sync${shardLabel} ===\n`);
 
   try {
     await mongoose.connect(MONGO_URI);
-    const summary = await syncSourcesByMode("puppeteer", { runPostSyncTasks: false });
+    const summary = await syncSourcesByMode("puppeteer", {
+      runPostSyncTasks: false,
+      ...shardOptions,
+    });
     console.log("\nSummary:", JSON.stringify(summary, null, 2));
 
     if (summary.totalSources === 0) {

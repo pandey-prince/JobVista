@@ -159,6 +159,26 @@ const filterSourcesByMode = (sources, mode) => {
   return sources;
 };
 
+const shardSources = (sources, shardIndex, shardCount) => {
+  if (
+    shardCount === undefined ||
+    shardCount === null ||
+    shardCount <= 1 ||
+    shardIndex === undefined ||
+    shardIndex === null
+  ) {
+    return sources;
+  }
+
+  const sorted = [...sources].sort((a, b) =>
+    String(a.companyName || a.name || a._id).localeCompare(
+      String(b.companyName || b.name || b._id),
+    ),
+  );
+
+  return sorted.filter((_, index) => index % shardCount === shardIndex);
+};
+
 const runSyncLoop = async (sources) => {
   const results = [];
   let removedFromBoard = 0;
@@ -177,9 +197,14 @@ const runSyncLoop = async (sources) => {
 };
 
 export const syncSourcesByMode = async (mode = "all", options = {}) => {
-  const { runPostSyncTasks = mode !== "puppeteer" } = options;
+  const {
+    runPostSyncTasks = mode !== "puppeteer",
+    shardIndex,
+    shardCount,
+  } = options;
   const allSources = await JobSource.find({ isActive: true });
-  const sources = filterSourcesByMode(allSources, mode);
+  const modeSources = filterSourcesByMode(allSources, mode);
+  const sources = shardSources(modeSources, shardIndex, shardCount);
   const { results, removedFromBoard } = await runSyncLoop(sources);
 
   let nonItRemoved = 0;
@@ -202,6 +227,8 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
 
   const summary = {
     mode,
+    shardIndex: shardCount > 1 ? shardIndex : null,
+    shardCount: shardCount > 1 ? shardCount : null,
     totalSources: sources.length,
     successful: results.filter((r) => r.success && !r.skipped).length,
     skipped: results.filter((r) => r.skipped).length,
@@ -216,7 +243,7 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
   };
 
   console.log(
-    `[ScrapeSync] ${mode} completed: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board`,
+    `[ScrapeSync] ${mode} completed${shardCount > 1 ? ` (shard ${shardIndex + 1}/${shardCount})` : ""}: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board`,
   );
 
   if (runPostSyncTasks) {

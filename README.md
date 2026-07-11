@@ -208,7 +208,7 @@ ALERT_DIGEST_CRON=30 14 * * *
 | Layer | What runs | Where |
 |-------|-------------|--------|
 | **API scrapers** (~47) | greenhouse, lever, workday, smartrecruiters, RSS, etc. | **Render** cron every 6h (`SCRAPE_ENABLED=true`, puppeteer skipped) |
-| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** daily — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) |
+| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** daily — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) (3 parallel shards) |
 
 Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** scraped on the hosted backend.
 
@@ -219,9 +219,9 @@ Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** s
 3. Workflow runs **daily** (08:00 IST) and supports **manual dispatch** from the Actions tab
 
 The workflow runs:
-1. `reprobe:sources` — tries to upgrade auto-puppeteer boards to API scrapers
-2. `sync:puppeteer` — scrapes remaining Puppeteer sources into Atlas
-3. `source-health` — logs a status report
+1. **reprobe** — tries to upgrade auto-puppeteer boards to API scrapers (once per run)
+2. **puppeteer-sync** — 3 parallel matrix jobs (`PUPPETEER_SHARD` 0–2), ~18 sources each, 3h timeout per shard
+3. **health-report** — logs a status report after all shards finish
 
 ### Ops sync endpoint (optional)
 
