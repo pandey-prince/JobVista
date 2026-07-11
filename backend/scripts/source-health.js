@@ -29,6 +29,8 @@ const run = async () => {
   let apiError = 0;
   let apiSuccess = 0;
   let puppeteerCount = 0;
+  let puppeteerError = 0;
+  let puppeteerSuccess = 0;
 
   for (const source of sources) {
     byStatus[source.lastScrapeStatus] = (byStatus[source.lastScrapeStatus] || 0) + 1;
@@ -36,6 +38,8 @@ const run = async () => {
 
     if (isPuppeteerScraperType(source.scraperType)) {
       puppeteerCount += 1;
+      if (source.lastScrapeStatus === "success") puppeteerSuccess += 1;
+      else if (source.lastScrapeStatus === "error") puppeteerError += 1;
       continue;
     }
 
@@ -48,19 +52,55 @@ const run = async () => {
   console.log(`Total sources: ${sources.length}`);
   console.log(`Active scraped jobs: ${activeJobs}`);
   console.log(`Puppeteer sources (GitHub Actions): ${puppeteerCount}`);
+  console.log(`Puppeteer success: ${puppeteerSuccess}`);
+  console.log(`Puppeteer errors: ${puppeteerError}`);
   console.log(`API success: ${apiSuccess}`);
   console.log(`API never synced: ${apiNever}`);
   console.log(`API errors: ${apiError}`);
   console.log("\nBy scrape status:", byStatus);
   console.log("By scraper type:", byType);
 
-  const errors = sources.filter((s) => s.lastScrapeStatus === "error");
-  if (errors.length) {
-    console.log("\nSources with errors:");
-    for (const source of errors.slice(0, 20)) {
+  const productive = sources.filter(
+    (source) =>
+      source.lastScrapeStatus === "success" && (source.jobsFoundCount || 0) > 0,
+  );
+  if (productive.length) {
+    console.log(`\nSources with jobs (${productive.length}):`);
+    for (const source of productive) {
+      console.log(
+        `  ✓ ${source.companyName} (${source.scraperType}): ${source.jobsFoundCount} jobs`,
+      );
+    }
+  }
+
+  const apiErrors = sources.filter(
+    (source) =>
+      !isPuppeteerScraperType(source.scraperType) &&
+      source.lastScrapeStatus === "error",
+  );
+  if (apiErrors.length) {
+    console.log("\nAPI sources with errors:");
+    for (const source of apiErrors.slice(0, 20)) {
       console.log(`  - ${source.companyName} (${source.scraperType}): ${source.lastScrapeError}`);
     }
-    if (errors.length > 20) console.log(`  ... and ${errors.length - 20} more`);
+    if (apiErrors.length > 20) {
+      console.log(`  ... and ${apiErrors.length - 20} more`);
+    }
+  }
+
+  const puppeteerErrors = sources.filter(
+    (source) =>
+      isPuppeteerScraperType(source.scraperType) &&
+      source.lastScrapeStatus === "error",
+  );
+  if (puppeteerErrors.length) {
+    console.log("\nPuppeteer sources with errors:");
+    for (const source of puppeteerErrors.slice(0, 20)) {
+      console.log(`  - ${source.companyName}: ${source.lastScrapeError}`);
+    }
+    if (puppeteerErrors.length > 20) {
+      console.log(`  ... and ${puppeteerErrors.length - 20} more`);
+    }
   }
 
   await mongoose.disconnect();

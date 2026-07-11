@@ -132,12 +132,12 @@ export const KNOWN_CAREER_BOARDS = {
   Google: {
     url: "https://www.google.com/about/careers/applications/jobs/results",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Microsoft: {
     url: "https://apply.careers.microsoft.com/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Amazon: {
     url: "https://www.amazon.jobs/en/search?loc_query=India&country=IND",
@@ -147,12 +147,12 @@ export const KNOWN_CAREER_BOARDS = {
   Apple: {
     url: "https://jobs.apple.com/en-us/search",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Meta: {
     url: "https://www.metacareers.com/jobs",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   IBM: {
     url: "https://www.ibm.com/careers/search?field_keyword_05[0]=India",
@@ -162,7 +162,7 @@ export const KNOWN_CAREER_BOARDS = {
   "Goldman Sachs": {
     url: "https://higher.gs.com/results",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   "Morgan Stanley": {
     url: "https://morganstanley.tal.net/vx/lang-en-GB/mobile-0/channel-1/candidate/jobboard/v2/",
@@ -217,7 +217,7 @@ export const KNOWN_CAREER_BOARDS = {
   Delhivery: {
     url: "https://www.delhivery.com/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   Lenskart: {
     url: "https://careers.lenskart.com",
@@ -272,7 +272,7 @@ export const KNOWN_CAREER_BOARDS = {
   Intuit: {
     url: "https://jobs.intuit.com/search-jobs",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   VMware: {
     url: "https://broadcom.wd1.myworkdayjobs.com/en-US/External_Career",
@@ -337,17 +337,17 @@ export const KNOWN_CAREER_BOARDS = {
   "ICICI Bank": {
     url: "https://www.icicicareers.com/",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   "HDFC Bank": {
     url: "https://www.hdfc.bank.in/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   "Axis Bank": {
     url: "https://www.axis.bank.in/careers",
     scraperType: "auto-puppeteer",
-    isActive: true,
+    isActive: false,
   },
   "Kotak Mahindra Bank": {
     url: "https://www.kotak.bank.in/en/about-us/careers.html",

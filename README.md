@@ -203,22 +203,26 @@ ALERT_DIGEST_CRON=30 14 * * *
 
 `ALERT_DIGEST_CRON` runs at **8:00 PM IST** (14:30 UTC). Without `RESEND_API_KEY`, emails are skipped in dev.
 
-## Scraping (hybrid: Render + GitHub Actions)
+## Scraping (hybrid: GitHub Actions + Render)
 
 | Layer | What runs | Where |
 |-------|-------------|--------|
-| **API scrapers** (~47) | greenhouse, lever, workday, smartrecruiters, RSS, etc. | **Render** cron every 6h (`SCRAPE_ENABLED=true`, puppeteer skipped) |
+| **API scrapers** (~47) | greenhouse, lever, workday, smartrecruiters, RSS, etc. | **GitHub Actions** every 6h — [`.github/workflows/scrape-api.yml`](.github/workflows/scrape-api.yml) (primary) |
 | **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** daily — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) (3 parallel shards) |
 
-Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** scraped on the hosted backend.
+Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** scraped on the hosted backend. Render’s built-in cron is an **optional backup** for API sync when the web process stays awake; **GitHub Actions is the primary** reliable runner for API sources.
 
 ### GitHub Actions setup (required for full 100-source coverage)
 
 1. Repo **Settings → Secrets and variables → Actions**
 2. Add secret: `MONGO_URI` (same Atlas URI as Render)
-3. Workflow runs **daily** (08:00 IST) and supports **manual dispatch** from the Actions tab
+3. Workflows support **manual dispatch** from the Actions tab
 
-The workflow runs:
+**API sync** ([`scrape-api.yml`](.github/workflows/scrape-api.yml)) runs every 6 hours:
+1. **api-sync** — `node scripts/sync-api.js` for greenhouse, lever, workday, smartrecruiters, RSS, etc.
+2. **source health** — `node scripts/source-health.js --report-only` after sync
+
+**Puppeteer sync** ([`scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml)) runs daily (08:00 IST):
 1. **reprobe** — tries to upgrade auto-puppeteer boards to API scrapers (once per run)
 2. **puppeteer-sync** — 3 parallel matrix jobs (`PUPPETEER_SHARD` 0–2), ~18 sources each, 3h timeout per shard
 3. **health-report** — logs a status report after all shards finish
