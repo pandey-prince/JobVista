@@ -25,7 +25,44 @@ const run = async () => {
     await mongoose.connect(MONGO_URI);
     const summary = await syncSourcesByMode("puppeteer", { runPostSyncTasks: false });
     console.log("\nSummary:", JSON.stringify(summary, null, 2));
-    process.exit(summary.failed > 0 ? 1 : 0);
+
+    if (summary.totalSources === 0) {
+      console.log("No puppeteer sources to sync.");
+      process.exit(0);
+    }
+
+    const minSuccess = Number(process.env.PUPPETEER_MIN_SUCCESS || 1);
+    const failOnPartial = process.env.PUPPETEER_FAIL_ON_PARTIAL === "true";
+
+    if (summary.failed > 0) {
+      const failedNames = summary.results
+        .filter((r) => !r.success && !r.skipped)
+        .map((r) => `${r.sourceName}: ${r.error || "unknown"}`)
+        .slice(0, 15);
+      console.warn(
+        `\n${summary.failed}/${summary.totalSources} puppeteer source(s) failed (common for auto-puppeteer):`,
+      );
+      for (const line of failedNames) console.warn(`  - ${line}`);
+      if (summary.failed > failedNames.length) {
+        console.warn(`  ... and ${summary.failed - failedNames.length} more`);
+      }
+    }
+
+    if (summary.successful < minSuccess) {
+      console.error(
+        `Puppeteer sync unusable: only ${summary.successful}/${summary.totalSources} succeeded (need at least ${minSuccess}).`,
+      );
+      process.exit(1);
+    }
+
+    if (failOnPartial && summary.failed > 0) {
+      process.exit(1);
+    }
+
+    console.log(
+      `\nPuppeteer sync finished: ${summary.successful}/${summary.totalSources} sources OK, ${summary.newJobsCount} new jobs.`,
+    );
+    process.exit(0);
   } catch (error) {
     console.error("Puppeteer sync failed:", error.message);
     process.exit(1);
