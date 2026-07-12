@@ -36,7 +36,11 @@ const Login = () => {
             });
             if (res.data.success) {
                 dispatch(setUser(res.data.user));
-                navigate("/");
+                if (res.data.user?.role === "admin") {
+                    navigate("/admin");
+                } else {
+                    navigate("/");
+                }
                 toast.success(res.data.message);
             }
         } catch (error) {
@@ -48,7 +52,11 @@ const Login = () => {
     }
     useEffect(()=>{
         if(user){
-            navigate("/");
+            if (user.role === "admin") {
+                navigate("/admin");
+            } else {
+                navigate("/");
+            }
         }
     },[])
     return (

@@ -254,8 +254,8 @@ const run = async () => {
       ? pass("GET /scraped-jobs", `${scrapedData.jobs?.length || 0} jobs`)
       : fail("GET /scraped-jobs");
 
-    skip("GET /scraped-jobs/sources (recruiter)", "applicant-only mode");
-    skip("POST /career-sources/import/excel (recruiter)", "applicant-only mode");
+    skip("GET /scraped-jobs/sources (recruiter)", "use admin-api-test.js");
+    skip("POST /career-sources/import/excel (recruiter)", "use admin-api-test.js");
 
     const workbookData = [
       ["companyName", "careerUrl"],

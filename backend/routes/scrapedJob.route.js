@@ -19,25 +19,25 @@ import {
 const router = express.Router();
 
 router.route("/").get(listScrapedJobs);
-router.route("/sync").post(isAuthenticated, requireRole("recruiter"), triggerFullSync);
+router.route("/sync").post(isAuthenticated, requireRole("admin"), triggerFullSync);
 router.route("/sync/ops").post(requireCronSecret, triggerOpsSync);
 router
   .route("/sources")
-  .get(isAuthenticated, requireRole("recruiter"), listJobSources)
-  .post(isAuthenticated, requireRole("recruiter"), createJobSource);
+  .get(isAuthenticated, requireRole("admin"), listJobSources)
+  .post(isAuthenticated, requireRole("admin"), createJobSource);
 router
   .route("/sources/detect")
-  .post(isAuthenticated, requireRole("recruiter"), detectSourceType);
+  .post(isAuthenticated, requireRole("admin"), detectSourceType);
 router
   .route("/sources/:id")
-  .put(isAuthenticated, requireRole("recruiter"), updateJobSource)
-  .delete(isAuthenticated, requireRole("recruiter"), deleteJobSource);
+  .put(isAuthenticated, requireRole("admin"), updateJobSource)
+  .delete(isAuthenticated, requireRole("admin"), deleteJobSource);
 router
   .route("/sources/:id/sync")
-  .post(isAuthenticated, requireRole("recruiter"), triggerSourceSync);
+  .post(isAuthenticated, requireRole("admin"), triggerSourceSync);
 router
   .route("/link-check")
-  .post(isAuthenticated, requireRole("recruiter"), triggerLinkCheck);
+  .post(isAuthenticated, requireRole("admin"), triggerLinkCheck);
 router.route("/:id").get(getScrapedJobById);
 
 export default router;

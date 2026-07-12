@@ -2,7 +2,7 @@
 
 A job portal for **job seekers** — IT roles in India from company career pages (100+ sources). Only India-relevant roles are shown.
 
-> **Applicant-only mode:** The product UI is for job seekers. Recruiter signup and admin dashboards are hidden; the public job feed shows scraped career-page listings only. Recruiter APIs remain in the backend for ops but are not exposed in the app.
+> **Applicant-only mode:** The product UI is for job seekers. Recruiter signup is blocked; the public job feed shows scraped career-page listings only. Platform ops use a separate **admin** login at `/admin/login` (not linked in the student navbar).
 
 ## Live
 
@@ -100,7 +100,7 @@ Routes map to controllers; controllers call services — not the other way aroun
 | Layer | Role |
 |-------|------|
 | `src/api/client.js` | Shared axios instance (credentials, base URL) |
-| `src/api/index.js` | Domain APIs: `authApi`, `jobsApi`, `savedJobsApi`, `alertsApi`, `trackerApi`, `careerSourceApi`, … |
+| `src/api/index.js` | Domain APIs: `authApi`, `jobsApi`, `adminApi`, `savedJobsApi`, `alertsApi`, `trackerApi`, `careerSourceApi`, … |
 | `src/app/router.jsx` | Route definitions |
 | `src/layouts/MainLayout.jsx` | Navbar + `<Outlet />` shell |
 | `src/features/*/` | Feature hooks and UI (`useJobAlerts`, `useTrackedApplications`, `MatchScorePanel`) |
@@ -135,6 +135,31 @@ Scraped jobs are kept fresh by:
 - **Link check** (default daily) — validates `applicationUrl` and hard-deletes confirmed 404 / "job not found" pages after 3 failures
 
 Recruiters can trigger manually via API (ops): `POST /api/v1/scraped-jobs/link-check`
+
+### Admin ops dashboard
+
+Admin accounts are **not** created via public signup. Bootstrap once with env vars in `backend/.env` (see `.env.example`):
+
+```env
+ADMIN_EMAIL=ops@example.com
+ADMIN_PASSWORD=your-strong-password
+ADMIN_FULLNAME=JobVista Admin
+ADMIN_PHONE=9000000000
+```
+
+```bash
+cd backend
+npm run seed:admin
+```
+
+Then open **http://localhost:5173/admin/login** (production: `https://job-vista-eta.vercel.app/admin/login`).
+
+| Path | Purpose |
+|------|---------|
+| `/admin` | Ops dashboard — platform stats + searchable company table (scraped vs in-DB vs visible on site) |
+| `/admin/sources` | Manage career sources — sync, enable/disable, add URL, Excel import |
+
+All `/api/v1/admin/*` and scraped-jobs source mutations require the `admin` role and JWT cookie. Student accounts cannot access admin routes.
 
 Optional company logo uploads (otherwise files save to `backend/uploads/`):
 
@@ -183,7 +208,8 @@ Frontend: http://localhost:3000 · Backend: http://localhost:8000
 | `/job` | List jobs (scraped feed), **sort** (`sortBy`), **company filter** (`companies`), **`GET /recommended`** |
 | `/application` | Apply to internal jobs (legacy; feed is scraped-only) |
 | `/company` | Recruiter companies (API only) |
-| `/scraped-jobs` | Scraped jobs + admin sources (admin API only) |
+| `/scraped-jobs` | Scraped jobs + source ops (admin role only) |
+| `/admin` | Admin dashboard stats and source list (`GET /dashboard`, `GET /sources`) |
 | `/career-sources` | Public directory, watchlist, Excel import, **`GET /:slug/jobs`** company page API |
 | `/chatbot` | JobMate messages |
 | `/stats` | Public platform stats (job counts, companies monitored) |

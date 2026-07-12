@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -13,9 +14,11 @@ import {
 } from "../ui/table";
 import { Badge } from "../ui/badge";
 import axios from "axios";
+import { adminApi } from "@/api";
 import { SCRAPED_JOB_API_END_POINT, CAREER_SOURCE_API_END_POINT } from "@/utils/constant";
 import { toast } from "sonner";
 import { Loader2, RefreshCw, Trash2, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const defaultForm = {
   name: "",
@@ -33,7 +36,9 @@ const defaultForm = {
 };
 
 const ScrapeSources = () => {
+  const [searchParams] = useSearchParams();
   const [sources, setSources] = useState([]);
+  const [filterText, setFilterText] = useState(searchParams.get("search") || "");
   const [form, setForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,9 +49,7 @@ const ScrapeSources = () => {
   const fetchSources = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${SCRAPED_JOB_API_END_POINT}/sources`, {
-        withCredentials: true,
-      });
+      const res = await adminApi.listSources();
       if (res.data.success) {
         setSources(res.data.sources);
       }
@@ -129,7 +132,12 @@ const ScrapeSources = () => {
     }
   };
 
-  const handleSourceSync = async (sourceId) => {
+  const handleSourceSync = async (sourceId, scraperType) => {
+    if (scraperType === "auto-puppeteer" || scraperType === "puppeteer") {
+      toast.message("Puppeteer sources sync on GitHub Actions", {
+        description: "Render skips browser scrapers. Use the daily CI workflow or priority queue.",
+      });
+    }
     try {
       setSyncingSourceId(sourceId);
       const res = await axios.post(
@@ -211,28 +219,49 @@ const ScrapeSources = () => {
 
   const activeCount = sources.filter((s) => s.isActive).length;
   const pendingCount = sources.filter((s) => !s.isActive).length;
+  const query = filterText.trim().toLowerCase();
+  const visibleSources = query
+    ? sources.filter((source) =>
+        [source.companyName, source.name, source.url, source.scraperType]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(query),
+      )
+    : sources;
 
   return (
     <div>
-      <div className="max-w-6xl mx-auto my-10">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="font-bold text-2xl">Career Page Sources</h1>
-            <p className="text-sm text-muted-foreground">
-              {sources.length} companies configured · {activeCount} active scrapers · {pendingCount} pending setup
-            </p>
-            <p className="text-xs text-muted-foreground/70 mt-1">
-              IT jobs are synced automatically from companies with Greenhouse, Lever, or Ashby career pages.
-            </p>
-          </div>
-          <Button onClick={handleFullSync} disabled={syncing}>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Career page sources</h1>
+          <p className="text-sm text-muted-foreground">
+            {sources.length} companies configured · {activeCount} active · {pendingCount} inactive
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            <Link to="/admin" className="text-brand hover:underline">
+              Back to dashboard
+            </Link>
+          </p>
+        </div>
+        <Button onClick={handleFullSync} disabled={syncing}>
             {syncing ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (
               <RefreshCw className="h-4 w-4 mr-2" />
             )}
-            Sync All
+            Sync all (API on Render)
           </Button>
+        </div>
+
+        <div className="mb-6">
+          <Label>Filter list</Label>
+          <Input
+            className="mt-2 max-w-md"
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            placeholder="Search company or URL..."
+          />
         </div>
 
         <div className="mb-8 rounded-lg border border-brand/20 bg-brand-muted p-6">
@@ -384,13 +413,15 @@ const ScrapeSources = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Jobs</TableHead>
+                <TableHead>Scraped</TableHead>
+                <TableHead>In DB</TableHead>
+                <TableHead>Visible</TableHead>
                 <TableHead>Last Sync</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sources.map((source) => (
+              {visibleSources.map((source) => (
                 <TableRow key={source._id}>
                   <TableCell>
                     <div>
@@ -428,6 +459,8 @@ const ScrapeSources = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>{source.jobsFoundCount || 0}</TableCell>
+                  <TableCell>{source.activeJobsInDb || 0}</TableCell>
+                  <TableCell>{source.visibleJobsOnSite || 0}</TableCell>
                   <TableCell>
                     {source.lastScrapedAt
                       ? new Date(source.lastScrapedAt).toLocaleString()
@@ -437,7 +470,7 @@ const ScrapeSources = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleSourceSync(source._id)}
+                      onClick={() => handleSourceSync(source._id, source.scraperType)}
                       disabled={syncingSourceId === source._id}
                     >
                       {syncingSourceId === source._id ? (
@@ -466,7 +499,6 @@ const ScrapeSources = () => {
             </TableBody>
           </Table>
         )}
-      </div>
     </div>
   );
 };

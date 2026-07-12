@@ -12,6 +12,11 @@ import CompanyLists from "@/components/CompanyLists";
 import SavedJobs from "@/components/SavedJobs";
 import JobAlerts from "@/components/JobAlerts";
 import AuthRoute from "@/components/shared/AuthRoute";
+import AdminLogin from "@/components/admin/AdminLogin";
+import AdminLayout from "@/components/admin/AdminLayout";
+import AdminDashboard from "@/components/admin/AdminDashboard";
+import ScrapeSources from "@/components/admin/ScrapeSources";
+import ProtectedRoute from "@/components/admin/ProtectedRoute";
 
 export const appRouter = createBrowserRouter([
   {
@@ -50,6 +55,19 @@ export const appRouter = createBrowserRouter([
           </AuthRoute>
         ),
       },
+    ],
+  },
+  { path: "/admin/login", element: <AdminLogin /> },
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: "sources", element: <ScrapeSources /> },
     ],
   },
 ]);

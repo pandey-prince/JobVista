@@ -24,7 +24,7 @@ router
   .route("/import/excel")
   .post(
     isAuthenticated,
-    requireRole("recruiter"),
+    requireRole("admin"),
     singleUpload,
     importCareerSourcesExcel
   );

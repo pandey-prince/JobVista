@@ -49,7 +49,7 @@ export const register = async (req, res) => {
       });
     }
 
-    if (role === "recruiter") {
+    if (role === "recruiter" || role === "admin") {
       return res.status(403).json({
         message: "Recruiter signup is disabled. JobVista is for job seekers only.",
         success: false,
