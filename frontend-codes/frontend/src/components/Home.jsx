@@ -6,6 +6,7 @@ import HowItWorks from './HowItWorks'
 import LatestJobs from './LatestJobs'
 import NewTodayJobs from './NewTodayJobs'
 import RecommendedJobs from './RecommendedJobs'
+import useHomeJobSections from '@/hooks/useHomeJobSections'
 import OnboardingChecklist from '@/features/onboarding/OnboardingChecklist'
 import useOnboardingProgress from '@/features/onboarding/useOnboardingProgress'
 
@@ -14,6 +15,11 @@ const ONBOARDING_BANNER_KEY = 'jobvista-onboarding-banner-dismissed'
 const Home = () => {
   const { user } = useSelector((store) => store.auth)
   const { isComplete, loading } = useOnboardingProgress(user)
+  const {
+    newTodayJobs,
+    latestJobs,
+    loading: homeJobsLoading,
+  } = useHomeJobSections()
   const [bannerDismissed, setBannerDismissed] = useState(() =>
     localStorage.getItem(ONBOARDING_BANNER_KEY) === 'true',
   )
@@ -43,11 +49,11 @@ const Home = () => {
         />
       ) : null}
       <HeroSection />
-      <NewTodayJobs />
+      <NewTodayJobs jobs={newTodayJobs} loading={homeJobsLoading} />
       <RecommendedJobs />
       <HowItWorks />
       <CategoryCarousel />
-      <LatestJobs />
+      <LatestJobs jobs={latestJobs} loading={homeJobsLoading} />
     </div>
   )
 }

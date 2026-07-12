@@ -11,8 +11,19 @@ const normalizeDedupeText = (value = "") =>
     .replace(/\s+/g, " ")
     .replace(/\/$/, "");
 
+const normalizeComparableText = (value = "") =>
+  String(value).toLowerCase().trim().replace(/\s+/g, " ");
+
 export const mapScrapedJobForList = (job) => {
-  const description = cleanJobText(job.description, { maxLength: 400 });
+  let description = cleanJobText(job.description, { maxLength: 400 });
+  const locationNorm = normalizeComparableText(job.location);
+  if (
+    description &&
+    (normalizeComparableText(description) === locationNorm ||
+      normalizeComparableText(description) === normalizeComparableText(job.title))
+  ) {
+    description = "";
+  }
 
   return attachBadgesToJob(
     {

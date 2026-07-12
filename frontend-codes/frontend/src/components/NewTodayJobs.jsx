@@ -1,35 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { jobsApi } from "@/api";
 import LatestJobCards from "./LatestJobCards";
 import LoadingState, { JobGridSkeleton } from "@/components/shared/LoadingState";
 import { Button } from "./ui/button";
 import { Sparkles } from "lucide-react";
 
-const NewTodayJobs = () => {
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchNewToday = async () => {
-      try {
-        setLoading(true);
-        const res = await jobsApi.list({
-          page: 1,
-          limit: 6,
-          postedWithin: "Last 24 hours",
-        });
-        if (res.data.success) setJobs(res.data.jobs || []);
-      } catch (error) {
-        console.error("Failed to load new today jobs", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNewToday();
-  }, []);
-
+const NewTodayJobs = ({ jobs = [], loading = false }) => {
   if (!loading && jobs.length === 0) return null;
 
   return (

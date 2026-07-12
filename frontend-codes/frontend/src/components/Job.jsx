@@ -39,6 +39,11 @@ const Job = ({job}) => {
 
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
     const description = cleanJobText(job?.description, { maxLength: 220 });
+    const locationText = String(job?.location || "").trim().toLowerCase();
+    const showDescription =
+      Boolean(description) &&
+      description.trim().toLowerCase() !== locationText &&
+      description.trim().toLowerCase() !== String(job?.title || "").trim().toLowerCase();
     
     return (
         <>
@@ -78,7 +83,7 @@ const Job = ({job}) => {
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>
-                {description ? (
+                {showDescription ? (
                     <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>
                         {description}
                     </p>
