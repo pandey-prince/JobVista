@@ -7,9 +7,15 @@ import {
   JOB_API_END_POINT,
   CAREER_SOURCE_API_END_POINT,
   STATS_API_END_POINT,
+  ADMIN_API_END_POINT,
   APPLICATION_API_END_POINT,
   SCRAPED_JOB_API_END_POINT,
 } from "@/utils/constant";
+
+export const adminApi = {
+  dashboard: (params = {}) => apiClient.get(`${ADMIN_API_END_POINT}/dashboard`, { params }),
+  listSources: () => apiClient.get(`${ADMIN_API_END_POINT}/sources`),
+};
 
 export const authApi = {
   me: () => apiClient.get(`${USER_API_END_POINT}/me`),

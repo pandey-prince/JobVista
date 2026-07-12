@@ -34,3 +34,6 @@ export const ALERTS_API_END_POINT =
 
 export const TRACKED_APPLICATIONS_API_END_POINT =
   import.meta.env.VITE_TRACKED_APPLICATIONS_API_END_POINT || `${API_ROOT}/tracked-applications`;
+
+export const ADMIN_API_END_POINT =
+  import.meta.env.VITE_ADMIN_API_END_POINT || `${API_ROOT}/admin`;

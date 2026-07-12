@@ -16,6 +16,7 @@ import statsRoute from "./routes/stats.route.js";
 import savedJobRoute from "./routes/savedJob.route.js";
 import alertRoute from "./routes/alert.route.js";
 import trackedApplicationRoute from "./routes/trackedApplication.route.js";
+import adminRoute from "./routes/admin.route.js";
 import { startScrapeScheduler } from "./jobs/scrapeScheduler.js";
 import { startAlertScheduler } from "./jobs/alertScheduler.js";
 import { startLinkCheckScheduler } from "./jobs/linkCheckScheduler.js";
@@ -65,6 +66,7 @@ app.use("/api/v1/stats", statsRoute);
 app.use("/api/v1/saved-jobs", savedJobRoute);
 app.use("/api/v1/alerts", alertRoute);
 app.use("/api/v1/tracked-applications", trackedApplicationRoute);
+app.use("/api/v1/admin", adminRoute);
 
 app.get("/home", (req, res) => {
   return res.status(200).json({
