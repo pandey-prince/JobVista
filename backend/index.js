@@ -22,6 +22,7 @@ import { startAlertScheduler } from "./jobs/alertScheduler.js";
 import { startLinkCheckScheduler } from "./jobs/linkCheckScheduler.js";
 import { seedDefaultJobSources } from "./utils/seedJobSources.js";
 import { User } from "./models/user.model.js";
+import { isEmailConfigured } from "./services/email.service.js";
 dotenv.config({});
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
