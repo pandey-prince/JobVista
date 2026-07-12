@@ -17,9 +17,6 @@ const normalizeEmail = (email) => String(email).trim().toLowerCase();
 
 const deliverOtpEmail = async (normalized, otp) => {
   if (!isEmailConfigured()) {
-    // #region agent log
-    fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'otp.service.js:deliverOtpEmail',message:'email not configured',data:{nodeEnv:process.env.NODE_ENV,emailConfigured:false},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
     if (process.env.NODE_ENV === "production") {
       const err = new Error("Email service is not configured. Contact support.");
       err.statusCode = 503;
@@ -43,10 +40,6 @@ const deliverOtpEmail = async (normalized, otp) => {
     `,
     text: `Your JobLeLo verification code is ${otp}. It expires in 10 minutes.`,
   });
-
-  // #region agent log
-  fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'otp.service.js:deliverOtpEmail',message:'email send result',data:{success:result.success,skipped:Boolean(result.skipped),hasId:Boolean(result.id),nodeEnv:process.env.NODE_ENV},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
-  // #endregion
 
   if (result.skipped) {
     devOtpByEmail.set(normalized, otp);

@@ -122,9 +122,6 @@ export const register = async (req, res) => {
     }
 
     const otp = generateOtp();
-    // #region agent log
-    fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'user.controller.js:register',message:'sending signup otp',data:{hasResendKey:Boolean(process.env.RESEND_API_KEY),nodeEnv:process.env.NODE_ENV,emailDomain:normalizedEmail.split('@')[1]},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
     await sendSignupOtp(normalizedEmail, otp);
 
     return res.status(201).json({
@@ -134,9 +131,6 @@ export const register = async (req, res) => {
       email: normalizedEmail,
     });
   } catch (error) {
-    // #region agent log
-    fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'user.controller.js:register',message:'register failed',data:{statusCode:error.statusCode||500,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
-    // #endregion
     console.error("[Register]", error.message);
     const status = error.statusCode || 500;
     return res.status(status).json({

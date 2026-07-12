@@ -40,9 +40,6 @@ const GoogleSignInButton = ({ onSuccess, redirectTo = "/" }) => {
 
     const initGoogle = () => {
       if (!window.google?.accounts?.id || !buttonRef.current) return;
-      // #region agent log
-      fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'GoogleSignInButton.jsx:initGoogle',message:'google gsi init',data:{origin:window.location.origin,hasClientId:Boolean(clientId),clientIdSuffix:clientId?clientId.slice(-12):null,siteUrl:import.meta.env.VITE_SITE_URL||null},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: handleCredential,
