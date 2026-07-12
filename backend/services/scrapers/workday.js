@@ -1,5 +1,24 @@
-import { stripHtml } from "./normalize.js";
 import { fetchJson } from "./fetchHtml.js";
+
+const parseWorkdayPath = (pathname = "") => {
+  const parts = pathname.split("/").filter(Boolean);
+  let locale = "en-US";
+  let site = "";
+
+  if (parts.length >= 2 && /^[a-z]{2}-[A-Z]{2}$/.test(parts[0])) {
+    locale = parts[0];
+    site = parts[parts.length - 1];
+  } else if (parts.length) {
+    site = parts[parts.length - 1];
+  }
+
+  return { locale, site };
+};
+
+const buildWorkdayApplicationUrl = (host, locale, site, externalPath = "") => {
+  const path = String(externalPath || "").startsWith("/") ? externalPath : `/${externalPath}`;
+  return `${host}/${locale}/${site}${path}`;
+};
 
 const parseWorkdayConfig = (source) => {
   if (source.selectors?.tenant && source.selectors?.site) {
@@ -7,6 +26,7 @@ const parseWorkdayConfig = (source) => {
       tenant: source.selectors.tenant,
       wdServer: source.selectors.wdServer || "wd5",
       site: source.selectors.site,
+      locale: source.selectors.locale || "en-US",
     };
   }
 
@@ -18,26 +38,26 @@ const parseWorkdayConfig = (source) => {
     }
 
     const [, tenant, wdServer] = hostMatch;
-    const site = parsed.pathname.split("/").filter(Boolean).pop();
+    const { locale, site } = parseWorkdayPath(parsed.pathname);
     if (!site) {
       throw new Error("Workday URL must include a career site path");
     }
 
-    return { tenant, wdServer, site };
+    return { tenant, wdServer, site, locale };
   } catch (error) {
     throw new Error(`Workday config error: ${error.message}`);
   }
 };
 
 export const scrapeWorkday = async (source) => {
-  const { tenant, wdServer, site } = parseWorkdayConfig(source);
+  const { tenant, wdServer, site, locale } = parseWorkdayConfig(source);
   const host = `https://${tenant}.${wdServer}.myworkdayjobs.com`;
   const apiUrl = `${host}/wday/cxs/${tenant}/${site}/jobs`;
 
   const data = await fetchJson(apiUrl, {
     method: "POST",
     headers: {
-      Referer: `${host}/en-US/${site}`,
+      Referer: `${host}/${locale}/${site}`,
     },
     body: JSON.stringify({
       appliedFacets: {},
@@ -53,11 +73,11 @@ export const scrapeWorkday = async (source) => {
   }
 
   return postings.map((job) => {
-    const applicationUrl = `${host}/en-US${job.externalPath}`;
+    const applicationUrl = buildWorkdayApplicationUrl(host, locale, site, job.externalPath);
     return {
       externalId: job.externalPath || applicationUrl,
       title: job.title,
-      description: job.locationsText || job.title,
+      description: "",
       location: job.locationsText || "Not specified",
       jobType: "Full-time",
       salary: "Not disclosed",

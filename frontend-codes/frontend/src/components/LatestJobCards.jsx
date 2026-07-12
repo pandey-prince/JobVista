@@ -10,6 +10,12 @@ const LatestJobCards = ({job}) => {
     const [quickViewOpen, setQuickViewOpen] = useState(false);
     const badges = getJobBadges(job);
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
+    const description = cleanJobText(job?.description, { maxLength: 220 });
+    const locationText = String(job?.location || "").trim().toLowerCase();
+    const showDescription =
+      Boolean(description) &&
+      description.trim().toLowerCase() !== locationText &&
+      description.trim().toLowerCase() !== String(job?.title || "").trim().toLowerCase();
 
     return (
         <>
@@ -32,9 +38,11 @@ const LatestJobCards = ({job}) => {
                 <div className="mt-2">
                     <JobFreshnessBadges job={job} />
                 </div>
-                <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>
-                    {cleanJobText(job?.description, { maxLength: 220 })}
-                </p>
+                {showDescription ? (
+                    <p className='mt-3 text-sm text-muted-foreground line-clamp-3'>
+                        {description}
+                    </p>
+                ) : null}
             </div>
             <div className='mt-4 flex flex-wrap items-center gap-2'>
                 <Badge className='font-semibold text-blue-700' variant="ghost">{job?.position} Positions</Badge>

@@ -1,27 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import LatestJobCards from "./LatestJobCards";
-import { jobsApi } from "@/api";
 import LoadingState, { JobGridSkeleton } from "@/components/shared/LoadingState";
 
-const LatestJobs = () => {
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchLatest = async () => {
-      try {
-        setLoading(true);
-        const res = await jobsApi.list({ page: 1, limit: 6 });
-        if (res.data.success) setJobs(res.data.jobs || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLatest();
-  }, []);
+const LatestJobs = ({ jobs = [], loading = false }) => {
+  if (!loading && jobs.length === 0) return null;
 
   return (
     <div className="max-w-7xl mx-auto my-20 px-4 sm:px-6">
