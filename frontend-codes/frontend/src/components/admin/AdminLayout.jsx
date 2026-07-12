@@ -38,7 +38,7 @@ const AdminLayout = () => {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div>
             <Link to="/admin" className="text-xl font-bold">
-              Job<span className="text-brand">Vista</span> Ops
+              Job<span className="text-brand">LeLo</span> Ops
             </Link>
             <p className="text-xs text-muted-foreground">Career source monitoring</p>
           </div>

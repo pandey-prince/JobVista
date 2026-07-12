@@ -5,7 +5,7 @@ const SOURCE_STYLES = {
       "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800",
   },
   recruiter: {
-    label: "JobVista",
+    label: "JobLeLo",
     className:
       "bg-brand-muted text-brand border-brand/30 dark:border-brand/40",
   },

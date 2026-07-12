@@ -175,7 +175,7 @@ const CompanyJobsPage = () => {
         <div className="mt-8 rounded-xl border border-dashed border-border bg-card p-10 text-center">
           <h2 className="font-semibold">No active openings right now</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Check back after the next sync or browse other companies on JobVista.
+            Check back after the next sync or browse other companies on JobLeLo.
           </p>
           <Button asChild variant="outline" className="mt-4 rounded-full">
             <Link to="/jobs">Browse all jobs</Link>

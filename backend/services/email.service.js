@@ -1,7 +1,7 @@
 const RESEND_API_URL = "https://api.resend.com/emails";
 
 const getFromAddress = () =>
-  process.env.EMAIL_FROM || "JobVista <onboarding@resend.dev>";
+  process.env.EMAIL_FROM || "JobLeLo <onboarding@resend.dev>";
 
 export const isEmailConfigured = () => Boolean(process.env.RESEND_API_KEY);
 
@@ -49,14 +49,14 @@ export const sendEmail = async ({ to, subject, html, text }) => {
 export const sendTestEmail = async (to) => {
   return sendEmail({
     to,
-    subject: "JobVista email alerts are working",
+    subject: "JobLeLo email alerts are working",
     html: `
       <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto;">
-        <h2 style="color: #6A38C2;">JobVista</h2>
+        <h2 style="color: #6A38C2;">JobLeLo</h2>
         <p>Your email alerts are set up correctly. You'll receive job notifications here.</p>
         <p style="color: #666; font-size: 14px;">Fresh IT jobs from company career pages.</p>
       </div>
     `,
-    text: "JobVista email alerts are working. You'll receive job notifications here.",
+    text: "JobLeLo email alerts are working. You'll receive job notifications here.",
   });
 };

@@ -85,7 +85,7 @@ const OnboardingChecklist = ({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Get started with JobVista</h2>
+          <h2 className="text-lg font-semibold">Get started with JobLeLo</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Three quick steps to unlock matches, company alerts, and daily digests.
           </p>

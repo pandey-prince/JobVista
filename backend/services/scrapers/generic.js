@@ -17,7 +17,7 @@ export const scrapeGeneric = async (source) => {
 
   const response = await fetch(source.url, {
     headers: {
-      "User-Agent": "JobVistaBot/1.0 (+https://job-vista-eta.vercel.app)",
+      "User-Agent": "JobLeLoBot/1.0 (+https://www.joblelo.online)",
     },
   });
 

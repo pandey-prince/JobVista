@@ -1,4 +1,4 @@
-# JobVista
+# JobLeLo
 
 A job portal for **job seekers** — IT roles in India from company career pages (100+ sources). Only India-relevant roles are shown.
 
@@ -8,7 +8,7 @@ A job portal for **job seekers** — IT roles in India from company career pages
 
 | Service | URL |
 |---------|-----|
-| Frontend | https://job-vista-eta.vercel.app |
+| Frontend | https://www.joblelo.online |
 | Backend API | https://jobvista-ahek.onrender.com |
 
 ## Tech stack
@@ -16,6 +16,15 @@ A job portal for **job seekers** — IT roles in India from company career pages
 - **Frontend:** React (Vite), Redux, Tailwind, shadcn/ui
 - **Backend:** Node.js 20, Express 5, MongoDB (Mongoose)
 - **Deploy:** Vercel (frontend), Render (backend), MongoDB Atlas
+
+## Custom domain (joblelo.online)
+
+1. **Vercel** → Project **job-vista** → Settings → Domains → add `www.joblelo.online` and `joblelo.online` (redirect apex → www).
+2. At your domain registrar, point DNS to Vercel (A/CNAME records shown in Vercel dashboard).
+3. **Render** → **jobvista-backend** → Environment → set `FRONTEND_URL=https://www.joblelo.online` and redeploy (needed for CORS + email links).
+4. Optional: set `VITE_SITE_URL=https://www.joblelo.online` in Vercel env vars.
+
+The old Vercel URL (`job-vista-eta.vercel.app`) still works during transition; backend CORS allows both.
 
 ## Features
 
@@ -143,7 +152,7 @@ Admin accounts are **not** created via public signup. Bootstrap once with env va
 ```env
 ADMIN_EMAIL=ops@example.com
 ADMIN_PASSWORD=your-strong-password
-ADMIN_FULLNAME=JobVista Admin
+ADMIN_FULLNAME=JobLeLo Admin
 ADMIN_PHONE=9000000000
 ```
 
@@ -152,7 +161,7 @@ cd backend
 npm run seed:admin
 ```
 
-Then open **http://localhost:5173/admin/login** (production: `https://job-vista-eta.vercel.app/admin/login`).
+Then open **http://localhost:5173/admin/login** (production: `https://www.joblelo.online/admin/login`).
 
 | Path | Purpose |
 |------|---------|
@@ -223,7 +232,7 @@ Set on backend (Render dashboard or `backend/.env`):
 
 ```env
 RESEND_API_KEY=re_xxxx
-EMAIL_FROM=JobVista <notifications@yourdomain.com>
+EMAIL_FROM=JobLeLo <notifications@joblelo.online>
 ALERT_DIGEST_CRON=30 14 * * *
 ```
 

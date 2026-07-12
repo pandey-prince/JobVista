@@ -63,7 +63,7 @@ const Signup = () => {
         >
           <h1 className="mb-5 text-xl font-bold">Sign Up</h1>
           <p className="mb-4 text-sm text-muted-foreground">
-            Create your JobVista account to save jobs, set alerts, and track applications.
+            Create your JobLeLo account to save jobs, set alerts, and track applications.
           </p>
           <div className="my-2">
             <Label>Full Name</Label>

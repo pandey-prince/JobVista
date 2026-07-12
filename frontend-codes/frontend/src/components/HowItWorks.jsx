@@ -6,7 +6,7 @@ const steps = [
     icon: Building2,
     title: "We monitor career pages",
     description:
-      "JobVista watches 100+ company career boards across India and syncs new IT openings automatically.",
+      "JobLeLo watches 100+ company career boards across India and syncs new IT openings automatically.",
   },
   {
     icon: Search,
@@ -27,13 +27,13 @@ const HowItWorks = () => {
     <section className="mx-auto my-20 max-w-7xl px-4 sm:px-6">
       <div className="text-center">
         <span className="rounded-full bg-brand-muted px-4 py-2 text-sm font-medium text-brand">
-          How JobVista works
+          How JobLeLo works
         </span>
         <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
           Fresh IT jobs, <span className="text-brand">straight from the source</span>
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          Not another generic job board. JobVista focuses on IT roles in India pulled directly from
+          Not another generic job board. JobLeLo focuses on IT roles in India pulled directly from
           company career pages.
         </p>
       </div>

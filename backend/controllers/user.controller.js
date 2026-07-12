@@ -51,7 +51,7 @@ export const register = async (req, res) => {
 
     if (role === "recruiter" || role === "admin") {
       return res.status(403).json({
-        message: "Recruiter signup is disabled. JobVista is for job seekers only.",
+        message: "Recruiter signup is disabled. JobLeLo is for job seekers only.",
         success: false,
       });
     }
@@ -179,7 +179,7 @@ export const login = async (req, res) => {
 
     if (user.role === "recruiter") {
       return res.status(403).json({
-        message: "Recruiter accounts are disabled. JobVista is for job seekers only.",
+        message: "Recruiter accounts are disabled. JobLeLo is for job seekers only.",
         success: false,
       });
     }
@@ -231,7 +231,7 @@ export const getMe = async (req, res) => {
         .status(403)
         .clearCookie("token", cookieOptions)
         .json({
-          message: "Recruiter accounts are disabled. JobVista is for job seekers only.",
+          message: "Recruiter accounts are disabled. JobLeLo is for job seekers only.",
           success: false,
         });
     }
@@ -328,7 +328,7 @@ export const updateProfile = async (req, res) => {
 
     if (user.role === "recruiter") {
       return res.status(403).json({
-        message: "Recruiter accounts are disabled. JobVista is for job seekers only.",
+        message: "Recruiter accounts are disabled. JobLeLo is for job seekers only.",
         success: false,
       });
     }

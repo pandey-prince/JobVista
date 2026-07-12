@@ -15,7 +15,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        value: https://job-vista-eta.vercel.app
+        value: https://www.joblelo.online
       - key: SCRAPE_ENABLED
         value: true
       - key: SCRAPE_ON_BOOT

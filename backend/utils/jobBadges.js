@@ -33,7 +33,7 @@ export const inferSourceFromJobId = (jobId = "") => {
   if (id.startsWith("arbeitnow-")) {
     return { sourceType: "arbeitnow", sourceLabel: "Arbeitnow" };
   }
-  return { sourceType: "recruiter", sourceLabel: "JobVista" };
+  return { sourceType: "recruiter", sourceLabel: "JobLeLo" };
 };
 
 export const buildJobBadges = ({

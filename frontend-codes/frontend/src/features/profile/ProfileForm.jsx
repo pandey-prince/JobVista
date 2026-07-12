@@ -160,7 +160,7 @@ const ProjectItemCard = ({ item, index, onChange, onRemove, errors }) => (
           id={`project-${index}-title`}
           value={item.title}
           onChange={(e) => onChange(index, "title", e.target.value)}
-          placeholder="JobVista"
+          placeholder="e.g. Razorpay"
         />
         <FieldError message={errors[`projects.${index}.title`]} />
       </div>

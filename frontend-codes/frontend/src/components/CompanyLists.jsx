@@ -413,7 +413,7 @@ const CompanyLists = () => {
               >
                 <h2 className="text-lg font-semibold">Submit a career page</h2>
                 <p className="text-sm text-muted-foreground">
-                  Add any company career portal. If it supports Greenhouse, Lever, or Ashby, IT jobs will be scraped for everyone on JobVista.
+                  Add any company career portal. If it supports Greenhouse, Lever, or Ashby, IT jobs will be scraped for everyone on JobLeLo.
                 </p>
                 <div>
                   <Label>Career page URL</Label>

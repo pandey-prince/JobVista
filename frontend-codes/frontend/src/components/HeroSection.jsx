@@ -49,7 +49,7 @@ const HeroSection = () => {
                     See new IT roles <span className='text-brand'>before they flood LinkedIn</span>
                 </h1>
                 <p className='mx-auto max-w-2xl text-muted-foreground'>
-                    JobVista monitors 100+ company career boards across India for fresher and 0–3 year IT openings.
+                    JobLeLo monitors 100+ company career boards across India for fresher and 0–3 year IT openings.
                     Watch companies, save roles, and get email alerts when something new drops.
                 </p>
                 <JobSearchBar

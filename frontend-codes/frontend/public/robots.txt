@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://job-vista-eta.vercel.app/sitemap.xml
+Sitemap: https://www.joblelo.online/sitemap.xml

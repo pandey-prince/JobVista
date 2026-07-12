@@ -12,7 +12,7 @@ dotenv.config();
 const run = async () => {
   const email = process.env.ADMIN_EMAIL;
   const password = process.env.ADMIN_PASSWORD;
-  const fullname = process.env.ADMIN_FULLNAME || "JobVista Admin";
+  const fullname = process.env.ADMIN_FULLNAME || "JobLeLo Admin";
   const phoneNumber = Number(process.env.ADMIN_PHONE || "9000000000");
 
   if (!process.env.MONGO_URI) {

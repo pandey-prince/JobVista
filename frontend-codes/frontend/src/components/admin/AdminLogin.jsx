@@ -94,7 +94,7 @@ const AdminLogin = () => {
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           <Link to="/" className="text-brand hover:underline">
-            Back to JobVista
+            Back to JobLeLo
           </Link>
         </p>
       </form>

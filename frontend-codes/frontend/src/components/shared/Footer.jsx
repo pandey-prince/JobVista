@@ -94,7 +94,7 @@ const Footer = () => {
           <div className="sm:col-span-2">
             <Link to="/" className="inline-block">
               <h2 className="text-2xl font-bold">
-                Job<span className="text-accent-orange">Vista</span>
+                Job<span className="text-accent-orange">LeLo</span>
               </h2>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
@@ -115,7 +115,7 @@ const Footer = () => {
 
             <div className="mt-6 flex items-center gap-3 pb-10">
               <a
-                href="mailto:support@jobvista.demo"
+                href="mailto:support@joblelo.online"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
                 aria-label="Email support"
               >
@@ -126,7 +126,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
-                aria-label="JobVista on LinkedIn"
+                aria-label="JobLeLo on LinkedIn"
               >
                 <Linkedin className="h-4 w-4" />
               </a>
@@ -135,7 +135,7 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
-                aria-label="JobVista on X"
+                aria-label="JobLeLo on X"
               >
                 <Twitter className="h-4 w-4" />
               </a>

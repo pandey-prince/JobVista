@@ -61,7 +61,7 @@ const ProfileSetup = () => {
   return (
     <div className="mx-auto my-6 max-w-3xl rounded-md border border-border bg-card p-4 sm:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Complete your JobVista profile</h1>
+        <h1 className="text-2xl font-bold">Complete your JobLeLo profile</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Add education, skills, experience, internships, and links so employers can understand you better.
         </p>

@@ -281,7 +281,7 @@ const JobDescription = () => {
                   <JobFreshnessBadges job={singleJob} size="md" />
                 </div>
                 <p className="text-muted-foreground mt-2">
-                  {singleJob?.company?.name || "JobVista Company"} · {singleJob.location}
+                  {singleJob?.company?.name || "Company"} · {singleJob.location}
                 </p>
                 {badges.isCareerPage && singleJob.sourceUrl && (
                   <a
