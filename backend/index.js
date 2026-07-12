@@ -42,15 +42,36 @@ const allowedOrigins = new Set(
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     process.env.FRONTEND_URL,
-  ].filter(Boolean)
+  ]
+    .filter(Boolean)
+    .map((url) => url.replace(/\/$/, "")),
 );
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const normalized = origin.replace(/\/$/, "");
+  if (allowedOrigins.has(normalized)) return true;
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname === "joblelo.online" || hostname.endsWith(".joblelo.online")) {
+      return true;
+    }
+    if (hostname.endsWith(".vercel.app")) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+};
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
+      console.warn("[CORS] blocked origin:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
