@@ -17,7 +17,6 @@ const Signup = () => {
   const [input, setInput] = useState({
     fullname: "",
     email: "",
-    phoneNumber: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -94,17 +93,6 @@ const Signup = () => {
                     name="email"
                     onChange={changeEventHandler}
                     placeholder="user@email.com"
-                    required
-                  />
-                </div>
-                <div className="my-2">
-                  <Label>Phone Number</Label>
-                  <Input
-                    type="text"
-                    value={input.phoneNumber}
-                    name="phoneNumber"
-                    onChange={changeEventHandler}
-                    placeholder="Enter your phone number"
                     required
                   />
                 </div>

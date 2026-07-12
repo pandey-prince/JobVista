@@ -68,9 +68,9 @@ const normalizeEmail = (email) => String(email).trim().toLowerCase();
 export const register = async (req, res) => {
   try {
     const { fullname, email, password, phoneNumber, role } = req.body;
-    if (!fullname || !email || !password || !phoneNumber) {
+    if (!fullname || !email || !password) {
       return res.status(400).json({
-        message: "Something is missing",
+        message: "Full name, email, and password are required",
         success: false,
       });
     }
@@ -104,7 +104,7 @@ export const register = async (req, res) => {
 
     if (user) {
       user.fullname = fullname;
-      user.phoneNumber = phoneNumber;
+      if (phoneNumber) user.phoneNumber = phoneNumber;
       user.password = hashedPassword;
       user.authProvider = "local";
       user.emailVerified = false;
@@ -113,7 +113,7 @@ export const register = async (req, res) => {
       user = await User.create({
         fullname,
         email: normalizedEmail,
-        phoneNumber,
+        ...(phoneNumber ? { phoneNumber } : {}),
         role: "student",
         password: hashedPassword,
         authProvider: "local",
@@ -122,6 +122,9 @@ export const register = async (req, res) => {
     }
 
     const otp = generateOtp();
+    // #region agent log
+    fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'user.controller.js:register',message:'sending signup otp',data:{hasResendKey:Boolean(process.env.RESEND_API_KEY),nodeEnv:process.env.NODE_ENV,emailDomain:normalizedEmail.split('@')[1]},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
     await sendSignupOtp(normalizedEmail, otp);
 
     return res.status(201).json({
@@ -131,9 +134,13 @@ export const register = async (req, res) => {
       email: normalizedEmail,
     });
   } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7533/ingest/ab9d03cf-9a58-4f5a-9174-f3b9b67f6bd5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'adbcde'},body:JSON.stringify({sessionId:'adbcde',location:'user.controller.js:register',message:'register failed',data:{statusCode:error.statusCode||500,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
+    // #endregion
     console.error("[Register]", error.message);
-    return res.status(500).json({
-      message: "Internal server error",
+    const status = error.statusCode || 500;
+    return res.status(status).json({
+      message: status >= 500 ? "Internal server error" : error.message,
       success: false,
     });
   }

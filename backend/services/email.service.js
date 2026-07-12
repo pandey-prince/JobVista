@@ -40,9 +40,11 @@ export const sendEmail = async ({ to, subject, html, text }) => {
 
   if (!response.ok) {
     const message = data?.message || data?.error || "Failed to send email";
+    console.error("[Email] Resend API error:", response.status, message);
     throw new Error(message);
   }
 
+  console.info("[Email] Sent:", subject, "→", Array.isArray(to) ? to.join(", ") : to);
   return { success: true, id: data.id };
 };
 
