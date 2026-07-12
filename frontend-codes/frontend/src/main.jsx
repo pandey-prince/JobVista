@@ -8,6 +8,9 @@ import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
 import ThemeProvider from "./components/shared/ThemeProvider.jsx";
 import ThemedToaster from "./components/shared/ThemedToaster.jsx";
+import { inject } from "@vercel/analytics";
+
+inject();
 
 const persistor = persistStore(store);
 
