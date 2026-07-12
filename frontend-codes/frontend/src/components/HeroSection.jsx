@@ -46,7 +46,7 @@ const HeroSection = () => {
                     Fresh IT jobs from company career pages
                 </span>
                 <h1 className='text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl'>
-                    See new IT roles <span className='text-brand'>before they flood LinkedIn</span>
+                    See new IT roles <span className='text-brand'>before they flood Everywhere</span>
                 </h1>
                 <p className='mx-auto max-w-2xl text-muted-foreground'>
                     JobLeLo monitors 100+ company career boards across India for fresher and 0–3 year IT openings.

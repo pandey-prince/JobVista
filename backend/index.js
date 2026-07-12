@@ -21,6 +21,7 @@ import { startScrapeScheduler } from "./jobs/scrapeScheduler.js";
 import { startAlertScheduler } from "./jobs/alertScheduler.js";
 import { startLinkCheckScheduler } from "./jobs/linkCheckScheduler.js";
 import { seedDefaultJobSources } from "./utils/seedJobSources.js";
+import { User } from "./models/user.model.js";
 dotenv.config({});
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -100,6 +101,10 @@ app.get("/home", (req, res) => {
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, async () => {
   await connectDB();
+  await User.updateMany(
+    { emailVerified: { $exists: false } },
+    { $set: { emailVerified: true, authProvider: "local" } },
+  );
   await seedDefaultJobSources();
   startScrapeScheduler();
   startAlertScheduler();

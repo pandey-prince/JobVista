@@ -21,6 +21,9 @@ export const authApi = {
   me: () => apiClient.get(`${USER_API_END_POINT}/me`),
   login: (payload) => apiClient.post(`${USER_API_END_POINT}/login`, payload),
   register: (payload) => apiClient.post(`${USER_API_END_POINT}/register`, payload),
+  verifyEmail: (payload) => apiClient.post(`${USER_API_END_POINT}/verify-email`, payload),
+  resendOtp: (payload) => apiClient.post(`${USER_API_END_POINT}/resend-otp`, payload),
+  googleLogin: (payload) => apiClient.post(`${USER_API_END_POINT}/google`, payload),
   logout: () => apiClient.post(`${USER_API_END_POINT}/logout`),
 };
 

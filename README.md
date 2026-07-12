@@ -28,7 +28,7 @@ The old Vercel URL (`job-vista-eta.vercel.app`) still works during transition; b
 
 ## Features
 
-- Job seeker auth (JWT cookies) — student accounts only
+- Job seeker auth (JWT cookies) — email/password with **OTP verification**, **Google Sign-In**, student accounts only
 - Job feed: scraped company career pages (India IT roles only)
 - **JobMate AI Assistant:** Gemini-powered career assistant (optional `GEMINI_API_KEY`)
 - 100+ Indian company career sources (Greenhouse, Lever, Workday, TCS, etc.)
@@ -213,7 +213,7 @@ Frontend: http://localhost:3000 · Backend: http://localhost:8000
 
 | Prefix | Purpose |
 |--------|---------|
-| `/user` | Register, login, logout, profile, **session (`GET /me`)** |
+| `/user` | Register (**OTP verify**), login, **Google (`POST /google`)**, logout, profile, **`GET /me`** |
 | `/job` | List jobs (scraped feed), **sort** (`sortBy`), **company filter** (`companies`), **`GET /recommended`** |
 | `/application` | Apply to internal jobs (legacy; feed is scraped-only) |
 | `/company` | Recruiter companies (API only) |
@@ -236,7 +236,42 @@ EMAIL_FROM=JobLeLo <notifications@joblelo.online>
 ALERT_DIGEST_CRON=30 14 * * *
 ```
 
-`ALERT_DIGEST_CRON` runs at **8:00 PM IST** (14:30 UTC). Without `RESEND_API_KEY`, emails are skipped in dev.
+`ALERT_DIGEST_CRON` runs at **8:00 PM IST** (14:30 UTC). Without `RESEND_API_KEY`, emails are skipped in dev and OTP codes are logged to the backend console locally.
+
+## Auth (OTP + Google)
+
+### Signup flow
+
+1. `POST /user/register` — creates account, sends 6-digit OTP email (no session yet)
+2. `POST /user/verify-email` — `{ email, otp }` → JWT cookie + verified account
+3. `POST /user/resend-otp` — resend code (rate-limited)
+
+Login with an unverified account returns `needsVerification: true` and sends a fresh OTP.
+
+Google Sign-In (`POST /user/google` with ID token) skips OTP — email is treated as verified.
+
+### Environment variables
+
+**Render (backend)**
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `GOOGLE_CLIENT_ID` | For Google auth | OAuth Web client ID from Google Cloud Console |
+| `RESEND_API_KEY` | For OTP in production | Same key used for job alert emails |
+| `EMAIL_FROM` | Yes | e.g. `JobLeLo <notifications@joblelo.online>` — verify domain in Resend |
+
+**Vercel (frontend)**
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `VITE_GOOGLE_CLIENT_ID` | For Google button | Same value as `GOOGLE_CLIENT_ID` |
+
+**Google Cloud Console**
+
+- Create OAuth **Web application** client
+- Authorized JavaScript origins: `https://www.joblelo.online`, `https://joblelo.online`, `http://localhost:5173`
+
+Admin login (`/admin/login`) remains email/password only.
 
 ## Scraping (hybrid: GitHub Actions + Render)
 

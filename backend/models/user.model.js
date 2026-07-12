@@ -13,11 +13,25 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: Number,
-      required: true,
+      required: false,
     },
     password: {
       type: String,
-      required: true,
+      required: false,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
     },
     role: {
       type: String,
@@ -68,7 +82,7 @@ const userSchema = new mongoose.Schema(
       profilePhoto: { type: String, default: "" },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.model("User", userSchema);

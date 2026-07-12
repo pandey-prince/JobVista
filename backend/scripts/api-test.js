@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import * as XLSX from "xlsx";
 import { parseCareerSourcesSpreadsheet } from "../utils/parseCareerSourcesSpreadsheet.js";
 import { isItJob } from "../utils/itJobFilter.js";
 import { isIndiaJob } from "../utils/indiaJobFilter.js";
+import { User } from "../models/user.model.js";
 
 dotenv.config();
 
@@ -66,8 +68,9 @@ class CookieClient {
 }
 
 const run = async () => {
-  console.log("\n=== JobVista Full API Test Suite ===\n");
+  console.log("\n=== JobLeLo Full API Test Suite ===\n");
   const ts = Date.now();
+  const studentEmail = `student${ts}@test.com`;
   const student = new CookieClient(API_BASE);
 
   try {
@@ -93,15 +96,49 @@ const run = async () => {
       method: "POST",
       body: {
         fullname: "Test Student",
-        email: `student${ts}@test.com`,
+        email: studentEmail,
         password: "Test@1234",
         phoneNumber: 9876543210,
         role: "student",
       },
     });
-    studentReg.response.ok && studentReg.data.success
-      ? pass("POST /user/register (student)")
+    studentReg.response.ok &&
+    studentReg.data.success &&
+    studentReg.data.needsVerification
+      ? pass("POST /user/register (student)", "needsVerification")
       : fail("POST /user/register (student)", studentReg.data?.message);
+
+    const badVerify = await student.request("/api/v1/user/verify-email", {
+      method: "POST",
+      body: { email: studentEmail, otp: "000000" },
+    });
+    badVerify.response.status === 400
+      ? pass("POST /user/verify-email (invalid otp)")
+      : fail("POST /user/verify-email (invalid otp)", badVerify.data?.message);
+
+    const googleBad = await fetch(`${API_BASE}/api/v1/user/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: "invalid-token" }),
+    });
+    googleBad.status === 401 || googleBad.status === 503
+      ? pass("POST /user/google (invalid token)", `HTTP ${googleBad.status}`)
+      : fail("POST /user/google (invalid token)", `HTTP ${googleBad.status}`);
+
+    if (process.env.MONGO_URI) {
+      await mongoose.connect(process.env.MONGO_URI);
+      await User.updateOne({ email: studentEmail }, { $set: { emailVerified: true } });
+      await mongoose.disconnect();
+      const studentLogin = await student.request("/api/v1/user/login", {
+        method: "POST",
+        body: { email: studentEmail, password: "Test@1234" },
+      });
+      studentLogin.response.ok && studentLogin.data.success
+        ? pass("POST /user/login (after verify)", studentEmail)
+        : fail("POST /user/login (after verify)", studentLogin.data?.message);
+    } else {
+      skip("POST /user/login (after verify)", "set MONGO_URI to mark test user verified");
+    }
 
     const detectRes = await student.request("/api/v1/career-sources/detect", {
       method: "POST",

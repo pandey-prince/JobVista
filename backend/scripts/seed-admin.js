@@ -40,6 +40,8 @@ const run = async () => {
     existing.phoneNumber = phoneNumber;
     existing.role = "admin";
     existing.password = hashedPassword;
+    existing.emailVerified = true;
+    existing.authProvider = "local";
     await existing.save();
     console.log(`Updated admin user: ${email}`);
   } else {
@@ -49,6 +51,8 @@ const run = async () => {
       phoneNumber,
       role: "admin",
       password: hashedPassword,
+      emailVerified: true,
+      authProvider: "local",
     });
     console.log(`Created admin user: ${email}`);
   }
