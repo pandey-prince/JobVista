@@ -140,7 +140,7 @@ export const register = async (req, res) => {
     console.error("[Register]", error.message);
     const status = error.statusCode || 500;
     return res.status(status).json({
-      message: status >= 500 ? "Internal server error" : error.message,
+      message: status === 500 ? "Internal server error" : error.message,
       success: false,
     });
   }
