@@ -1,6 +1,10 @@
 /**
  * Sync Puppeteer career sources (auto-puppeteer / puppeteer).
  * Intended for GitHub Actions — set SKIP_PUPPETEER_SCRAPERS=false.
+ *
+ * Optional bucket filter (hash(id) % count):
+ *   PUPPETEER_BUCKET=0|1|2
+ *   PUPPETEER_BUCKET_COUNT=3 (default when BUCKET is set)
  */
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -13,18 +17,31 @@ process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "false";
 
 const MONGO_URI = process.env.MONGO_URI;
 
-const parseShardOptions = () => {
-  const shardIndex = Number(process.env.PUPPETEER_SHARD);
-  const shardCount = Number(process.env.PUPPETEER_SHARD_COUNT);
+const parseBucketOptions = () => {
+  const rawBucket =
+    process.env.PUPPETEER_BUCKET !== undefined
+      ? process.env.PUPPETEER_BUCKET
+      : process.env.PUPPETEER_SHARD;
+  const rawCount =
+    process.env.PUPPETEER_BUCKET_COUNT !== undefined
+      ? process.env.PUPPETEER_BUCKET_COUNT
+      : process.env.PUPPETEER_SHARD_COUNT || "3";
+
+  if (rawBucket === undefined || rawBucket === "") {
+    return {};
+  }
+
+  const bucketIndex = Number(rawBucket);
+  const bucketCount = Number(rawCount);
 
   if (
-    Number.isInteger(shardIndex) &&
-    Number.isInteger(shardCount) &&
-    shardCount > 1 &&
-    shardIndex >= 0 &&
-    shardIndex < shardCount
+    Number.isInteger(bucketIndex) &&
+    Number.isInteger(bucketCount) &&
+    bucketCount > 1 &&
+    bucketIndex >= 0 &&
+    bucketIndex < bucketCount
   ) {
-    return { shardIndex, shardCount };
+    return { bucketIndex, bucketCount };
   }
 
   return {};
@@ -36,19 +53,19 @@ const run = async () => {
     process.exit(1);
   }
 
-  const shardOptions = parseShardOptions();
-  const shardLabel =
-    shardOptions.shardCount > 1
-      ? ` (shard ${shardOptions.shardIndex + 1}/${shardOptions.shardCount})`
+  const bucketOptions = parseBucketOptions();
+  const bucketLabel =
+    bucketOptions.bucketCount > 1
+      ? ` (bucket ${bucketOptions.bucketIndex}/${bucketOptions.bucketCount})`
       : "";
 
-  console.log(`\n=== JobVista Puppeteer source sync${shardLabel} ===\n`);
+  console.log(`\n=== JobVista Puppeteer source sync${bucketLabel} ===\n`);
 
   try {
     await mongoose.connect(MONGO_URI);
     const summary = await syncSourcesByMode("puppeteer", {
       runPostSyncTasks: false,
-      ...shardOptions,
+      ...bucketOptions,
     });
     console.log("\nSummary:", JSON.stringify(summary, null, 2));
 

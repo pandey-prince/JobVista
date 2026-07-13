@@ -23,11 +23,17 @@ const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 const statCards = (summary) => [
   { label: "Companies monitored", value: summary.totalSources ?? "—" },
   { label: "Active sources", value: summary.activeSources ?? "—" },
+  { label: "Needs attention", value: summary.sourcesNeedingAttention ?? "—" },
   { label: "Jobs in database", value: summary.totalActiveJobsInDb ?? "—" },
   { label: "Visible on site", value: summary.totalVisibleJobsOnSite ?? "—" },
-  { label: "Companies with visible jobs", value: summary.companiesWithVisibleJobs ?? "—" },
   { label: "Sync errors", value: summary.sourcesWithErrors ?? "—" },
 ];
+
+const reasonClassName = (health) => {
+  if (health === "error" || health === "blocked") return "text-red-600";
+  if (health === "waiting") return "text-amber-700";
+  return "text-muted-foreground";
+};
 
 const csvEscape = (value) => {
   const text = value === null || value === undefined ? "" : String(value);
@@ -45,9 +51,12 @@ const buildCsv = (sources = []) => {
     "scraperType",
     "runHost",
     "sourceOrigin",
+    "regions",
     "isActive",
     "isPublic",
     "lastScrapeStatus",
+    "syncHealth",
+    "syncReason",
     "lastScrapedAt",
     "jobsFoundCount",
     "activeJobsInDb",
@@ -65,9 +74,12 @@ const buildCsv = (sources = []) => {
       source.scraperType,
       source.runHostLabel || source.runHost,
       source.sourceOrigin,
+      (source.regions || []).join("; "),
       source.isActive ? "yes" : "no",
       source.isPublic ? "yes" : "no",
       source.lastScrapeStatus,
+      source.syncHealth || "",
+      source.syncReason || "",
       source.lastScrapedAt ? new Date(source.lastScrapedAt).toISOString() : "",
       source.jobsFoundCount ?? 0,
       source.activeJobsInDb ?? 0,
@@ -99,6 +111,7 @@ const AdminDashboard = () => {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [needsAttention, setNeedsAttention] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
 
@@ -110,6 +123,7 @@ const AdminDashboard = () => {
         limit,
         search,
         status: statusFilter || undefined,
+        needsAttention: needsAttention ? "true" : undefined,
         sortBy: "companyName",
       });
       if (res.data.success) {
@@ -122,7 +136,7 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, search, statusFilter]);
+  }, [page, limit, search, statusFilter, needsAttention]);
 
   useEffect(() => {
     loadDashboard();
@@ -130,11 +144,21 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter, limit]);
+  }, [search, statusFilter, needsAttention, limit]);
 
   const applySearch = (e) => {
     e.preventDefault();
     setSearch(searchInput.trim());
+  };
+
+  const setStatusChip = (status) => {
+    setNeedsAttention(false);
+    setStatusFilter(status);
+  };
+
+  const toggleNeedsAttention = () => {
+    setStatusFilter("");
+    setNeedsAttention((prev) => !prev);
   };
 
   const exportCurrentFilters = async () => {
@@ -145,6 +169,7 @@ const AdminDashboard = () => {
         limit: 500,
         search,
         status: statusFilter || undefined,
+        needsAttention: needsAttention ? "true" : undefined,
         sortBy: "companyName",
       });
       if (!res.data.success) {
@@ -165,7 +190,8 @@ const AdminDashboard = () => {
       <div>
         <h1 className="text-2xl font-bold">Ops dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Complete list of monitored career sources with scrape host, origin, and job counts.
+          All monitored companies with job counts, last sync time, and why a source is not
+          scraping when applicable.
         </p>
       </div>
 
@@ -196,12 +222,22 @@ const AdminDashboard = () => {
             <Button
               key={status || "all"}
               size="sm"
-              variant={statusFilter === status ? "default" : "outline"}
-              onClick={() => setStatusFilter(status)}
+              variant={!needsAttention && statusFilter === status ? "default" : "outline"}
+              onClick={() => setStatusChip(status)}
             >
               {status || "All statuses"}
             </Button>
           ))}
+          <Button
+            size="sm"
+            variant={needsAttention ? "default" : "outline"}
+            onClick={toggleNeedsAttention}
+          >
+            Needs attention
+            {typeof summary.sourcesNeedingAttention === "number"
+              ? ` (${summary.sourcesNeedingAttention})`
+              : ""}
+          </Button>
           <select
             className="h-9 rounded-md border border-input bg-background px-2 text-sm"
             value={limit}
@@ -244,16 +280,16 @@ const AdminDashboard = () => {
                 <TableRow>
                   <TableHead>Company</TableHead>
                   <TableHead>Career site</TableHead>
+                  <TableHead>Regions</TableHead>
                   <TableHead>Scraper</TableHead>
                   <TableHead>Runs on</TableHead>
-                  <TableHead>Origin</TableHead>
-                  <TableHead>Public</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead>Sync</TableHead>
                   <TableHead>Scraped</TableHead>
                   <TableHead>In DB</TableHead>
                   <TableHead>Visible</TableHead>
                   <TableHead>Last sync</TableHead>
+                  <TableHead>Reason</TableHead>
                   <TableHead>Site</TableHead>
                 </TableRow>
               </TableHeader>
@@ -271,11 +307,6 @@ const AdminDashboard = () => {
                             {source.companyName}
                           </Link>
                           <p className="mt-1 text-xs text-muted-foreground">{source.name}</p>
-                          {source.lastScrapeError ? (
-                            <p className="mt-1 text-xs text-red-600 line-clamp-2">
-                              {source.lastScrapeError}
-                            </p>
-                          ) : null}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -295,6 +326,19 @@ const AdminDashboard = () => {
                         )}
                       </TableCell>
                       <TableCell>
+                        {(source.regions || []).length > 0 ? (
+                          <div className="flex max-w-[160px] flex-wrap gap-1">
+                            {source.regions.map((region) => (
+                              <Badge key={region} variant="outline">
+                                {region}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <Badge variant="outline">{source.scraperType}</Badge>
                       </TableCell>
                       <TableCell>
@@ -309,14 +353,6 @@ const AdminDashboard = () => {
                           }
                         >
                           {source.runHostLabel || "—"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{source.sourceOrigin || "seed"}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={source.isPublic ? "default" : "secondary"}>
-                          {source.isPublic ? "Yes" : "No"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -345,6 +381,18 @@ const AdminDashboard = () => {
                         {source.lastScrapedAt
                           ? new Date(source.lastScrapedAt).toLocaleString()
                           : "Never"}
+                      </TableCell>
+                      <TableCell className="max-w-[280px]">
+                        {source.syncReason ? (
+                          <p
+                            className={`text-xs leading-snug ${reasonClassName(source.syncHealth)}`}
+                            title={source.syncReason}
+                          >
+                            {source.syncReason}
+                          </p>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Link

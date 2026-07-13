@@ -5,7 +5,7 @@ import {
   buildCareerSubmitMessage,
   createOrGetJobSource,
 } from "../services/careerSource.service.js";
-import { parseCareerSourcesSpreadsheet } from "../utils/parseCareerSourcesSpreadsheet.js";
+import { parseCareerSourcesUpload } from "../utils/parseCareerSourcesInput.js";
 import {
   detectScraperType,
   extractCompanySlugFromUrl,
@@ -176,24 +176,29 @@ export const importCareerSourcesExcel = async (req, res) => {
     if (!req.file?.buffer) {
       return res.status(400).json({
         success: false,
-        message: "Upload an Excel or CSV file",
+        message: "Upload an Excel, CSV, or JSON file",
       });
     }
 
-    const rows = parseCareerSourcesSpreadsheet(req.file.buffer);
+    const { region, companies } = parseCareerSourcesUpload(req.file);
+    const isJson = String(req.file.originalname || "")
+      .toLowerCase()
+      .endsWith(".json");
     const results = [];
 
-    for (const row of rows) {
+    for (const row of companies) {
       try {
+        const rowRegion = row.region || region;
         const { source, created } = await createOrGetJobSource({
           url: row.careerUrl,
           companyName: row.companyName,
           name: row.name,
           scraperType: row.scraperType || undefined,
-          sourceOrigin: "excel",
+          sourceOrigin: isJson ? "json" : "excel",
           submittedBy: req.id,
           isPublic: true,
-          triggerSync: true,
+          triggerSync: false,
+          regions: rowRegion ? [rowRegion] : [],
         });
 
         results.push({
@@ -202,6 +207,7 @@ export const importCareerSourcesExcel = async (req, res) => {
           created,
           sourceId: source._id,
           isActive: source.isActive,
+          regions: source.regions || [],
         });
       } catch (error) {
         results.push({
@@ -214,7 +220,8 @@ export const importCareerSourcesExcel = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Processed ${results.length} companies from spreadsheet`,
+      message: `Processed ${results.length} companies from ${isJson ? "JSON" : "spreadsheet"}`,
+      region: region || null,
       summary: {
         total: results.length,
         created: results.filter((r) => r.success && r.created).length,

@@ -5,6 +5,44 @@ const buildUrl = (type, slug) => {
   return "";
 };
 
+/** Path segments that are too generic to use as ATS board slugs. */
+export const GENERIC_CAREER_PATH_SLUGS = new Set([
+  "career",
+  "careers",
+  "job",
+  "jobs",
+  "opening",
+  "openings",
+  "join",
+  "join-us",
+  "joinus",
+  "work",
+  "working",
+  "hiring",
+  "vacancies",
+  "apply",
+  "application",
+  "opportunities",
+  "opportunity",
+  "en",
+  "en-us",
+  "en-in",
+  "in",
+  "india",
+  "home",
+  "pages",
+]);
+
+export const isProbeableAtsSlug = (slug = "") => {
+  const cleaned = String(slug || "")
+    .trim()
+    .toLowerCase();
+  if (!cleaned || cleaned.length < 3) return false;
+  if (GENERIC_CAREER_PATH_SLUGS.has(cleaned)) return false;
+  if (/^\d+$/.test(cleaned)) return false;
+  return true;
+};
+
 const testGreenhouse = async (slug) => {
   const response = await fetch(
     `https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`
@@ -41,7 +79,9 @@ const testAshby = async (slug) => {
 const testers = [testGreenhouse, testLever, testAshby];
 
 export const probeCareerSource = async (slugs = []) => {
-  const uniqueSlugs = [...new Set(slugs.filter(Boolean))];
+  const uniqueSlugs = [
+    ...new Set(slugs.filter(Boolean).map(String).filter(isProbeableAtsSlug)),
+  ];
 
   for (const slug of uniqueSlugs) {
     for (const test of testers) {

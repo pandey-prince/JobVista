@@ -266,10 +266,11 @@ const ScrapeSources = () => {
         </div>
 
         <div className="mb-8 rounded-lg border border-brand/20 bg-brand-muted p-6">
-          <h2 className="font-semibold text-lg">Bulk import from Excel / CSV</h2>
+          <h2 className="font-semibold text-lg">Bulk import from Excel / CSV / JSON</h2>
           <p className="text-sm text-muted-foreground mt-2">
-            Upload a spreadsheet with columns: <strong>companyName</strong>, <strong>careerUrl</strong> (optional: name, scraperType).
-            Imported companies are public for all users.
+            Upload a spreadsheet (columns: <strong>companyName</strong>, <strong>careerUrl</strong>)
+            or a JSON array whose first object is <code>{`{ "region": "Noida" }`}</code> followed by
+            company rows. Imported companies are public; sync runs on the next scheduled scrape.
           </p>
           <div className="mt-4">
             <Button
@@ -283,13 +284,13 @@ const ScrapeSources = () => {
               ) : (
                 <Upload className="h-4 w-4 mr-2" />
               )}
-              Upload Excel / CSV
+              Upload Excel / CSV / JSON
             </Button>
             <input
               ref={excelInputRef}
               id="excel-import"
               type="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls,.csv,.json"
               className="sr-only"
               tabIndex={-1}
               onChange={handleExcelImport}

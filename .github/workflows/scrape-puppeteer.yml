@@ -2,9 +2,21 @@ name: Scrape Puppeteer Sources
 
 on:
   schedule:
-    # Daily 02:30 UTC (8:00 AM IST)
-    - cron: "30 2 * * *"
+    # Three timed buckets/day (UTC) so each source is scraped ~1×/24h via hash(id)%3
+    - cron: "30 2 * * *" # bucket 0 — 08:00 IST
+    - cron: "30 10 * * *" # bucket 1 — 16:00 IST
+    - cron: "30 18 * * *" # bucket 2 — 00:00 IST
   workflow_dispatch:
+    inputs:
+      bucket:
+        description: "Puppeteer bucket (0, 1, or 2)"
+        required: true
+        type: choice
+        options:
+          - "0"
+          - "1"
+          - "2"
+        default: "0"
 
 concurrency:
   group: scrape-puppeteer
@@ -69,14 +81,31 @@ jobs:
         run: node scripts/reprobe-sources.js
         continue-on-error: true
 
-  puppeteer-sync:
+  resolve-bucket:
     needs: reprobe
     runs-on: ubuntu-latest
+    outputs:
+      bucket: ${{ steps.pick.outputs.bucket }}
+    steps:
+      - name: Pick bucket from schedule or dispatch
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "bucket=${{ github.event.inputs.bucket }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 2 * * *" ]; then
+            echo "bucket=0" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 10 * * *" ]; then
+            echo "bucket=1" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 18 * * *" ]; then
+            echo "bucket=2" >> "$GITHUB_OUTPUT"
+          else
+            echo "bucket=0" >> "$GITHUB_OUTPUT"
+          fi
+
+  puppeteer-sync:
+    needs: resolve-bucket
+    runs-on: ubuntu-latest
     timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [0, 1, 2]
 
     steps:
       - name: Checkout
@@ -97,7 +126,7 @@ jobs:
         working-directory: backend
         run: npx puppeteer browsers install chrome
 
-      - name: Sync Puppeteer career sources (shard ${{ matrix.shard }})
+      - name: Sync Puppeteer career sources (bucket ${{ needs.resolve-bucket.outputs.bucket }})
         working-directory: backend
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
@@ -105,8 +134,8 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
           PUPPETEER_FAIL_ON_PARTIAL: "false"
           PUPPETEER_MIN_SUCCESS: "1"
-          PUPPETEER_SHARD: ${{ matrix.shard }}
-          PUPPETEER_SHARD_COUNT: "3"
+          PUPPETEER_BUCKET: ${{ needs.resolve-bucket.outputs.bucket }}
+          PUPPETEER_BUCKET_COUNT: "3"
         run: node scripts/sync-puppeteer.js
 
   health-report:

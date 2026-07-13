@@ -34,7 +34,7 @@ export const mapScrapedJobForList = (job) => {
       requirements: job.requirements || [],
       experienceLevel: extractExperienceFromTitle(job.title) || "Not specified",
       salary: job.salary || "Not disclosed",
-      location: job.location,
+      location: String(job.location || "").trim() || "Not specified",
       jobType: job.jobType,
       position: 1,
       company: {

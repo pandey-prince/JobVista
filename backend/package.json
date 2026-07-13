@@ -17,7 +17,8 @@
     "sync:puppeteer-priority": "node scripts/sync-puppeteer-priority.js",
     "reprobe:sources": "node scripts/reprobe-sources.js",
     "sync:health": "node scripts/source-health.js",
-    "seed:admin": "node scripts/seed-admin.js"
+    "seed:admin": "node scripts/seed-admin.js",
+    "import:sources": "node scripts/import-career-sources.js"
   },
   "keywords": [],
   "author": "",

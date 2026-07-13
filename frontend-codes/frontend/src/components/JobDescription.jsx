@@ -281,7 +281,7 @@ const JobDescription = () => {
                   <JobFreshnessBadges job={singleJob} size="md" />
                 </div>
                 <p className="text-muted-foreground mt-2">
-                  {singleJob?.company?.name || "Company"} · {singleJob.location}
+                  {singleJob?.company?.name || "Company"} · {singleJob.location?.trim() || "Not specified"}
                 </p>
                 {badges.isCareerPage && singleJob.sourceUrl && (
                   <a
@@ -422,7 +422,7 @@ const JobDescription = () => {
                   <MapPin className="h-5 w-5 text-brand" />
                   <div>
                     <p className="text-sm text-muted-foreground">Location</p>
-                    <p className="font-medium">{singleJob.location}</p>
+                    <p className="font-medium">{singleJob.location?.trim() || "Not specified"}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">

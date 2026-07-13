@@ -1,0 +1,47 @@
+name: Import Career Sources
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "Path under backend/ to the careers JSON or spreadsheet"
+        required: true
+        default: "data/lists/noida_company_careers.json"
+      region:
+        description: "Optional region override (blank = use file header)"
+        required: false
+        default: ""
+
+concurrency:
+  group: import-career-sources
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Import career sources into Atlas
+        working-directory: backend
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          EXTRA_ARGS=()
+          if [ -n "${{ inputs.region }}" ]; then
+            EXTRA_ARGS+=(--region="${{ inputs.region }}")
+          fi
+          node scripts/import-career-sources.js --file="${{ inputs.file }}" "${EXTRA_ARGS[@]}"

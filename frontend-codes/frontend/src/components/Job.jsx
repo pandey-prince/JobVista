@@ -74,7 +74,7 @@ const Job = ({job}) => {
                     >
                         {job?.company?.name}
                     </Link>
-                    <p className='text-sm text-muted-foreground'>{job?.location || "India"}</p>
+                    <p className='text-sm text-muted-foreground'>{job?.location?.trim() || "Not specified"}</p>
                 </div>
             </div>
 

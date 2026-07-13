@@ -278,7 +278,7 @@ Admin login (`/admin/login`) remains email/password only.
 | Layer | What runs | Where |
 |-------|-------------|--------|
 | **API scrapers** (~47) | greenhouse, lever, workday, smartrecruiters, RSS, etc. | **GitHub Actions** every 6h — [`.github/workflows/scrape-api.yml`](.github/workflows/scrape-api.yml) (primary) |
-| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** daily — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) (3 parallel shards) |
+| **Puppeteer scrapers** (~55) | `auto-puppeteer` career pages | **GitHub Actions** 3×/day — [`.github/workflows/scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml) (one bucket per run) |
 
 Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** scraped on the hosted backend. Render’s built-in cron is an **optional backup** for API sync when the web process stays awake; **GitHub Actions is the primary** reliable runner for API sources.
 
@@ -292,11 +292,19 @@ Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** s
 1. **api-sync** — `node scripts/sync-api.js` for greenhouse, lever, workday, smartrecruiters, RSS, etc.
 2. **source health** — `node scripts/source-health.js --report-only` after sync
 
-**Puppeteer sync** ([`scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml)) runs daily (08:00 IST):
+**Puppeteer sync** ([`scrape-puppeteer.yml`](.github/workflows/scrape-puppeteer.yml)) runs **3 times/day** (bucket `hash(id)%3`):
 1. **priority-puppeteer** — user-submitted `auto-puppeteer` sources queued via `priorityPuppeteerSync`
 2. **reprobe** — tries to upgrade auto-puppeteer boards to API scrapers (once per run)
-3. **puppeteer-sync** — 3 parallel matrix jobs (`PUPPETEER_SHARD` 0–2), ~18 sources each, 3h timeout per shard
-4. **health-report** — logs a status report after all shards finish
+3. **puppeteer-sync** — single job for `PUPPETEER_BUCKET=0|1|2` (cron maps schedule → bucket; ~1/3 of sources per run, 3h timeout)
+4. **health-report** — logs a status report after the bucket finishes
+
+Also: **Import career sources** ([`import-career-sources.yml`](.github/workflows/import-career-sources.yml)) — manual workflow to load region JSON (e.g. Noida) into Atlas without sync storm (`triggerSync: false`).
+
+```bash
+# Local / laptop (set Atlas URI)
+cd backend
+MONGO_URI="mongodb+srv://..." npm run import:sources -- --file=data/lists/noida_company_careers.json
+```
 
 `PUPPETEER_FAIL_ON_PARTIAL=false` — one source failing does **not** fail the whole workflow; only successful scrapes upsert jobs.
 

@@ -1,6 +1,6 @@
 import { KNOWN_CAREER_BOARDS } from "../data/knownCareerBoards.js";
 import { mergePuppeteerSelectors } from "../data/puppeteerSelectors.js";
-import { slugsFromCompanyName } from "./probeCareerSource.js";
+import { slugsFromCompanyName, isProbeableAtsSlug } from "./probeCareerSource.js";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
@@ -139,7 +139,7 @@ const fetchCareerPage = async (url) => {
 };
 
 const probeBySlug = async (companyName) => {
-  const slugs = slugsFromCompanyName(companyName);
+  const slugs = slugsFromCompanyName(companyName).filter(isProbeableAtsSlug);
   for (const slug of slugs) {
     for (const test of [
       testGreenhouse,

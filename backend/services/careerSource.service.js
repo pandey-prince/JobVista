@@ -128,16 +128,38 @@ export const createOrGetJobSource = async ({
   scraperType,
   selectors,
   triggerSync = false,
+  regions = [],
 }) => {
   const normalizedUrl = normalizeCareerUrl(url);
   if (!normalizedUrl) {
     throw new Error("A valid career page URL is required");
   }
 
+  const regionList = (Array.isArray(regions) ? regions : [regions])
+    .map((region) => String(region || "").trim())
+    .filter(Boolean);
+
   const existing = await JobSource.findOne({ url: normalizedUrl });
   if (existing) {
     let queuedPuppeteer = false;
     let workflowDispatched = false;
+    let regionsChanged = false;
+
+    if (regionList.length) {
+      const merged = new Set([...(existing.regions || []), ...regionList]);
+      const nextRegions = [...merged];
+      if (
+        nextRegions.length !== (existing.regions || []).length ||
+        nextRegions.some((region) => !(existing.regions || []).includes(region))
+      ) {
+        existing.regions = nextRegions;
+        regionsChanged = true;
+      }
+    }
+
+    if (regionsChanged) {
+      await existing.save();
+    }
 
     if (triggerSync && existing.isActive) {
       if (isPuppeteerScraperType(existing.scraperType)) {
@@ -162,6 +184,23 @@ export const createOrGetJobSource = async ({
   const finalUrl = resolved.url || normalizedUrl;
   const isPuppeteer = isPuppeteerScraperType(resolved.scraperType);
 
+  // Prefer unique URL if resolve changed it and already exists
+  const existingFinal = await JobSource.findOne({ url: finalUrl });
+  if (existingFinal && finalUrl !== normalizedUrl) {
+    if (regionList.length) {
+      existingFinal.regions = [
+        ...new Set([...(existingFinal.regions || []), ...regionList]),
+      ];
+      await existingFinal.save();
+    }
+    return {
+      source: existingFinal,
+      created: false,
+      queuedPuppeteer: false,
+      workflowDispatched: false,
+    };
+  }
+
   const source = await JobSource.create({
     name: name || `${companyName || slug} Careers`,
     companyName: companyName || slug,
@@ -172,7 +211,8 @@ export const createOrGetJobSource = async ({
     sourceOrigin,
     submittedBy,
     isPublic,
-    priorityPuppeteerSync: isPuppeteer && resolved.isActive,
+    regions: regionList,
+    priorityPuppeteerSync: isPuppeteer && resolved.isActive && triggerSync,
     lastScrapeStatus: resolved.isActive ? "pending" : "never",
     lastScrapeError: resolved.isActive
       ? ""

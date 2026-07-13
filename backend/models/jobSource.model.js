@@ -69,8 +69,12 @@ const jobSourceSchema = new mongoose.Schema(
     },
     sourceOrigin: {
       type: String,
-      enum: ["seed", "admin", "user", "excel"],
+      enum: ["seed", "admin", "user", "excel", "json"],
       default: "seed",
+    },
+    regions: {
+      type: [String],
+      default: [],
     },
     submittedBy: {
       type: mongoose.Schema.Types.ObjectId,

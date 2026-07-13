@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import HeroSection from './HeroSection'
 import CategoryCarousel from './CategoryCarousel'
 import HowItWorks from './HowItWorks'
+import MonitoredCompaniesPreview from './MonitoredCompaniesPreview'
 import LatestJobs from './LatestJobs'
 import NewTodayJobs from './NewTodayJobs'
 import RecommendedJobs from './RecommendedJobs'
@@ -52,6 +53,7 @@ const Home = () => {
       <NewTodayJobs jobs={newTodayJobs} loading={homeJobsLoading} />
       <RecommendedJobs />
       <HowItWorks />
+      <MonitoredCompaniesPreview />
       <CategoryCarousel />
       <LatestJobs jobs={latestJobs} loading={homeJobsLoading} />
     </div>

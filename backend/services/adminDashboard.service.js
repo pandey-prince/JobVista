@@ -28,6 +28,77 @@ const runHostForScraper = (scraperType = "") => {
   };
 };
 
+/**
+ * Human-readable sync health for ops dashboard.
+ * syncHealth: ok | waiting | blocked | error
+ */
+export const deriveSyncHealth = (source = {}) => {
+  const status = source.lastScrapeStatus || "never";
+  const error = String(source.lastScrapeError || "").trim();
+  const jobsFound = Number(source.jobsFoundCount || 0);
+  const isPuppeteer = isPuppeteerScraperType(source.scraperType);
+
+  if (source.scraperType === "unsupported") {
+    return {
+      syncHealth: "blocked",
+      syncReason:
+        error || "Unsupported portal — automatic scraping not available",
+    };
+  }
+
+  if (!source.isActive) {
+    return {
+      syncHealth: "blocked",
+      syncReason: error
+        ? `Inactive — not on scrape schedule (${error})`
+        : "Inactive — not on scrape schedule",
+    };
+  }
+
+  if (status === "error") {
+    return {
+      syncHealth: "error",
+      syncReason: error || "Last sync failed",
+    };
+  }
+
+  if (status === "pending") {
+    return {
+      syncHealth: "waiting",
+      syncReason: isPuppeteer
+        ? "Queued — waiting for next Puppeteer / priority sync"
+        : "Queued — waiting for next sync run",
+    };
+  }
+
+  if (status === "never") {
+    return {
+      syncHealth: "waiting",
+      syncReason: isPuppeteer
+        ? "Never synced — Puppeteer source runs on next GHA bucket"
+        : "Never synced — waiting for next API sync run",
+    };
+  }
+
+  if (status === "success" && jobsFound === 0) {
+    return {
+      syncHealth: "waiting",
+      syncReason: "Last sync found 0 jobs (will retry next schedule)",
+    };
+  }
+
+  return {
+    syncHealth: "ok",
+    syncReason: "",
+  };
+};
+
+const matchesNeedsAttention = (row) => {
+  if (row.syncHealth === "blocked" || row.syncHealth === "error") return true;
+  if (row.syncHealth === "waiting" && row.lastScrapeStatus === "never") return true;
+  return false;
+};
+
 const buildSourceQuery = ({ search, status, scraperType, activeOnly }) => {
   const query = {};
 
@@ -116,7 +187,8 @@ const attachJobCounts = async (sources) => {
   return sources.map((source) => {
     const sourceJobs = jobsBySource.get(String(source._id)) || [];
     const host = runHostForScraper(source.scraperType);
-    return {
+    const jobsFoundCount = source.jobsFoundCount || 0;
+    const row = {
       _id: source._id,
       name: source.name,
       companyName: source.companyName,
@@ -127,13 +199,20 @@ const attachJobCounts = async (sources) => {
       lastScrapeStatus: source.lastScrapeStatus,
       lastScrapeError: source.lastScrapeError,
       lastScrapedAt: source.lastScrapedAt,
-      jobsFoundCount: source.jobsFoundCount || 0,
+      jobsFoundCount,
       priorityPuppeteerSync: Boolean(source.priorityPuppeteerSync),
       sourceOrigin: source.sourceOrigin || "seed",
+      regions: Array.isArray(source.regions) ? source.regions : [],
       runHost: host.runHost,
       runHostLabel: host.runHostLabel,
       activeJobsInDb: sourceJobs.length,
       visibleJobsOnSite: countVisibleJobs(sourceJobs),
+    };
+    const health = deriveSyncHealth(row);
+    return {
+      ...row,
+      syncHealth: health.syncHealth,
+      syncReason: health.syncReason,
     };
   });
 };
@@ -154,7 +233,16 @@ export const getAdminDashboard = async (query = {}) => {
 
   const allSources = await JobSource.find(sourceQuery).sort({ companyName: 1 });
   const rowsWithCounts = await attachJobCounts(allSources);
-  const sortedRows = sortSources(rowsWithCounts, query.sortBy || "companyName");
+  let sortedRows = sortSources(rowsWithCounts, query.sortBy || "companyName");
+
+  const needsAttentionOnly =
+    query.needsAttention === "true" ||
+    query.needsAttention === true ||
+    query.health === "attention";
+
+  if (needsAttentionOnly) {
+    sortedRows = sortedRows.filter(matchesNeedsAttention);
+  }
 
   const totalActiveJobsInDb = await ScrapedJob.countDocuments({ status: "active" });
   const allActiveJobs = await ScrapedJob.find({ status: "active" }).select(
@@ -169,9 +257,11 @@ export const getAdminDashboard = async (query = {}) => {
       .length,
     sourcesNeverSynced: allSources.filter((source) => source.lastScrapeStatus === "never")
       .length,
+    sourcesNeedingAttention: rowsWithCounts.filter(matchesNeedsAttention).length,
     totalActiveJobsInDb,
     totalVisibleJobsOnSite,
-    companiesWithVisibleJobs: sortedRows.filter((row) => row.visibleJobsOnSite > 0).length,
+    companiesWithVisibleJobs: rowsWithCounts.filter((row) => row.visibleJobsOnSite > 0)
+      .length,
     lastSyncAt: allSources.reduce((latest, source) => {
       if (!source.lastScrapedAt) return latest;
       if (!latest || source.lastScrapedAt > latest) return source.lastScrapedAt;

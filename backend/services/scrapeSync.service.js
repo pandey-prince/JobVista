@@ -159,24 +159,32 @@ const filterSourcesByMode = (sources, mode) => {
   return sources;
 };
 
-const shardSources = (sources, shardIndex, shardCount) => {
+/** Stable bucket 0..bucketCount-1 from Mongo id (or string fallback). */
+export const puppeteerBucketForId = (id, bucketCount = 3) => {
+  const str = String(id || "");
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash % bucketCount;
+};
+
+const filterSourcesByBucket = (sources, bucketIndex, bucketCount) => {
   if (
-    shardCount === undefined ||
-    shardCount === null ||
-    shardCount <= 1 ||
-    shardIndex === undefined ||
-    shardIndex === null
+    bucketCount === undefined ||
+    bucketCount === null ||
+    bucketCount <= 1 ||
+    bucketIndex === undefined ||
+    bucketIndex === null ||
+    !Number.isInteger(bucketIndex) ||
+    !Number.isInteger(bucketCount)
   ) {
     return sources;
   }
 
-  const sorted = [...sources].sort((a, b) =>
-    String(a.companyName || a.name || a._id).localeCompare(
-      String(b.companyName || b.name || b._id),
-    ),
+  return sources.filter(
+    (source) => puppeteerBucketForId(source._id, bucketCount) === bucketIndex,
   );
-
-  return sorted.filter((_, index) => index % shardCount === shardIndex);
 };
 
 const runSyncLoop = async (sources) => {
@@ -199,12 +207,23 @@ const runSyncLoop = async (sources) => {
 export const syncSourcesByMode = async (mode = "all", options = {}) => {
   const {
     runPostSyncTasks = mode !== "puppeteer",
+    bucketIndex,
+    bucketCount,
     shardIndex,
     shardCount,
   } = options;
+  const resolvedBucketIndex =
+    bucketIndex !== undefined && bucketIndex !== null ? bucketIndex : shardIndex;
+  const resolvedBucketCount =
+    bucketCount !== undefined && bucketCount !== null ? bucketCount : shardCount;
+
   const allSources = await JobSource.find({ isActive: true });
   const modeSources = filterSourcesByMode(allSources, mode);
-  const sources = shardSources(modeSources, shardIndex, shardCount);
+  const sources = filterSourcesByBucket(
+    modeSources,
+    resolvedBucketIndex,
+    resolvedBucketCount,
+  );
   const { results, removedFromBoard } = await runSyncLoop(sources);
 
   let nonItRemoved = 0;
@@ -225,10 +244,15 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
     }
   }
 
+  const usingBuckets =
+    Number.isInteger(resolvedBucketCount) &&
+    resolvedBucketCount > 1 &&
+    Number.isInteger(resolvedBucketIndex);
+
   const summary = {
     mode,
-    shardIndex: shardCount > 1 ? shardIndex : null,
-    shardCount: shardCount > 1 ? shardCount : null,
+    bucketIndex: usingBuckets ? resolvedBucketIndex : null,
+    bucketCount: usingBuckets ? resolvedBucketCount : null,
     totalSources: sources.length,
     successful: results.filter((r) => r.success && !r.skipped).length,
     skipped: results.filter((r) => r.skipped).length,
@@ -243,7 +267,7 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
   };
 
   console.log(
-    `[ScrapeSync] ${mode} completed${shardCount > 1 ? ` (shard ${shardIndex + 1}/${shardCount})` : ""}: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board`,
+    `[ScrapeSync] ${mode} completed${usingBuckets ? ` (bucket ${resolvedBucketIndex}/${resolvedBucketCount})` : ""}: ${summary.successful}/${summary.totalSources} sources, ${summary.newJobsCount} new jobs, ${summary.removedFromBoard} removed from board`,
   );
 
   if (runPostSyncTasks) {

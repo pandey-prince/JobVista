@@ -147,7 +147,7 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-2 text-sm text-foreground">
               <MapPin className="h-4 w-4 shrink-0 text-brand" />
-              <span>{displayJob.location || "India"}</span>
+              <span>{displayJob.location?.trim() || "Not specified"}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground">
               <IndianRupee className="h-4 w-4 shrink-0 text-brand" />

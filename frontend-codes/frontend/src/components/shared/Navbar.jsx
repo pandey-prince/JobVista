@@ -43,6 +43,7 @@ const Navbar = () => {
   const navigationLinks = [
     { label: "Home", to: "/" },
     { label: "Jobs", to: "/jobs" },
+    { label: "Companies", to: "/companies" },
     ...(user
       ? [
           { label: "Saved", to: "/saved-jobs" },

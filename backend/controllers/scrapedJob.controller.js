@@ -60,7 +60,7 @@ export const getScrapedJobById = async (req, res) => {
           requirements: (job.requirements || []).map((item) => cleanJobText(String(item))),
           experienceLevel: extractExperienceFromTitle(job.title) || "Not specified",
           salary: job.salary,
-          location: job.location,
+          location: String(job.location || "").trim() || "Not specified",
           jobType: job.jobType,
           position: 1,
           company: {

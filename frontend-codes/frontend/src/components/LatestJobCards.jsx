@@ -30,7 +30,7 @@ const LatestJobCards = ({job}) => {
                 <CompanyLogo company={job?.company} className="h-12 w-12" />
                 <div className="min-w-0">
                     <h2 className='truncate font-medium text-lg'>{job?.company?.name}</h2>
-                    <p className='text-sm text-muted-foreground'>{job?.location || "India"}</p>
+                    <p className='text-sm text-muted-foreground'>{job?.location?.trim() || "Not specified"}</p>
                 </div>
             </div>
             <div className='mt-4'>
