@@ -23,6 +23,7 @@ import { startLinkCheckScheduler } from "./jobs/linkCheckScheduler.js";
 import { seedDefaultJobSources } from "./utils/seedJobSources.js";
 import { User } from "./models/user.model.js";
 import { isEmailConfigured } from "./services/email.service.js";
+import { ensureAdminFromEnv } from "./utils/ensureAdmin.js";
 dotenv.config({});
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -97,6 +98,10 @@ app.get("/home", (req, res) => {
   return res.status(200).json({
     message: "I am coming form backend",
     success: true,
+    auth: {
+      emailConfigured: isEmailConfigured(),
+      googleConfigured: Boolean(process.env.GOOGLE_CLIENT_ID),
+    },
   });
 });
 const PORT = process.env.PORT || 8000;
@@ -107,8 +112,12 @@ app.listen(PORT, async () => {
     { $set: { emailVerified: true, authProvider: "local" } },
   );
   await seedDefaultJobSources();
+  await ensureAdminFromEnv();
   startScrapeScheduler();
   startAlertScheduler();
   startLinkCheckScheduler();
   console.log(`server is listening at ${PORT}`);
+  console.log(
+    `[Config] emailConfigured=${isEmailConfigured()} googleConfigured=${Boolean(process.env.GOOGLE_CLIENT_ID)}`,
+  );
 });
