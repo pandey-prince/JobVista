@@ -25,13 +25,14 @@ export const seedIndiaCompanySources = async () => {
       const resolved = (await resolveCareerBoard(company)) || toPendingSource(company);
 
       if (existing) {
-        const shouldUpgrade =
-          resolved.isActive &&
+        const needsActivate = Boolean(resolved.isActive) && !existing.isActive;
+        const needsConfigUpgrade =
+          Boolean(resolved.isActive) &&
           (existing.scraperType === "unsupported" ||
             existing.url !== resolved.url ||
             existing.scraperType !== resolved.scraperType);
 
-        if (shouldUpgrade) {
+        if (needsActivate || needsConfigUpgrade) {
           existing.name = resolved.name || existing.name;
           existing.url = resolved.url;
           existing.scraperType = resolved.scraperType;

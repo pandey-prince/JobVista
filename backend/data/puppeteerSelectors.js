@@ -160,17 +160,19 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
     },
   },
   Chargebee: {
-    url: "https://jobs.chargebee.com/",
+    url: "https://jobs.chargebee.com/jobs",
     selectors: {
-      jobList: "a[href*='/job/'], .job-title a, tr a[href*='job'], .opening a",
+      jobList:
+        "a[href*='/jobs/'], a[href*='/job/'], .job-title a, tr a[href*='job'], .opening a, [class*='Job'] a",
       title: "",
-      location: ".location, .job-location",
+      location: ".location, .job-location, [class*='location']",
       link: "",
-      waitMs: 12000,
+      waitMs: 15000,
       waitUntil: "domcontentloaded",
       hrefPattern: "/job",
       minTitleLength: 8,
       scroll: true,
+      timeoutMs: 90000,
     },
   },
   Lenskart: {
@@ -234,14 +236,33 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
   Ola: {
     url: "https://www.olacabs.com/careers",
     selectors: {
-      jobList: "a[href*='job'], a[href*='career'], a[href*='lever'], a[href*='greenhouse']",
+      jobList:
+        "a[href*='job'], a[href*='career'], a[href*='lever'], a[href*='greenhouse'], a[href*='boards'], [class*='job'] a, [class*='opening'] a",
       title: "",
-      location: "",
+      location: ".location, .job-location, [class*='location']",
       link: "",
-      waitMs: 8000,
+      waitMs: 12000,
       waitUntil: "domcontentloaded",
       hrefPattern: "job",
       minTitleLength: 8,
+      scroll: true,
+      timeoutMs: 90000,
+    },
+  },
+  Delhivery: {
+    url: "https://www.delhivery.com/careers",
+    selectors: {
+      jobList:
+        "a[href*='job'], a[href*='career'], a[href*='greenhouse'], a[href*='lever'], a[href*='workday'], [class*='job'] a, [class*='opening'] a",
+      title: "",
+      location: ".location, .job-location, [class*='location']",
+      link: "",
+      waitMs: 12000,
+      waitUntil: "domcontentloaded",
+      hrefPattern: "job",
+      minTitleLength: 8,
+      scroll: true,
+      timeoutMs: 90000,
     },
   },
   "Kotak Mahindra Bank": {

@@ -212,12 +212,12 @@ export const KNOWN_CAREER_BOARDS = {
   Chargebee: {
     url: "https://jobs.chargebee.com/jobs",
     scraperType: "auto-puppeteer",
-    isActive: false,
+    isActive: true,
   },
   Delhivery: {
     url: "https://www.delhivery.com/careers",
     scraperType: "auto-puppeteer",
-    isActive: false,
+    isActive: true,
   },
   Lenskart: {
     url: "https://careers.lenskart.com",
@@ -247,7 +247,7 @@ export const KNOWN_CAREER_BOARDS = {
   Ola: {
     url: "https://www.olacabs.com/careers",
     scraperType: "auto-puppeteer",
-    isActive: false,
+    isActive: true,
   },
   Policybazaar: {
     url: "https://www.policybazaar.com/careers/",

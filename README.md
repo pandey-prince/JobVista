@@ -298,6 +298,10 @@ Render sets `SKIP_PUPPETEER_SCRAPERS=true` — Puppeteer companies are **not** s
 3. **puppeteer-sync** — 3 parallel matrix jobs (`PUPPETEER_SHARD` 0–2), ~18 sources each, 3h timeout per shard
 4. **health-report** — logs a status report after all shards finish
 
+`PUPPETEER_FAIL_ON_PARTIAL=false` — one source failing does **not** fail the whole workflow; only successful scrapes upsert jobs.
+
+**Pilot (best-effort):** Chargebee, Ola, and Delhivery are active `auto-puppeteer` sources. After Render redeploy, boot seed flips them `isActive: true` in MongoDB. Then either wait for the daily Puppeteer run or manually: GitHub → Actions → **Scrape Puppeteer Sources** → Run workflow. In the logs, search for those company names — success shows job counts; failures are skipped and do not stop other sources. If a pilot returns junk or 0 useful India IT jobs for several runs, set `isActive: false` again in `backend/data/knownCareerBoards.js` for that company only.
+
 **Priority Puppeteer sync** ([`scrape-puppeteer-priority.yml`](.github/workflows/scrape-puppeteer-priority.yml)) runs on demand when a user submits a generic career page:
 - Triggered via `repository_dispatch` when Render has `GITHUB_WORKFLOW_DISPATCH_TOKEN` + `GITHUB_REPO` set
 - Also supports manual dispatch from the Actions tab (~30 min timeout)
