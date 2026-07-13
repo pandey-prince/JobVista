@@ -3,10 +3,30 @@ import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import { buildPaginationMeta, parsePagination } from "../utils/pagination.js";
+import { isPuppeteerScraperType } from "./scrapeSync.service.js";
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const countVisibleJobs = (jobs = []) => filterIndiaJobs(filterItJobs(jobs)).length;
+
+const runHostForScraper = (scraperType = "") => {
+  if (scraperType === "unsupported") {
+    return {
+      runHost: "none",
+      runHostLabel: "Not scraped",
+    };
+  }
+  if (isPuppeteerScraperType(scraperType)) {
+    return {
+      runHost: "github-puppeteer",
+      runHostLabel: "GitHub Actions (Puppeteer)",
+    };
+  }
+  return {
+    runHost: "api",
+    runHostLabel: "GitHub Actions + Render (API)",
+  };
+};
 
 const buildSourceQuery = ({ search, status, scraperType, activeOnly }) => {
   const query = {};
@@ -95,6 +115,7 @@ const attachJobCounts = async (sources) => {
 
   return sources.map((source) => {
     const sourceJobs = jobsBySource.get(String(source._id)) || [];
+    const host = runHostForScraper(source.scraperType);
     return {
       _id: source._id,
       name: source.name,
@@ -102,12 +123,15 @@ const attachJobCounts = async (sources) => {
       url: source.url,
       scraperType: source.scraperType,
       isActive: source.isActive,
+      isPublic: source.isPublic !== false,
       lastScrapeStatus: source.lastScrapeStatus,
       lastScrapeError: source.lastScrapeError,
       lastScrapedAt: source.lastScrapedAt,
       jobsFoundCount: source.jobsFoundCount || 0,
       priorityPuppeteerSync: Boolean(source.priorityPuppeteerSync),
-      sourceOrigin: source.sourceOrigin,
+      sourceOrigin: source.sourceOrigin || "seed",
+      runHost: host.runHost,
+      runHostLabel: host.runHostLabel,
       activeJobsInDb: sourceJobs.length,
       visibleJobsOnSite: countVisibleJobs(sourceJobs),
     };
@@ -117,8 +141,8 @@ const attachJobCounts = async (sources) => {
 export const getAdminDashboard = async (query = {}) => {
   const paginationQuery = parsePagination(query, {
     defaultPage: 1,
-    defaultLimit: 50,
-    maxLimit: 200,
+    defaultLimit: 100,
+    maxLimit: 500,
   });
 
   const sourceQuery = buildSourceQuery({

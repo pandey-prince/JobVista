@@ -14,8 +14,11 @@ import {
 } from "../ui/table";
 import LoadingState from "@/components/shared/LoadingState";
 import Pagination from "@/components/shared/Pagination";
-import { Loader2, Search } from "lucide-react";
+import { companyJobsPath } from "@/utils/companySlug";
+import { Download, ExternalLink, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
+
+const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 const statCards = (summary) => [
   { label: "Companies monitored", value: summary.totalSources ?? "—" },
@@ -26,22 +29,85 @@ const statCards = (summary) => [
   { label: "Sync errors", value: summary.sourcesWithErrors ?? "—" },
 ];
 
+const csvEscape = (value) => {
+  const text = value === null || value === undefined ? "" : String(value);
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+};
+
+const buildCsv = (sources = []) => {
+  const headers = [
+    "companyName",
+    "name",
+    "url",
+    "scraperType",
+    "runHost",
+    "sourceOrigin",
+    "isActive",
+    "isPublic",
+    "lastScrapeStatus",
+    "lastScrapedAt",
+    "jobsFoundCount",
+    "activeJobsInDb",
+    "visibleJobsOnSite",
+    "lastScrapeError",
+    "sitePath",
+  ];
+
+  const lines = [headers.join(",")];
+  for (const source of sources) {
+    const row = [
+      source.companyName,
+      source.name,
+      source.url,
+      source.scraperType,
+      source.runHostLabel || source.runHost,
+      source.sourceOrigin,
+      source.isActive ? "yes" : "no",
+      source.isPublic ? "yes" : "no",
+      source.lastScrapeStatus,
+      source.lastScrapedAt ? new Date(source.lastScrapedAt).toISOString() : "",
+      source.jobsFoundCount ?? 0,
+      source.activeJobsInDb ?? 0,
+      source.visibleJobsOnSite ?? 0,
+      source.lastScrapeError || "",
+      companyJobsPath(source.companyName),
+    ].map(csvEscape);
+    lines.push(row.join(","));
+  }
+  return lines.join("\n");
+};
+
+const downloadCsv = (sources) => {
+  const blob = new Blob([buildCsv(sources)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `joblelo-sources-${new Date().toISOString().slice(0, 10)}.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
+
 const AdminDashboard = () => {
   const [summary, setSummary] = useState({});
   const [sources, setSources] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
 
   const loadDashboard = useCallback(async () => {
     try {
       setLoading(true);
       const res = await adminApi.dashboard({
         page,
-        limit: 50,
+        limit,
         search,
         status: statusFilter || undefined,
         sortBy: "companyName",
@@ -56,7 +122,7 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter]);
+  }, [page, limit, search, statusFilter]);
 
   useEffect(() => {
     loadDashboard();
@@ -64,11 +130,34 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter]);
+  }, [search, statusFilter, limit]);
 
   const applySearch = (e) => {
     e.preventDefault();
     setSearch(searchInput.trim());
+  };
+
+  const exportCurrentFilters = async () => {
+    try {
+      setExporting(true);
+      const res = await adminApi.dashboard({
+        page: 1,
+        limit: 500,
+        search,
+        status: statusFilter || undefined,
+        sortBy: "companyName",
+      });
+      if (!res.data.success) {
+        throw new Error(res.data.message || "Export failed");
+      }
+      const rows = res.data.sources || [];
+      downloadCsv(rows);
+      toast.success(`Exported ${rows.length} companies`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || "Export failed");
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -76,7 +165,7 @@ const AdminDashboard = () => {
       <div>
         <h1 className="text-2xl font-bold">Ops dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Complete list of monitored career sources with scraped vs visible job counts.
+          Complete list of monitored career sources with scrape host, origin, and job counts.
         </p>
       </div>
 
@@ -91,7 +180,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <form onSubmit={applySearch} className="flex max-w-md flex-1 gap-2">
           <Input
             value={searchInput}
@@ -113,6 +202,32 @@ const AdminDashboard = () => {
               {status || "All statuses"}
             </Button>
           ))}
+          <select
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            aria-label="Rows per page"
+          >
+            {PAGE_SIZE_OPTIONS.map((size) => (
+              <option key={size} value={size}>
+                {size} / page
+              </option>
+            ))}
+          </select>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={exporting}
+            onClick={exportCurrentFilters}
+          >
+            {exporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Export CSV
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link to="/admin/sources">Manage sources</Link>
           </Button>
@@ -128,68 +243,122 @@ const AdminDashboard = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Company</TableHead>
+                  <TableHead>Career site</TableHead>
                   <TableHead>Scraper</TableHead>
+                  <TableHead>Runs on</TableHead>
+                  <TableHead>Origin</TableHead>
+                  <TableHead>Public</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead>Sync</TableHead>
                   <TableHead>Scraped</TableHead>
                   <TableHead>In DB</TableHead>
                   <TableHead>Visible</TableHead>
                   <TableHead>Last sync</TableHead>
+                  <TableHead>Site</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sources.map((source) => (
-                  <TableRow key={source._id}>
-                    <TableCell>
-                      <div className="min-w-[140px]">
-                        <Link
-                          to={`/admin/sources?search=${encodeURIComponent(source.companyName)}`}
-                          className="font-medium text-brand hover:underline"
+                {sources.map((source) => {
+                  const sitePath = companyJobsPath(source.companyName);
+                  return (
+                    <TableRow key={source._id}>
+                      <TableCell>
+                        <div className="min-w-[140px]">
+                          <Link
+                            to={`/admin/sources?search=${encodeURIComponent(source.companyName)}`}
+                            className="font-medium text-brand hover:underline"
+                          >
+                            {source.companyName}
+                          </Link>
+                          <p className="mt-1 text-xs text-muted-foreground">{source.name}</p>
+                          {source.lastScrapeError ? (
+                            <p className="mt-1 text-xs text-red-600 line-clamp-2">
+                              {source.lastScrapeError}
+                            </p>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {source.url ? (
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex max-w-[220px] items-center gap-1 text-sm text-brand hover:underline"
+                            title={source.url}
+                          >
+                            <span className="truncate">{source.url.replace(/^https?:\/\//, "")}</span>
+                            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{source.scraperType}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            source.runHost === "github-puppeteer"
+                              ? "border-amber-500 text-amber-700"
+                              : source.runHost === "none"
+                                ? "border-muted-foreground text-muted-foreground"
+                                : "border-green-500 text-green-700"
+                          }
                         >
-                          {source.companyName}
+                          {source.runHostLabel || "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{source.sourceOrigin || "seed"}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={source.isPublic ? "default" : "secondary"}>
+                          {source.isPublic ? "Yes" : "No"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={source.isActive ? "default" : "secondary"}>
+                          {source.isActive ? "Yes" : "No"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            source.lastScrapeStatus === "success"
+                              ? "border-green-500 text-green-700"
+                              : source.lastScrapeStatus === "error"
+                                ? "border-red-500 text-red-700"
+                                : ""
+                          }
+                        >
+                          {source.lastScrapeStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{source.jobsFoundCount || 0}</TableCell>
+                      <TableCell>{source.activeJobsInDb || 0}</TableCell>
+                      <TableCell>{source.visibleJobsOnSite || 0}</TableCell>
+                      <TableCell className="whitespace-nowrap text-xs">
+                        {source.lastScrapedAt
+                          ? new Date(source.lastScrapedAt).toLocaleString()
+                          : "Never"}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          to={sitePath}
+                          className="inline-flex items-center gap-1 text-sm text-brand hover:underline"
+                          title="Open public company page"
+                        >
+                          View
+                          <ExternalLink className="h-3.5 w-3.5" />
                         </Link>
-                        <p className="mt-1 max-w-xs truncate text-xs text-muted-foreground">
-                          {source.url}
-                        </p>
-                        {source.lastScrapeError ? (
-                          <p className="mt-1 text-xs text-red-600 line-clamp-2">
-                            {source.lastScrapeError}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{source.scraperType}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={source.isActive ? "default" : "secondary"}>
-                        {source.isActive ? "Yes" : "No"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          source.lastScrapeStatus === "success"
-                            ? "border-green-500 text-green-700"
-                            : source.lastScrapeStatus === "error"
-                              ? "border-red-500 text-red-700"
-                              : ""
-                        }
-                      >
-                        {source.lastScrapeStatus}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{source.jobsFoundCount || 0}</TableCell>
-                    <TableCell>{source.activeJobsInDb || 0}</TableCell>
-                    <TableCell>{source.visibleJobsOnSite || 0}</TableCell>
-                    <TableCell className="whitespace-nowrap text-xs">
-                      {source.lastScrapedAt
-                        ? new Date(source.lastScrapedAt).toLocaleString()
-                        : "Never"}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
