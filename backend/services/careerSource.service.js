@@ -3,6 +3,7 @@ import {
   detectScraperType,
   extractCompanySlugFromUrl,
 } from "./scrapers/index.js";
+import { resolveSuccessfactorsRssUrl } from "./scrapers/successfactorsRss.js";
 import { probeCareerSource } from "../utils/probeCareerSource.js";
 import { resolveCareerBoard } from "../utils/resolveCareerBoard.js";
 import {
@@ -32,12 +33,19 @@ const slugCandidatesFromUrl = (url = "") => {
 export const resolveScraperConfig = async (url, scraperType, companyName = "") => {
   const detected = scraperType || detectScraperType(url);
 
+  if (detected === "successfactors-rss") {
+    return {
+      scraperType: "successfactors-rss",
+      isActive: true,
+      url: resolveSuccessfactorsRssUrl(url),
+    };
+  }
+
   const apiTypes = [
     "greenhouse",
     "lever",
     "ashby",
     "tcs-ibegin",
-    "successfactors-rss",
     "smartdreamers",
     "workday",
     "smartrecruiters",

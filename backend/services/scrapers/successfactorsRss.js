@@ -21,11 +21,31 @@ const parseLocationFromTitle = (title = "") => {
 
 const parseTitleFromRss = (title = "") => title.replace(/\s*\([^)]+\)\s*$/, "").trim();
 
+/**
+ * Build SuccessFactors RSS URL from a careers host (never fall back to another company).
+ */
+export const resolveSuccessfactorsRssUrl = (sourceUrl = "") => {
+  const trimmed = String(sourceUrl || "").trim();
+  if (!trimmed) {
+    throw new Error("SuccessFactors careers URL is required");
+  }
+
+  if (trimmed.includes("/services/rss/") || /\.xml(\?|$)/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+  } catch {
+    throw new Error(`Invalid SuccessFactors careers URL: ${trimmed}`);
+  }
+
+  return `${parsed.origin}/services/rss/job/?locale=en_US`;
+};
+
 export const scrapeSuccessfactorsRss = async (source) => {
-  const rssUrl =
-    source.url.includes("/services/rss/") || source.url.endsWith(".xml")
-      ? source.url
-      : "https://careers.wipro.com/services/rss/job/?locale=en_US";
+  const rssUrl = resolveSuccessfactorsRssUrl(source.url);
 
   const xml = await fetchText(rssUrl, {
     headers: { Accept: "application/rss+xml, application/xml, text/xml, */*" },
@@ -33,7 +53,7 @@ export const scrapeSuccessfactorsRss = async (source) => {
 
   const items = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
   if (!items.length) {
-    throw new Error("No jobs found in SuccessFactors RSS feed");
+    throw new Error(`No jobs found in SuccessFactors RSS feed (${rssUrl})`);
   }
 
   return items.map((item) => {
