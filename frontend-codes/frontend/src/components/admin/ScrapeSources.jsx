@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -45,6 +45,7 @@ const ScrapeSources = () => {
   const [syncing, setSyncing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [syncingSourceId, setSyncingSourceId] = useState("");
+  const excelInputRef = useRef(null);
 
   const fetchSources = async () => {
     try {
@@ -270,8 +271,13 @@ const ScrapeSources = () => {
             Upload a spreadsheet with columns: <strong>companyName</strong>, <strong>careerUrl</strong> (optional: name, scraperType).
             Imported companies are public for all users.
           </p>
-          <label htmlFor="excel-import" className="inline-block mt-4 cursor-pointer">
-            <Button type="button" variant="outline" disabled={importing}>
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={importing}
+              onClick={() => excelInputRef.current?.click()}
+            >
               {importing ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
@@ -279,14 +285,16 @@ const ScrapeSources = () => {
               )}
               Upload Excel / CSV
             </Button>
-          </label>
-          <input
-            id="excel-import"
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            className="hidden"
-            onChange={handleExcelImport}
-          />
+            <input
+              ref={excelInputRef}
+              id="excel-import"
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="sr-only"
+              tabIndex={-1}
+              onChange={handleExcelImport}
+            />
+          </div>
         </div>
 
         <form
