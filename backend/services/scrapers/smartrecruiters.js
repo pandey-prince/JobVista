@@ -1,5 +1,6 @@
 import { stripHtml } from "./normalize.js";
 import { fetchJson } from "./fetchHtml.js";
+import { toPublicApplicationUrl } from "../../utils/applicationUrl.js";
 
 const extractSlug = (source) => {
   if (source.selectors?.slug) return source.selectors.slug;
@@ -18,11 +19,12 @@ const extractSlug = (source) => {
 };
 
 const buildJobUrl = (posting) => {
-  if (posting.ref) return posting.ref;
   if (posting.company?.identifier && posting.id) {
     return `https://jobs.smartrecruiters.com/${posting.company.identifier}/${posting.id}`;
   }
-  return posting.applyUrl || "";
+  if (posting.applyUrl) return toPublicApplicationUrl(posting.applyUrl);
+  if (posting.ref) return toPublicApplicationUrl(posting.ref);
+  return "";
 };
 
 export const scrapeSmartrecruiters = async (source) => {

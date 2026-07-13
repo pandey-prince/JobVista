@@ -20,6 +20,7 @@ import {
 } from "../services/job-catalog/index.js";
 import { attachBadgesToJob } from "../utils/jobBadges.js";
 import { cleanJobText, extractExperienceFromTitle } from "../utils/jobText.js";
+import { toPublicApplicationUrl } from "../utils/applicationUrl.js";
 
 export const listScrapedJobs = async (req, res) => {
   try {
@@ -71,7 +72,7 @@ export const getScrapedJobById = async (req, res) => {
           applications: [],
           external: true,
           externalSource: job.source?.name || job.companyName,
-          applicationLink: job.applicationUrl,
+          applicationLink: toPublicApplicationUrl(job.applicationUrl),
           sourceName: job.source?.name,
           sourceUrl: job.source?.url,
         },

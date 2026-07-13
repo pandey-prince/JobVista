@@ -1,4 +1,5 @@
 import { cleanJobText } from "../../utils/jobText.js";
+import { toPublicApplicationUrl } from "../../utils/applicationUrl.js";
 
 export const stripHtml = (value = "") => cleanJobText(value);
 
@@ -12,7 +13,7 @@ export const normalizeJob = (job) => ({
   requirements: Array.isArray(job.requirements)
     ? job.requirements.filter(Boolean).map((item) => cleanJobText(String(item)))
     : [],
-  applicationUrl: job.applicationUrl,
+  applicationUrl: toPublicApplicationUrl(job.applicationUrl),
   companyName: job.companyName?.trim() || "Company",
   companyLogo: job.companyLogo || "",
 });

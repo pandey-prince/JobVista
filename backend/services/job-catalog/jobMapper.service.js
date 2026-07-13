@@ -3,6 +3,7 @@ import { filterItJobs } from "../../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../../utils/indiaJobFilter.js";
 import { cleanJobText, extractExperienceFromTitle } from "../../utils/jobText.js";
 import { attachBadgesToJob } from "../../utils/jobBadges.js";
+import { toPublicApplicationUrl } from "../../utils/applicationUrl.js";
 
 const normalizeDedupeText = (value = "") =>
   String(value)
@@ -44,7 +45,7 @@ export const mapScrapedJobForList = (job) => {
       applications: [],
       external: true,
       externalSource: job.source?.name || job.companyName,
-      applicationLink: job.applicationUrl,
+      applicationLink: toPublicApplicationUrl(job.applicationUrl),
       scrapedJobId: job._id,
     },
     {

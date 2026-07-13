@@ -1,6 +1,7 @@
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { isItJob } from "../utils/itJobFilter.js";
 import { isIndiaJob } from "../utils/indiaJobFilter.js";
+import { toPublicApplicationUrl } from "../utils/applicationUrl.js";
 import {
   fetchExternalJobById,
   isExternalJobId,
@@ -13,7 +14,9 @@ export const buildJobSnapshot = (job = {}) => ({
   location: job.location || "",
   salary:
     typeof job.salary === "number" ? `${job.salary} LPA` : job.salary || "",
-  applicationLink: job.applicationLink || job.applicationUrl || "",
+  applicationLink: toPublicApplicationUrl(
+    job.applicationLink || job.applicationUrl || "",
+  ),
   sourceType: job.badges?.sourceType || "",
   description: (job.description || "").slice(0, 280),
 });
