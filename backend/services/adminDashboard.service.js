@@ -1,13 +1,9 @@
 import { JobSource } from "../models/jobSource.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
-import { filterItJobs } from "../utils/itJobFilter.js";
-import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import { buildPaginationMeta, parsePagination } from "../utils/pagination.js";
 import { isPuppeteerScraperType } from "./scrapeSync.service.js";
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const countVisibleJobs = (jobs = []) => filterIndiaJobs(filterItJobs(jobs)).length;
 
 const runHostForScraper = (scraperType = "") => {
   if (scraperType === "unsupported") {
@@ -170,9 +166,6 @@ const sortSources = (rows, sortBy = "companyName") => {
   return sorted;
 };
 
-const JOB_COUNT_SELECT =
-  "source title location jobType requirements companyName";
-
 const mapSourceBaseRow = (source) => {
   const host = runHostForScraper(source.scraperType);
   const row = {
@@ -203,33 +196,32 @@ const mapSourceBaseRow = (source) => {
   };
 };
 
-const loadJobsBySource = async (sourceIds) => {
-  if (!sourceIds.length) return new Map();
-
-  const activeJobs = await ScrapedJob.find({
-    source: { $in: sourceIds },
-    status: "active",
-  }).select(JOB_COUNT_SELECT);
-
-  const jobsBySource = new Map();
-  for (const job of activeJobs) {
-    const key = String(job.source);
-    if (!jobsBySource.has(key)) jobsBySource.set(key, []);
-    jobsBySource.get(key).push(job);
-  }
-  return jobsBySource;
-};
-
+/**
+ * Count active jobs per source via aggregation only.
+ * Exact IT+India “visible” filtering requires hydrating every job document and
+ * OOMs on free Render — approximate visible with in-DB active counts.
+ */
 const attachJobCounts = async (sources) => {
-  const jobsBySource = await loadJobsBySource(sources.map((source) => source._id));
+  const sourceIds = sources.map((source) => source._id);
+  if (!sourceIds.length) {
+    return sources.map((source) => mapSourceBaseRow(source));
+  }
+
+  const counts = await ScrapedJob.aggregate([
+    { $match: { status: "active", source: { $in: sourceIds } } },
+    { $group: { _id: "$source", activeJobsInDb: { $sum: 1 } } },
+  ]);
+  const countBySource = new Map(
+    counts.map((row) => [String(row._id), row.activeJobsInDb]),
+  );
 
   return sources.map((source) => {
     const base = mapSourceBaseRow(source);
-    const sourceJobs = jobsBySource.get(String(source._id)) || [];
+    const activeJobsInDb = countBySource.get(String(source._id)) || 0;
     return {
       ...base,
-      activeJobsInDb: sourceJobs.length,
-      visibleJobsOnSite: countVisibleJobs(sourceJobs),
+      activeJobsInDb,
+      visibleJobsOnSite: activeJobsInDb,
     };
   });
 };
@@ -243,8 +235,7 @@ const summarizeActiveJobs = async () => {
     ]),
   ]);
 
-  // Global “visible” exact IT+India filter would require loading every job.
-  // Use active inventory for summary cards; per-row Visible stays exact for the page.
+  // Exact IT+India visible totals need every job; use active inventory instead.
   return {
     totalActiveJobsInDb,
     totalVisibleJobsOnSite: totalActiveJobsInDb,
@@ -341,8 +332,6 @@ export const getAdminDashboard = async (query = {}) => {
 };
 
 export const getAdminSourcesList = async () => {
-  // Paginate-friendly list without hydrating every job for every source:
-  // return health rows + active counts via aggregation only.
   const sources = await JobSource.find()
     .select(
       "name companyName url scraperType isActive isPublic lastScrapeStatus lastScrapeError lastScrapedAt jobsFoundCount priorityPuppeteerSync sourceOrigin regions",
@@ -350,22 +339,5 @@ export const getAdminSourcesList = async () => {
     .sort({ companyName: 1 })
     .lean();
 
-  const counts = await ScrapedJob.aggregate([
-    { $match: { status: "active" } },
-    { $group: { _id: "$source", activeJobsInDb: { $sum: 1 } } },
-  ]);
-  const countBySource = new Map(
-    counts.map((row) => [String(row._id), row.activeJobsInDb]),
-  );
-
-  return sources.map((source) => {
-    const base = mapSourceBaseRow(source);
-    const activeJobsInDb = countBySource.get(String(source._id)) || 0;
-    return {
-      ...base,
-      activeJobsInDb,
-      // Exact visible filter needs titles; approximate with in-DB count for this list.
-      visibleJobsOnSite: activeJobsInDb,
-    };
-  });
+  return attachJobCounts(sources);
 };

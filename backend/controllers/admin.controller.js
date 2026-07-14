@@ -8,7 +8,7 @@ export const fetchAdminDashboard = async (req, res) => {
       ...data,
     });
   } catch (error) {
-    console.error("[Admin] dashboard failed:", error.message);
+    console.error("[Admin] dashboard failed:", error.message, error.stack);
     return res.status(500).json({
       success: false,
       message: "Unable to load admin dashboard",

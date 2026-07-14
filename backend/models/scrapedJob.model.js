@@ -82,5 +82,6 @@ const scrapedJobSchema = new mongoose.Schema(
 
 scrapedJobSchema.index({ source: 1, externalId: 1 }, { unique: true });
 scrapedJobSchema.index({ status: 1, firstSeenAt: -1 });
+scrapedJobSchema.index({ status: 1, source: 1 });
 
 export const ScrapedJob = mongoose.model("ScrapedJob", scrapedJobSchema);
