@@ -246,11 +246,37 @@ const filterSourcesByBucket = (sources, bucketIndex, bucketCount) => {
 const runSyncLoop = async (sources) => {
   const results = [];
   let removedFromBoard = 0;
+  const total = sources.length;
 
-  for (const source of sources) {
+  console.log(`[ScrapeSync] starting loop for ${total} source(s)`);
+
+  for (let index = 0; index < sources.length; index += 1) {
+    const source = sources[index];
+    const label = `${index + 1}/${total}`;
+    const startedAt = Date.now();
+    console.log(
+      `[ScrapeSync] (${label}) start "${source.companyName}" [${source.scraperType}] ${source.url}`,
+    );
+
     const result = await syncSource(source);
     results.push(result);
     removedFromBoard += result.removedJobsCount || 0;
+
+    const elapsedMs = Date.now() - startedAt;
+    if (result.skipped) {
+      console.log(
+        `[ScrapeSync] (${label}) skip "${source.companyName}" reason=${result.reason || "n/a"} (${elapsedMs}ms)`,
+      );
+    } else if (result.success) {
+      console.log(
+        `[ScrapeSync] (${label}) ok "${source.companyName}" found=${result.jobsFound ?? 0} new=${result.newJobsCount ?? 0} removed=${result.removedJobsCount ?? 0} (${elapsedMs}ms)`,
+      );
+    } else {
+      console.warn(
+        `[ScrapeSync] (${label}) fail "${source.companyName}": ${result.error || "unknown"} (${elapsedMs}ms)`,
+      );
+    }
+
     const delayMs = isPuppeteerScraperType(source.scraperType)
       ? PUPPETEER_DELAY_MS
       : SCRAPE_DELAY_MS;
@@ -279,6 +305,13 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
     modeSources,
     resolvedBucketIndex,
     resolvedBucketCount,
+  );
+  const usingBucketsPreview =
+    Number.isInteger(resolvedBucketCount) &&
+    resolvedBucketCount > 1 &&
+    Number.isInteger(resolvedBucketIndex);
+  console.log(
+    `[ScrapeSync] mode=${mode}${usingBucketsPreview ? ` bucket=${resolvedBucketIndex}/${resolvedBucketCount}` : ""} queued=${sources.length}/${modeSources.length} active puppeteer/api pool`,
   );
   const { results, removedFromBoard } = await runSyncLoop(sources);
 

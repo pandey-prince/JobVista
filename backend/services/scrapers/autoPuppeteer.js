@@ -5,6 +5,13 @@ import { getPuppeteerOverride } from "../../data/puppeteerSelectors.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PUPPETEER_MAX_PAGES = Number(process.env.PUPPETEER_MAX_PAGES || 10);
+/** Hard cap for one company scrape (browser closed on timeout). */
+const PUPPETEER_SOURCE_TIMEOUT_MS = Number(
+  process.env.PUPPETEER_SOURCE_TIMEOUT_MS || 180000,
+);
+const PUPPETEER_NAV_TIMEOUT_MS = Number(
+  process.env.PUPPETEER_NAV_TIMEOUT_MS || 45000,
+);
 
 const DEFAULT_NEXT_SELECTORS = [
   "button[aria-label*='Next' i]",
@@ -329,7 +336,12 @@ const clickNextPage = async (page, nextButtonSelector = "") => {
 const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
   const waitMs = Number(selectors.waitMs || process.env.PUPPETEER_WAIT_MS || 6000);
   const waitUntil = selectors.waitUntil || "domcontentloaded";
-  const timeoutMs = Number(selectors.timeoutMs || 60000);
+  const timeoutMs = Number(
+    selectors.timeoutMs || PUPPETEER_NAV_TIMEOUT_MS || 45000,
+  );
+
+  page.setDefaultNavigationTimeout(timeoutMs);
+  page.setDefaultTimeout(timeoutMs);
 
   await page.goto(baseUrl, { waitUntil, timeout: timeoutMs });
   await delay(waitMs);
@@ -340,7 +352,9 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
   }
 
   try {
-    await page.waitForSelector(selectors.jobList, { timeout: Math.min(timeoutMs, 25000) });
+    await page.waitForSelector(selectors.jobList, {
+      timeout: Math.min(timeoutMs, 20000),
+    });
   } catch {
     // Some boards render lazily; continue with best-effort scrape.
   }
@@ -416,32 +430,58 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
 
 export const scrapeAutoPuppeteer = async (source) => {
   const browser = await launchBrowser();
+  let timeoutHandle;
 
   try {
-    const page = await browser.newPage();
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    );
+    const work = (async () => {
+      const page = await browser.newPage();
+      await page.setUserAgent(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      );
 
-    const { url, presets } = buildSelectorPlan(source);
+      const { url, presets } = buildSelectorPlan(source);
+      console.log(
+        `[AutoPuppeteer] "${source.companyName}" url=${url} presets=${presets.length} timeoutMs=${PUPPETEER_SOURCE_TIMEOUT_MS}`,
+      );
 
-    for (const selectors of presets) {
-      const jobs = await scrapeWithSelectors(page, source, selectors, url);
-      if (jobs.length >= 1) {
-        return jobs.map((job) => ({
-          ...job,
-          description: stripHtml(job.description),
-          jobType: "Full-time",
-          salary: "Not disclosed",
-          requirements: [],
-          companyName: source.companyName,
-          companyLogo: "",
-        }));
+      for (let i = 0; i < presets.length; i += 1) {
+        const selectors = presets[i];
+        console.log(
+          `[AutoPuppeteer] "${source.companyName}" trying preset ${i + 1}/${presets.length}`,
+        );
+        const jobs = await scrapeWithSelectors(page, source, selectors, url);
+        if (jobs.length >= 1) {
+          console.log(
+            `[AutoPuppeteer] "${source.companyName}" scraped ${jobs.length} raw job(s)`,
+          );
+          return jobs.map((job) => ({
+            ...job,
+            description: stripHtml(job.description),
+            jobType: "Full-time",
+            salary: "Not disclosed",
+            requirements: [],
+            companyName: source.companyName,
+            companyLogo: "",
+          }));
+        }
       }
-    }
 
-    throw new Error("Auto Puppeteer could not find job listings on career page");
+      throw new Error("Auto Puppeteer could not find job listings on career page");
+    })();
+
+    const timedOut = new Promise((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        reject(
+          new Error(
+            `Auto Puppeteer timed out after ${PUPPETEER_SOURCE_TIMEOUT_MS}ms for ${source.companyName}`,
+          ),
+        );
+      }, PUPPETEER_SOURCE_TIMEOUT_MS);
+    });
+
+    return await Promise.race([work, timedOut]);
   } finally {
-    await browser.close();
+    clearTimeout(timeoutHandle);
+    await browser.close().catch(() => {});
   }
 };
