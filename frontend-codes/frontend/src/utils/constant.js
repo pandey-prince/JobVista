@@ -2,38 +2,76 @@ const PRODUCTION_API = "https://jobvista-ahek.onrender.com/api/v1";
 const DEV_API = "http://localhost:8000/api/v1";
 const API_ROOT = import.meta.env.PROD ? PRODUCTION_API : DEV_API;
 
-export const USER_API_END_POINT =
-  import.meta.env.VITE_USER_API_END_POINT || `${API_ROOT}/user`;
+/**
+ * Only accept real absolute API URLs from Vercel env.
+ * Placeholder values like "...admin" must NOT win — they become relative
+ * paths on joblelo.online and the SPA returns HTML, which the admin UI
+ * surfaces as "Unable to load admin dashboard".
+ */
+const resolveApiEndpoint = (envValue, fallbackPath) => {
+  const trimmed = typeof envValue === "string" ? envValue.trim() : "";
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed.replace(/\/$/, "");
+  }
+  return `${API_ROOT}/${fallbackPath}`;
+};
 
-export const JOB_API_END_POINT =
-  import.meta.env.VITE_JOB_API_END_POINT || `${API_ROOT}/job`;
+export const USER_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_USER_API_END_POINT,
+  "user",
+);
 
-export const APPLICATION_API_END_POINT =
-  import.meta.env.VITE_APPLICATION_API_END_POINT || `${API_ROOT}/application`;
+export const JOB_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_JOB_API_END_POINT,
+  "job",
+);
 
-export const COMPANY_API_END_POINT =
-  import.meta.env.VITE_COMPANY_API_END_POINT || `${API_ROOT}/company`;
+export const APPLICATION_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_APPLICATION_API_END_POINT,
+  "application",
+);
 
-export const CHATBOT_API_END_POINT =
-  import.meta.env.VITE_CHATBOT_API_END_POINT || `${API_ROOT}/chatbot`;
+export const COMPANY_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_COMPANY_API_END_POINT,
+  "company",
+);
 
-export const SCRAPED_JOB_API_END_POINT =
-  import.meta.env.VITE_SCRAPED_JOB_API_END_POINT || `${API_ROOT}/scraped-jobs`;
+export const CHATBOT_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_CHATBOT_API_END_POINT,
+  "chatbot",
+);
 
-export const CAREER_SOURCE_API_END_POINT =
-  import.meta.env.VITE_CAREER_SOURCE_API_END_POINT || `${API_ROOT}/career-sources`;
+export const SCRAPED_JOB_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_SCRAPED_JOB_API_END_POINT,
+  "scraped-jobs",
+);
 
-export const STATS_API_END_POINT =
-  import.meta.env.VITE_STATS_API_END_POINT || `${API_ROOT}/stats`;
+export const CAREER_SOURCE_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_CAREER_SOURCE_API_END_POINT,
+  "career-sources",
+);
 
-export const SAVED_JOBS_API_END_POINT =
-  import.meta.env.VITE_SAVED_JOBS_API_END_POINT || `${API_ROOT}/saved-jobs`;
+export const STATS_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_STATS_API_END_POINT,
+  "stats",
+);
 
-export const ALERTS_API_END_POINT =
-  import.meta.env.VITE_ALERTS_API_END_POINT || `${API_ROOT}/alerts`;
+export const SAVED_JOBS_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_SAVED_JOBS_API_END_POINT,
+  "saved-jobs",
+);
 
-export const TRACKED_APPLICATIONS_API_END_POINT =
-  import.meta.env.VITE_TRACKED_APPLICATIONS_API_END_POINT || `${API_ROOT}/tracked-applications`;
+export const ALERTS_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_ALERTS_API_END_POINT,
+  "alerts",
+);
 
-export const ADMIN_API_END_POINT =
-  import.meta.env.VITE_ADMIN_API_END_POINT || `${API_ROOT}/admin`;
+export const TRACKED_APPLICATIONS_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_TRACKED_APPLICATIONS_API_END_POINT,
+  "tracked-applications",
+);
+
+export const ADMIN_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_ADMIN_API_END_POINT,
+  "admin",
+);
