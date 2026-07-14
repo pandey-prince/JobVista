@@ -49,9 +49,9 @@ const SavedJobs = () => {
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               Tap Save on any job card to keep it here.
             </p>
-            <Link to="/jobs">
-              <Button className="mt-6 bg-brand hover:bg-brand/90">Browse jobs</Button>
-            </Link>
+            <Button asChild className="mt-6 bg-brand hover:bg-brand/90">
+              <Link to="/jobs">Browse jobs</Link>
+            </Button>
           </div>
         ) : (
           <>

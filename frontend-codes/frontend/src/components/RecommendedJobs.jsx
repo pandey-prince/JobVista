@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { jobsApi } from "@/api";
 import Job from "./Job";
@@ -12,7 +12,6 @@ const hasProfileSignals = (user) =>
 
 const RecommendedJobs = () => {
   const { user, loading: authLoading } = useSelector((store) => store.auth);
-  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [personalized, setPersonalized] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -56,11 +55,8 @@ const RecommendedJobs = () => {
           <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
             Add skills and preferred roles to your profile and we&apos;ll surface openings that match your background.
           </p>
-          <Button
-            className="mt-5 rounded-full bg-brand hover:bg-brand/90"
-            onClick={() => navigate("/profile/setup")}
-          >
-            Complete your profile
+          <Button asChild className="mt-5 rounded-full bg-brand hover:bg-brand/90">
+            <Link to="/profile/setup">Complete your profile</Link>
           </Button>
         </div>
       </section>
@@ -95,12 +91,8 @@ const RecommendedJobs = () => {
           <p className="text-sm text-muted-foreground">
             No strong matches yet. Try updating your skills or check back after the next sync.
           </p>
-          <Button
-            variant="outline"
-            className="mt-4 rounded-full"
-            onClick={() => navigate("/profile")}
-          >
-            Update profile
+          <Button asChild variant="outline" className="mt-4 rounded-full">
+            <Link to="/profile">Update profile</Link>
           </Button>
         </div>
       ) : (

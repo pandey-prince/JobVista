@@ -133,7 +133,8 @@ const JobMateChatbot = () => {
 
   useEffect(() => {
     if (open) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      // Prefer nearest so the chat panel scrolls without dragging the page to the footer.
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [messages, loading, open]);
 

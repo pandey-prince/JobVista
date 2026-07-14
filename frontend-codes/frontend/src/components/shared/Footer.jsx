@@ -12,9 +12,9 @@ const footerLinks = {
   ],
   candidatesGuest: [
     { label: "Create account", to: "/signup" },
-    { label: "Saved jobs", to: "/saved-jobs" },
-    { label: "Job alerts", to: "/alerts" },
-    { label: "Your profile", to: "/profile" },
+    { label: "Saved jobs", to: "/login" },
+    { label: "Job alerts", to: "/login" },
+    { label: "Your profile", to: "/login" },
   ],
   candidatesStudent: [
     { label: "Saved jobs", to: "/saved-jobs" },
