@@ -312,7 +312,12 @@ const run = async () => {
       : fail("IT job filter");
 
     isIndiaJob({ location: "Bangalore, India" }) &&
-    !isIndiaJob({ location: "San Francisco, USA" })
+    isIndiaJob({ location: "" }) &&
+    isIndiaJob({ location: "Not specified" }) &&
+    isIndiaJob({ location: "Remote" }) &&
+    isIndiaJob({ location: "Remote - India" }) &&
+    !isIndiaJob({ location: "San Francisco, USA" }) &&
+    !isIndiaJob({ location: "London, UK" })
       ? pass("India job filter")
       : fail("India job filter");
 

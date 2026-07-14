@@ -19,14 +19,24 @@ const INDIA_PATTERNS = [
   /\b(tamil nadu|karnataka|maharashtra|telangana|west bengal|gujarat|rajasthan|uttar pradesh)\b/i,
 ];
 
+const UNSPECIFIED_LOCATION_PATTERN =
+  /^(not\s*specified|n\/?a|none|null|unknown|-|_|\.|tbd|to\s*be\s*decided)?$/i;
+
 export const getJobLocationText = (job = {}) =>
   [job.location, job.candidate_required_location].filter(Boolean).join(" ").trim();
+
+export const isUnspecifiedLocation = (location = "") => {
+  const normalized = String(location || "").trim();
+  if (!normalized) return true;
+  return UNSPECIFIED_LOCATION_PATTERN.test(normalized);
+};
 
 export const isIndiaJob = (job = {}) => {
   const location = getJobLocationText(job);
 
-  if (!location) {
-    return !job.external;
+  // Blank / placeholder locations are treated as "not mentioned" → keep.
+  if (isUnspecifiedLocation(location)) {
+    return true;
   }
 
   const hasIndia = INDIA_PATTERNS.some((pattern) => pattern.test(location));
@@ -35,6 +45,7 @@ export const isIndiaJob = (job = {}) => {
   if (hasNonIndia && !hasIndia) return false;
   if (hasIndia) return true;
 
+  // Bare Remote (no foreign country signal) → keep.
   if (/remote/i.test(location) && !hasNonIndia) return true;
 
   return false;

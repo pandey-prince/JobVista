@@ -2,6 +2,7 @@ import { JobSource } from "../models/jobSource.model.js";
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { runScraper } from "./scrapers/index.js";
 import { filterItJobs, isItJob } from "../utils/itJobFilter.js";
+import { filterIndiaJobs, isIndiaJob } from "../utils/indiaJobFilter.js";
 import { processWatchlistAlerts } from "./watchlistAlert.service.js";
 import { hardDeleteScrapedJob } from "./scrapedJobCleanup.service.js";
 import { checkActiveJobLinks } from "./linkCheck.service.js";
@@ -61,7 +62,9 @@ export const syncSource = async (source) => {
   const newJobs = [];
 
   try {
-    const allScrapedJobs = filterItJobs(await runScraper(source));
+    const rawJobs = await runScraper(source);
+    const rawByExternalId = new Map(rawJobs.map((job) => [job.externalId, job]));
+    const allScrapedJobs = filterIndiaJobs(filterItJobs(rawJobs));
     const seenExternalIds = new Set(allScrapedJobs.map((job) => job.externalId));
     const jobsToUpsert = limitUpserts(allScrapedJobs);
 
@@ -105,7 +108,12 @@ export const syncSource = async (source) => {
     });
 
     for (const staleJob of staleJobs) {
-      await hardDeleteScrapedJob(staleJob, "missing_from_board");
+      const rawJob = rawByExternalId.get(staleJob.externalId);
+      let reason = "missing_from_board";
+      if (rawJob) {
+        reason = !isItJob(rawJob) ? "non_it" : "non_india";
+      }
+      await hardDeleteScrapedJob(staleJob, reason);
       removedJobsCount += 1;
     }
 
@@ -226,11 +234,11 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
   );
   const { results, removedFromBoard } = await runSyncLoop(sources);
 
-  let nonItRemoved = 0;
+  let ineligibleRemoved = 0;
   let linkCheckSummary = null;
 
   if (runPostSyncTasks) {
-    nonItRemoved = await cleanupNonItScrapedJobs();
+    ineligibleRemoved = await cleanupIneligibleScrapedJobs();
 
     if (LINK_CHECK_AFTER_SYNC) {
       try {
@@ -259,7 +267,8 @@ export const syncSourcesByMode = async (mode = "all", options = {}) => {
     failed: results.filter((r) => !r.success).length,
     newJobsCount: results.reduce((sum, r) => sum + (r.newJobsCount || 0), 0),
     removedFromBoard,
-    removedNonIt: nonItRemoved,
+    removedNonIt: ineligibleRemoved,
+    removedIneligible: ineligibleRemoved,
     removedDeadLinks: linkCheckSummary?.deleted || 0,
     linkChecksRun: linkCheckSummary?.checked || 0,
     results,
@@ -364,13 +373,19 @@ export const syncPriorityPuppeteerSources = async (options = {}) => {
   return summary;
 };
 
-const cleanupNonItScrapedJobs = async () => {
+const cleanupIneligibleScrapedJobs = async () => {
   const activeJobs = await ScrapedJob.find({ status: "active" });
   let removedCount = 0;
 
   for (const job of activeJobs) {
     if (!isItJob(job)) {
       await hardDeleteScrapedJob(job, "non_it");
+      removedCount += 1;
+      continue;
+    }
+
+    if (!isIndiaJob(job)) {
+      await hardDeleteScrapedJob(job, "non_india");
       removedCount += 1;
     }
   }
