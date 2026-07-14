@@ -77,7 +77,7 @@ export const getAllJobs = async (req, res) => {
     const keyword = String(req.query.keyword || "").trim();
     const filters = parseJobListFilters(req.query);
     const paginationQuery = parsePagination(req.query, {
-      defaultLimit: 12,
+      defaultLimit: 30,
       maxLimit: 48,
     });
 

@@ -16,7 +16,7 @@ import LoadingState from "@/components/shared/LoadingState";
 import usePageTitle from "@/hooks/usePageTitle";
 import { RefreshCw, X } from "lucide-react";
 
-const JOBS_PER_PAGE = 12;
+const JOBS_PER_PAGE = 30;
 
 const countActiveFilters = (filters) =>
   Object.entries(filters).reduce((count, [key, values]) => {

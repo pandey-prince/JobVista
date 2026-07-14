@@ -4,7 +4,7 @@ import { filtersToQueryParams } from "@/utils/jobFilters";
 
 const usePaginatedJobs = ({
   page = 1,
-  limit = 12,
+  limit = 30,
   keyword = "",
   filters = {},
   enabled = true,

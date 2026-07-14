@@ -52,7 +52,7 @@ export const trackerApi = {
 };
 
 export const jobsApi = {
-  list: ({ keyword = "", page = 1, limit = 12, ...filterParams } = {}) =>
+  list: ({ keyword = "", page = 1, limit = 30, ...filterParams } = {}) =>
     apiClient.get(`${JOB_API_END_POINT}/get`, {
       params: { keyword, page, limit, ...filterParams },
     }),
