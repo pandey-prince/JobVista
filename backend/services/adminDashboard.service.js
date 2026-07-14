@@ -170,12 +170,46 @@ const sortSources = (rows, sortBy = "companyName") => {
   return sorted;
 };
 
-const attachJobCounts = async (sources) => {
-  const sourceIds = sources.map((source) => source._id);
+const JOB_COUNT_SELECT =
+  "source title location jobType requirements companyName";
+
+const mapSourceBaseRow = (source) => {
+  const host = runHostForScraper(source.scraperType);
+  const row = {
+    _id: source._id,
+    name: source.name,
+    companyName: source.companyName,
+    url: source.url,
+    scraperType: source.scraperType,
+    isActive: source.isActive,
+    isPublic: source.isPublic !== false,
+    lastScrapeStatus: source.lastScrapeStatus,
+    lastScrapeError: source.lastScrapeError,
+    lastScrapedAt: source.lastScrapedAt,
+    jobsFoundCount: source.jobsFoundCount || 0,
+    priorityPuppeteerSync: Boolean(source.priorityPuppeteerSync),
+    sourceOrigin: source.sourceOrigin || "seed",
+    regions: Array.isArray(source.regions) ? source.regions : [],
+    runHost: host.runHost,
+    runHostLabel: host.runHostLabel,
+    activeJobsInDb: 0,
+    visibleJobsOnSite: 0,
+  };
+  const health = deriveSyncHealth(row);
+  return {
+    ...row,
+    syncHealth: health.syncHealth,
+    syncReason: health.syncReason,
+  };
+};
+
+const loadJobsBySource = async (sourceIds) => {
+  if (!sourceIds.length) return new Map();
+
   const activeJobs = await ScrapedJob.find({
     source: { $in: sourceIds },
     status: "active",
-  }).select("source title description location jobType requirements companyName");
+  }).select(JOB_COUNT_SELECT);
 
   const jobsBySource = new Map();
   for (const job of activeJobs) {
@@ -183,36 +217,19 @@ const attachJobCounts = async (sources) => {
     if (!jobsBySource.has(key)) jobsBySource.set(key, []);
     jobsBySource.get(key).push(job);
   }
+  return jobsBySource;
+};
+
+const attachJobCounts = async (sources) => {
+  const jobsBySource = await loadJobsBySource(sources.map((source) => source._id));
 
   return sources.map((source) => {
+    const base = mapSourceBaseRow(source);
     const sourceJobs = jobsBySource.get(String(source._id)) || [];
-    const host = runHostForScraper(source.scraperType);
-    const jobsFoundCount = source.jobsFoundCount || 0;
-    const row = {
-      _id: source._id,
-      name: source.name,
-      companyName: source.companyName,
-      url: source.url,
-      scraperType: source.scraperType,
-      isActive: source.isActive,
-      isPublic: source.isPublic !== false,
-      lastScrapeStatus: source.lastScrapeStatus,
-      lastScrapeError: source.lastScrapeError,
-      lastScrapedAt: source.lastScrapedAt,
-      jobsFoundCount,
-      priorityPuppeteerSync: Boolean(source.priorityPuppeteerSync),
-      sourceOrigin: source.sourceOrigin || "seed",
-      regions: Array.isArray(source.regions) ? source.regions : [],
-      runHost: host.runHost,
-      runHostLabel: host.runHostLabel,
+    return {
+      ...base,
       activeJobsInDb: sourceJobs.length,
       visibleJobsOnSite: countVisibleJobs(sourceJobs),
-    };
-    const health = deriveSyncHealth(row);
-    return {
-      ...row,
-      syncHealth: health.syncHealth,
-      syncReason: health.syncReason,
     };
   });
 };
@@ -232,23 +249,53 @@ export const getAdminDashboard = async (query = {}) => {
   });
 
   const allSources = await JobSource.find(sourceQuery).sort({ companyName: 1 });
-  const rowsWithCounts = await attachJobCounts(allSources);
-  let sortedRows = sortSources(rowsWithCounts, query.sortBy || "companyName");
-
+  const sortBy = query.sortBy || "companyName";
   const needsAttentionOnly =
     query.needsAttention === "true" ||
     query.needsAttention === true ||
     query.health === "attention";
+  const needsJobCountsForSort =
+    sortBy === "visibleJobs" || sortBy === "activeJobsInDb";
 
-  if (needsAttentionOnly) {
-    sortedRows = sortedRows.filter(matchesNeedsAttention);
+  // Health/summary use JobSource fields only (no job document load).
+  const healthRows = allSources.map(mapSourceBaseRow);
+  const sourcesNeedingAttention = healthRows.filter(matchesNeedsAttention).length;
+
+  let workingRows = needsAttentionOnly
+    ? healthRows.filter(matchesNeedsAttention)
+    : healthRows;
+
+  // Only load job docs for all sources when sorting by job counts.
+  if (needsJobCountsForSort) {
+    workingRows = sortSources(await attachJobCounts(allSources), sortBy);
+    if (needsAttentionOnly) {
+      workingRows = workingRows.filter(matchesNeedsAttention);
+    }
+  } else {
+    workingRows = sortSources(workingRows, sortBy);
   }
 
-  const totalActiveJobsInDb = await ScrapedJob.countDocuments({ status: "active" });
-  const allActiveJobs = await ScrapedJob.find({ status: "active" }).select(
-    "title description location jobType requirements companyName",
-  );
-  const totalVisibleJobsOnSite = countVisibleJobs(allActiveJobs);
+  const skip = paginationQuery.skip;
+  const pageSlice = workingRows.slice(skip, skip + paginationQuery.limit);
+
+  let pageSources = pageSlice;
+  if (!needsJobCountsForSort) {
+    const pageDocs = pageSlice
+      .map((row) => allSources.find((source) => String(source._id) === String(row._id)))
+      .filter(Boolean);
+    const counted = await attachJobCounts(pageDocs);
+    const byId = new Map(counted.map((row) => [String(row._id), row]));
+    pageSources = pageSlice.map((row) => byId.get(String(row._id)) || row);
+  }
+
+  const [totalActiveJobsInDb, lightJobs] = await Promise.all([
+    ScrapedJob.countDocuments({ status: "active" }),
+    ScrapedJob.find({ status: "active" }).select(JOB_COUNT_SELECT).lean(),
+  ]);
+  const totalVisibleJobsOnSite = countVisibleJobs(lightJobs);
+  const companiesWithVisibleJobs = new Set(
+    lightJobs.filter((job) => countVisibleJobs([job]) > 0).map((job) => String(job.source)),
+  ).size;
 
   const summary = {
     totalSources: allSources.length,
@@ -257,11 +304,10 @@ export const getAdminDashboard = async (query = {}) => {
       .length,
     sourcesNeverSynced: allSources.filter((source) => source.lastScrapeStatus === "never")
       .length,
-    sourcesNeedingAttention: rowsWithCounts.filter(matchesNeedsAttention).length,
+    sourcesNeedingAttention,
     totalActiveJobsInDb,
     totalVisibleJobsOnSite,
-    companiesWithVisibleJobs: rowsWithCounts.filter((row) => row.visibleJobsOnSite > 0)
-      .length,
+    companiesWithVisibleJobs,
     lastSyncAt: allSources.reduce((latest, source) => {
       if (!source.lastScrapedAt) return latest;
       if (!latest || source.lastScrapedAt > latest) return source.lastScrapedAt;
@@ -269,16 +315,13 @@ export const getAdminDashboard = async (query = {}) => {
     }, null),
   };
 
-  const skip = paginationQuery.skip;
-  const sources = sortedRows.slice(skip, skip + paginationQuery.limit);
-
   return {
     summary,
-    sources,
+    sources: pageSources,
     pagination: buildPaginationMeta({
       page: paginationQuery.page,
       limit: paginationQuery.limit,
-      total: sortedRows.length,
+      total: workingRows.length,
     }),
   };
 };

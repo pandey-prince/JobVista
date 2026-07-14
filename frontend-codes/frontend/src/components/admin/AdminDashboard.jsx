@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { adminApi } from "@/api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -103,6 +103,7 @@ const downloadCsv = (sources) => {
 };
 
 const AdminDashboard = () => {
+  const [loadError, setLoadError] = useState("");
   const [summary, setSummary] = useState({});
   const [sources, setSources] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -114,10 +115,12 @@ const AdminDashboard = () => {
   const [needsAttention, setNeedsAttention] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
+  const navigate = useNavigate();
 
   const loadDashboard = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError("");
       const res = await adminApi.dashboard({
         page,
         limit,
@@ -130,13 +133,28 @@ const AdminDashboard = () => {
         setSummary(res.data.summary || {});
         setSources(res.data.sources || []);
         setPagination(res.data.pagination || null);
+      } else {
+        setLoadError(res.data.message || "Unable to load admin dashboard");
+        setSummary({});
+        setSources([]);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load dashboard");
+      const status = error.response?.status;
+      const message =
+        error.response?.data?.message || error.message || "Failed to load dashboard";
+      setLoadError(message);
+      setSummary({});
+      setSources([]);
+      if (status === 401) {
+        toast.error("Session expired — sign in again");
+        navigate("/admin/login");
+        return;
+      }
+      toast.error(message);
     } finally {
       setLoading(false);
     }
-  }, [page, limit, search, statusFilter, needsAttention]);
+  }, [page, limit, search, statusFilter, needsAttention, navigate]);
 
   useEffect(() => {
     loadDashboard();
@@ -269,6 +287,16 @@ const AdminDashboard = () => {
           </Button>
         </div>
       </div>
+
+      {loadError ? (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="font-medium">Could not load dashboard</p>
+          <p className="mt-1">{loadError}</p>
+          <Button type="button" size="sm" variant="outline" className="mt-3" onClick={loadDashboard}>
+            Retry
+          </Button>
+        </div>
+      ) : null}
 
       {loading ? (
         <LoadingState variant="page" message="Loading dashboard" />
