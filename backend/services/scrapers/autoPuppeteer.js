@@ -190,6 +190,56 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
         return href.toLowerCase().includes(hrefPattern.toLowerCase());
       };
 
+      const cleanLocationText = (value = "") => {
+        let text = String(value || "")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (!text) return "Not specified";
+
+        text = text
+          .replace(/,?\s*(?:and|&)?\s*\+?\s*\d+\s*more\b/gi, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        text = text.replace(/^[,|/·•\-–—]+|[,|/·•\-–—]+$/g, "").trim();
+
+        if (!text || /^(?:and|&)?\s*\+?\s*\d+\s*more$/i.test(text)) {
+          return "Not specified";
+        }
+
+        return text;
+      };
+
+      const readLocation = (container, locationSelector) => {
+        const candidates = [];
+
+        if (locationSelector) {
+          container.querySelectorAll(locationSelector).forEach((el) => {
+            const t = el.textContent?.trim();
+            if (t) candidates.push(t);
+          });
+        }
+
+        container
+          .querySelectorAll(
+            "[class*='location'], [data-automation-id*='ocation'], .job-list-item__location, .job-location",
+          )
+          .forEach((el) => {
+            const t = el.textContent?.trim();
+            if (t) candidates.push(t);
+          });
+
+        for (const candidate of candidates) {
+          const cleaned = cleanLocationText(candidate);
+          if (cleaned !== "Not specified") return cleaned;
+        }
+
+        if (candidates.length) {
+          return cleanLocationText(candidates[0]);
+        }
+
+        return "Not specified";
+      };
+
       const seen = new Set();
 
       const resolveLinkEl = (container, linkSelector) => {
@@ -207,9 +257,7 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
         .map((container) => {
           const titleEl = title ? container.querySelector(title) : container;
           let titleText = titleEl?.textContent?.trim() || "";
-          const locationText = location
-            ? container.querySelector(location)?.textContent?.trim() || "Not specified"
-            : "Not specified";
+          const locationText = readLocation(container, location);
           const linkEl = resolveLinkEl(container, link);
           const href = linkEl?.getAttribute("href") || "";
           const applicationUrl = resolveUrl(href);

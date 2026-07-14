@@ -316,6 +316,13 @@ const run = async () => {
     isIndiaJob({ location: "Not specified" }) &&
     isIndiaJob({ location: "Remote" }) &&
     isIndiaJob({ location: "Remote - India" }) &&
+    isIndiaJob({ location: "and 1 more" }) &&
+    isIndiaJob({ location: "+2 more" }) &&
+    isIndiaJob({ location: "Noida and 1 more" }) &&
+    isIndiaJob({
+      title: "Developer Bangalore, IN",
+      location: "Not specified",
+    }) &&
     !isIndiaJob({ location: "San Francisco, USA" }) &&
     !isIndiaJob({ location: "London, UK" })
       ? pass("India job filter")

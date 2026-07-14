@@ -2,6 +2,7 @@ import { ScrapedJob } from "../../models/scrapedJob.model.js";
 import { filterItJobs } from "../../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../../utils/indiaJobFilter.js";
 import { cleanJobText, extractExperienceFromTitle } from "../../utils/jobText.js";
+import { normalizeJobLocation } from "../../utils/jobLocation.js";
 import { attachBadgesToJob } from "../../utils/jobBadges.js";
 import { toPublicApplicationUrl } from "../../utils/applicationUrl.js";
 
@@ -34,7 +35,8 @@ export const mapScrapedJobForList = (job) => {
       requirements: job.requirements || [],
       experienceLevel: extractExperienceFromTitle(job.title) || "Not specified",
       salary: job.salary || "Not disclosed",
-      location: String(job.location || "").trim() || "Not specified",
+      location:
+        normalizeJobLocation(job.location, { title: job.title }) || "Not specified",
       jobType: job.jobType,
       position: 1,
       company: {

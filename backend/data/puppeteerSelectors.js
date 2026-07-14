@@ -47,7 +47,8 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
     selectors: {
       jobList: ".job-tile",
       title: ".job-list-item__content span",
-      location: ".job-list-item__content span:nth-of-type(2)",
+      location:
+        ".job-list-item__location, [class*='location'], .job-list-item__content span:nth-of-type(2)",
       link: "a.job-list-item__link, a[href*='/job/']",
       waitMs: 15000,
       waitUntil: "domcontentloaded",
@@ -61,7 +62,8 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
     selectors: {
       jobList: ".job-tile",
       title: ".job-list-item__content span",
-      location: ".job-list-item__content span:nth-of-type(2)",
+      location:
+        ".job-list-item__location, [class*='location'], .job-list-item__content span:nth-of-type(2)",
       link: "a.job-list-item__link, a[href*='job/']",
       waitMs: 20000,
       waitUntil: "networkidle2",
