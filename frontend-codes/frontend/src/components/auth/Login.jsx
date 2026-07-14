@@ -65,14 +65,14 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+    if (!user) return;
+
+    if (user.role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/");
     }
-  }, []);
+  }, [user, navigate]);
 
   return (
     <div>

@@ -3,7 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 const authSlice = createSlice({
     name:"auth",
     initialState:{
-        loading:false,
+        // Start true so AuthRoute waits for SessionBootstrap /me before
+        // treating a missing user as logged-out (avoids bounce to /login).
+        loading:true,
         user:null
     },
     reducers:{

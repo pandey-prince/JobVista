@@ -428,7 +428,10 @@ const ProfileForm = ({
             />
             <div>
               <Label htmlFor="experienceLevel">Experience level</Label>
-              <Select value={input.experienceLevel} onValueChange={(value) => updateField("experienceLevel", value)}>
+              <Select
+                value={input.experienceLevel || undefined}
+                onValueChange={(value) => updateField("experienceLevel", value)}
+              >
                 <SelectTrigger id="experienceLevel">
                   <SelectValue placeholder="Select your experience level" />
                 </SelectTrigger>

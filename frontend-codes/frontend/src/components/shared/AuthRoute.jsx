@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import LoadingState from "@/components/shared/LoadingState";
 
 const AuthRoute = ({ children, roles }) => {
   const { user, loading } = useSelector((store) => store.auth);
@@ -10,18 +11,24 @@ const AuthRoute = ({ children, roles }) => {
     if (loading) return;
 
     if (!user) {
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
 
     if (roles?.length && !roles.includes(user.role)) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   }, [user, loading, navigate, roles]);
 
-  // Wait for session restore only when we have no user yet (avoid redirect flicker).
-  if (loading && !user) {
-    return null;
+  if (loading) {
+    return (
+      <LoadingState
+        variant="page"
+        message="Checking your session"
+        description="Hang tight while we restore your account."
+        className="py-20"
+      />
+    );
   }
 
   if (!user) {

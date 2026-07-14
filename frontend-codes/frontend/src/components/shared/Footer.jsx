@@ -48,9 +48,10 @@ const Footer = () => {
   const { user, loading: authLoading } = useSelector((store) => store.auth);
 
   const candidateLinks = useMemo(() => {
+    if (authLoading) return [];
     if (!user) return footerLinks.candidatesGuest;
     return footerLinks.candidatesStudent;
-  }, [user]);
+  }, [user, authLoading]);
 
   return (
     <footer className="mt-auto border-t border-border bg-card">

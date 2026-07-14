@@ -77,7 +77,9 @@ const Profile = () => {
                     <h1>Skills</h1>
                     <div className='flex flex-wrap items-center gap-1'>
                         {
-                            user?.profile?.skills?.length ? user.profile.skills.map((item, index) => <Badge key={index}>{item}</Badge>) : <span>NA</span>
+                            Array.isArray(user?.profile?.skills) && user.profile.skills.length
+                              ? user.profile.skills.map((item, index) => <Badge key={index}>{item}</Badge>)
+                              : <span>NA</span>
                         }
                     </div>
                 </div>
@@ -85,7 +87,9 @@ const Profile = () => {
                     <h1>Preferred Roles</h1>
                     <div className='flex flex-wrap items-center gap-1'>
                         {
-                            user?.profile?.preferredJobRoles?.length ? user.profile.preferredJobRoles.map((item, index) => <Badge key={index} variant="outline">{item}</Badge>) : <span>NA</span>
+                            Array.isArray(user?.profile?.preferredJobRoles) && user.profile.preferredJobRoles.length
+                              ? user.profile.preferredJobRoles.map((item, index) => <Badge key={index} variant="outline">{item}</Badge>)
+                              : <span>NA</span>
                         }
                     </div>
                 </div>
@@ -96,19 +100,19 @@ const Profile = () => {
                 </div>
                 <div className='my-5'>
                     <h1 className='flex items-center gap-2 font-semibold'><Briefcase /> Experience</h1>
-                    {user?.profile?.experience?.length ? user.profile.experience.map((item, index) => (
+                    {Array.isArray(user?.profile?.experience) && user.profile.experience.length ? user.profile.experience.map((item, index) => (
                         <p key={index} className='mt-2 text-sm text-foreground/80'>{[item.title, item.company, item.duration, item.description].filter(Boolean).join(" - ")}</p>
                     )) : <span>NA</span>}
                 </div>
                 <div className='my-5'>
                     <h1 className='font-semibold'>Internships</h1>
-                    {user?.profile?.internships?.length ? user.profile.internships.map((item, index) => (
+                    {Array.isArray(user?.profile?.internships) && user.profile.internships.length ? user.profile.internships.map((item, index) => (
                         <p key={index} className='mt-2 text-sm text-foreground/80'>{[item.title, item.company, item.duration, item.description].filter(Boolean).join(" - ")}</p>
                     )) : <span>NA</span>}
                 </div>
                 <div className='my-5'>
                     <h1 className='font-semibold'>Projects</h1>
-                    {user?.profile?.projects?.length ? user.profile.projects.map((item, index) => (
+                    {Array.isArray(user?.profile?.projects) && user.profile.projects.length ? user.profile.projects.map((item, index) => (
                         <p key={index} className='mt-2 text-sm text-foreground/80'>{[item.title, item.link, item.description].filter(Boolean).join(" - ")}</p>
                     )) : <span>NA</span>}
                 </div>
