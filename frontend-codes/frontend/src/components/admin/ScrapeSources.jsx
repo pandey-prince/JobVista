@@ -17,7 +17,7 @@ import axios from "axios";
 import { adminApi } from "@/api";
 import { SCRAPED_JOB_API_END_POINT, CAREER_SOURCE_API_END_POINT } from "@/utils/constant";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Trash2, Upload } from "lucide-react";
+import { Loader2, Pencil, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const defaultForm = {
@@ -40,12 +40,14 @@ const ScrapeSources = () => {
   const [sources, setSources] = useState([]);
   const [filterText, setFilterText] = useState(searchParams.get("search") || "");
   const [form, setForm] = useState(defaultForm);
+  const [editingId, setEditingId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [syncingSourceId, setSyncingSourceId] = useState("");
   const excelInputRef = useRef(null);
+  const formRef = useRef(null);
 
   const fetchSources = async () => {
     try {
@@ -64,6 +66,30 @@ const ScrapeSources = () => {
   useEffect(() => {
     fetchSources();
   }, []);
+
+  const resetForm = () => {
+    setForm(defaultForm);
+    setEditingId("");
+  };
+
+  const startEdit = (source) => {
+    setEditingId(source._id);
+    setForm({
+      name: source.name || "",
+      companyName: source.companyName || "",
+      url: source.url || "",
+      scraperType: source.scraperType || "",
+      isActive: source.isActive !== false,
+      selectors: {
+        jobList: source.selectors?.jobList || "",
+        title: source.selectors?.title || "",
+        description: source.selectors?.description || "",
+        location: source.selectors?.location || "",
+        link: source.selectors?.link || "",
+      },
+    });
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const detectType = async (url) => {
     if (!url) return;
@@ -88,25 +114,50 @@ const ScrapeSources = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.url) {
+    if (!form.url.trim()) {
       toast.error("Career page URL is required");
       return;
     }
 
+    const payload = {
+      name: form.name.trim(),
+      companyName: form.companyName.trim(),
+      url: form.url.trim(),
+      scraperType: form.scraperType.trim() || undefined,
+      isActive: form.isActive,
+      selectors: form.selectors,
+    };
+
     try {
       setSaving(true);
-      const res = await axios.post(
-        `${SCRAPED_JOB_API_END_POINT}/sources`,
-        form,
-        { withCredentials: true }
-      );
-      if (res.data.success) {
-        toast.success(res.data.message);
-        setForm(defaultForm);
-        fetchSources();
+      if (editingId) {
+        const res = await axios.put(
+          `${SCRAPED_JOB_API_END_POINT}/sources/${editingId}`,
+          payload,
+          { withCredentials: true }
+        );
+        if (res.data.success) {
+          toast.success(res.data.message || "Career link updated");
+          resetForm();
+          fetchSources();
+        }
+      } else {
+        const res = await axios.post(
+          `${SCRAPED_JOB_API_END_POINT}/sources`,
+          payload,
+          { withCredentials: true }
+        );
+        if (res.data.success) {
+          toast.success(res.data.message);
+          resetForm();
+          fetchSources();
+        }
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add source");
+      toast.error(
+        error.response?.data?.message ||
+          (editingId ? "Failed to update source" : "Failed to add source"),
+      );
     } finally {
       setSaving(false);
     }
@@ -299,10 +350,21 @@ const ScrapeSources = () => {
         </div>
 
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
           className="bg-card border border-border rounded-lg p-6 mb-8 space-y-4"
         >
-          <h2 className="font-semibold text-lg">Add career page</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-semibold text-lg">
+              {editingId ? "Edit career page" : "Add career page"}
+            </h2>
+            {editingId ? (
+              <Button type="button" variant="ghost" size="sm" onClick={resetForm}>
+                <X className="mr-1 h-4 w-4" />
+                Cancel edit
+              </Button>
+            ) : null}
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <Label>Career page URL</Label>
@@ -405,7 +467,7 @@ const ScrapeSources = () => {
 
           <Button type="submit" disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Add Source
+            {editingId ? "Save changes" : "Add Source"}
           </Button>
         </form>
 
@@ -476,6 +538,14 @@ const ScrapeSources = () => {
                       : "Never"}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => startEdit(source)}
+                      title="Edit career link"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
