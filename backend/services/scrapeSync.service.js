@@ -6,6 +6,7 @@ import { filterIndiaJobs, isIndiaJob } from "../utils/indiaJobFilter.js";
 import { processWatchlistAlerts } from "./watchlistAlert.service.js";
 import { hardDeleteScrapedJob } from "./scrapedJobCleanup.service.js";
 import { checkActiveJobLinks } from "./linkCheck.service.js";
+import { dedupeScrapedJobs } from "./job-catalog/index.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -23,6 +24,43 @@ const shouldSkipPuppeteer = () =>
 const limitUpserts = (jobs) => {
   if (!MAX_UPSERTS_PER_SOURCE || MAX_UPSERTS_PER_SOURCE <= 0) return jobs;
   return jobs.slice(0, MAX_UPSERTS_PER_SOURCE);
+};
+
+const escapeRegex = (value = "") =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Active job elsewhere with same company+title or same application URL. */
+export const findActiveCrossSourceDuplicate = async (
+  job,
+  excludeSourceId,
+) => {
+  const company = String(job.companyName || "").trim();
+  const title = String(job.title || "").trim();
+  const url = String(job.applicationUrl || "").trim();
+  const or = [];
+
+  if (company && title) {
+    or.push({
+      companyName: new RegExp(`^${escapeRegex(company)}$`, "i"),
+      title: new RegExp(`^${escapeRegex(title)}$`, "i"),
+    });
+  }
+  if (url) {
+    or.push({ applicationUrl: url });
+  }
+  if (!or.length) return null;
+
+  const query = {
+    status: "active",
+    $or: or,
+  };
+  if (excludeSourceId) {
+    query.source = { $ne: excludeSourceId };
+  }
+
+  return ScrapedJob.findOne(query).select(
+    "_id companyName title applicationUrl source",
+  );
 };
 
 export const syncSource = async (source) => {
@@ -59,12 +97,13 @@ export const syncSource = async (source) => {
   let newJobsCount = 0;
   let updatedJobsCount = 0;
   let removedJobsCount = 0;
+  let duplicateSkippedCount = 0;
   const newJobs = [];
 
   try {
     const rawJobs = await runScraper(source);
     const rawByExternalId = new Map(rawJobs.map((job) => [job.externalId, job]));
-    const allScrapedJobs = filterIndiaJobs(filterItJobs(rawJobs));
+    const allScrapedJobs = dedupeScrapedJobs(filterIndiaJobs(filterItJobs(rawJobs)));
     const seenExternalIds = new Set(allScrapedJobs.map((job) => job.externalId));
     const jobsToUpsert = limitUpserts(allScrapedJobs);
 
@@ -88,17 +127,24 @@ export const syncSource = async (source) => {
         existing.status = "active";
         await existing.save();
         updatedJobsCount += 1;
-      } else {
-        const created = await ScrapedJob.create({
-          ...job,
-          source: source._id,
-          firstSeenAt: now,
-          lastSeenAt: now,
-          status: "active",
-        });
-        newJobs.push(created);
-        newJobsCount += 1;
+        continue;
       }
+
+      const crossDup = await findActiveCrossSourceDuplicate(job, source._id);
+      if (crossDup) {
+        duplicateSkippedCount += 1;
+        continue;
+      }
+
+      const created = await ScrapedJob.create({
+        ...job,
+        source: source._id,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        status: "active",
+      });
+      newJobs.push(created);
+      newJobsCount += 1;
     }
 
     const staleJobs = await ScrapedJob.find({
@@ -132,6 +178,7 @@ export const syncSource = async (source) => {
       newJobsCount,
       updatedJobsCount,
       removedJobsCount,
+      duplicateSkippedCount,
       newJobs,
     };
   } catch (error) {
@@ -148,6 +195,7 @@ export const syncSource = async (source) => {
       newJobsCount,
       updatedJobsCount,
       removedJobsCount,
+      duplicateSkippedCount,
     };
   }
 };
@@ -373,8 +421,17 @@ export const syncPriorityPuppeteerSources = async (options = {}) => {
   return summary;
 };
 
+const normalizeDedupeKey = (value = "") =>
+  String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\/$/, "");
+
 const cleanupIneligibleScrapedJobs = async () => {
-  const activeJobs = await ScrapedJob.find({ status: "active" });
+  const activeJobs = await ScrapedJob.find({ status: "active" }).sort({
+    firstSeenAt: -1,
+  });
   let removedCount = 0;
 
   for (const job of activeJobs) {
@@ -388,6 +445,27 @@ const cleanupIneligibleScrapedJobs = async () => {
       await hardDeleteScrapedJob(job, "non_india");
       removedCount += 1;
     }
+  }
+
+  const remaining = await ScrapedJob.find({ status: "active" }).sort({
+    firstSeenAt: -1,
+  });
+  const seenCompanyTitle = new Set();
+  const seenUrls = new Set();
+
+  for (const job of remaining) {
+    const companyTitleKey = `${normalizeDedupeKey(job.companyName)}::${normalizeDedupeKey(job.title)}`;
+    const urlKey = normalizeDedupeKey(job.applicationUrl);
+    if (
+      seenCompanyTitle.has(companyTitleKey) ||
+      (urlKey && seenUrls.has(urlKey))
+    ) {
+      await hardDeleteScrapedJob(job, "duplicate");
+      removedCount += 1;
+      continue;
+    }
+    seenCompanyTitle.add(companyTitleKey);
+    if (urlKey) seenUrls.add(urlKey);
   }
 
   return removedCount;

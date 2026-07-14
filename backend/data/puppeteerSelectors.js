@@ -4,7 +4,7 @@
  */
 export const PUPPETEER_SELECTOR_OVERRIDES = {
   AMD: {
-    url: "https://careers.amd.com/careers-home/jobs",
+    url: "https://careers.amd.com/careers-home/jobs?page=1&limit=100&country=India&categories=Engineering",
     selectors: {
       jobList: "a.job-title-link",
       title: "",

@@ -31,7 +31,8 @@ export const cleanLocationNoise = (value = "") => {
 };
 
 /**
- * Vague / unspecified locations should still be eligible for the India browse/persist gate.
+ * Vague / unspecified location strings (blank, "Not specified", "and N more", etc.).
+ * Stricter India gate rejects these unless an India place is found in the title.
  */
 export const isVagueLocation = (location = "") => {
   const cleaned = cleanLocationNoise(location);

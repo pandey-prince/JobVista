@@ -15,6 +15,10 @@ const NON_INDIA_PATTERNS = [
   /\b(japan|tokyo|china|beijing|shanghai|hong kong)\b/i,
   /\b(latin america|brazil|mexico)\b/i,
   /\b(middle east|dubai|uae)\b/i,
+  /\b(poland|warsaw|krakow|kraków|wroclaw|wrocław)\b/i,
+  /\b(germany|france|spain|italy|netherlands|sweden|ireland|portugal)\b/i,
+  /\b(taiwan|korea|seoul|manila|jakarta|thailand|bangkok|vietnam)\b/i,
+  /\b(israel|tel aviv|south africa)\b/i,
 ];
 
 const INDIA_PATTERNS = [
@@ -30,22 +34,35 @@ export const getJobLocationText = (job = {}) =>
 /** @deprecated Use isVagueLocation from jobLocation.js */
 export const isUnspecifiedLocation = isVagueLocation;
 
+/**
+ * Strict India gate: require an India city/country signal.
+ * Blank, "Not specified", bare "Remote", and foreign cities are rejected.
+ * Title may supply the India place when the board location is junk.
+ */
 export const isIndiaJob = (job = {}) => {
   const rawLocation = getJobLocationText(job);
   const location = normalizeJobLocation(rawLocation, { title: job.title || "" });
+  const title = String(job.title || "");
 
-  // Blank / placeholder / "and N more" / Remote (no foreign signal) → keep.
-  if (isVagueLocation(location) || isVagueLocation(rawLocation)) {
-    return true;
-  }
+  // Search India signal in normalized location, raw location, and title.
+  const haystack = [location, rawLocation, title].filter(Boolean).join(" ");
+  const hasIndia = INDIA_PATTERNS.some((pattern) => pattern.test(haystack));
+  const hasNonIndia = NON_INDIA_PATTERNS.some((pattern) => pattern.test(haystack));
 
-  const hasIndia = INDIA_PATTERNS.some((pattern) => pattern.test(location));
-  const hasNonIndia = NON_INDIA_PATTERNS.some((pattern) => pattern.test(location));
-
-  if (hasNonIndia && !hasIndia) return false;
+  // Explicit India wins even on multi-location boards (India + elsewhere).
   if (hasIndia) return true;
 
-  if (/remote/i.test(location) && !hasNonIndia) return true;
+  // Foreign-only (or foreign with no India city) → drop.
+  if (hasNonIndia) return false;
+
+  // Bare remote / vague / empty with no India signal → drop.
+  if (isVagueLocation(location) || isVagueLocation(rawLocation)) {
+    return false;
+  }
+
+  if (/^remote\b/i.test(location) || /^remote\b/i.test(rawLocation)) {
+    return false;
+  }
 
   return false;
 };

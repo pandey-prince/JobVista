@@ -312,19 +312,20 @@ const run = async () => {
       : fail("IT job filter");
 
     isIndiaJob({ location: "Bangalore, India" }) &&
-    isIndiaJob({ location: "" }) &&
-    isIndiaJob({ location: "Not specified" }) &&
-    isIndiaJob({ location: "Remote" }) &&
     isIndiaJob({ location: "Remote - India" }) &&
-    isIndiaJob({ location: "and 1 more" }) &&
-    isIndiaJob({ location: "+2 more" }) &&
     isIndiaJob({ location: "Noida and 1 more" }) &&
     isIndiaJob({
       title: "Developer Bangalore, IN",
       location: "Not specified",
     }) &&
+    !isIndiaJob({ location: "" }) &&
+    !isIndiaJob({ location: "Not specified" }) &&
+    !isIndiaJob({ location: "Remote" }) &&
+    !isIndiaJob({ location: "and 1 more" }) &&
+    !isIndiaJob({ location: "+2 more" }) &&
     !isIndiaJob({ location: "San Francisco, USA" }) &&
-    !isIndiaJob({ location: "London, UK" })
+    !isIndiaJob({ location: "London, UK" }) &&
+    !isIndiaJob({ location: "Warsaw, Poland" })
       ? pass("India job filter")
       : fail("India job filter");
 
