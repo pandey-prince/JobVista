@@ -299,11 +299,30 @@ export const syncSourceById = async (sourceId) => {
 
 export const syncPriorityPuppeteerSources = async (options = {}) => {
   const { runPostSyncTasks = true } = options;
+  const maxSources = Math.max(
+    1,
+    Number(options.maxSources ?? process.env.PUPPETEER_PRIORITY_MAX ?? 8),
+  );
+
   const sources = await JobSource.find({
     isActive: true,
     priorityPuppeteerSync: true,
     scraperType: { $in: [...PUPPETEER_SCRAPER_TYPES] },
-  }).sort({ updatedAt: 1 });
+  })
+    .sort({ updatedAt: 1 })
+    .limit(maxSources);
+
+  const queuedTotal = await JobSource.countDocuments({
+    isActive: true,
+    priorityPuppeteerSync: true,
+    scraperType: { $in: [...PUPPETEER_SCRAPER_TYPES] },
+  });
+
+  if (queuedTotal > sources.length) {
+    console.log(
+      `[ScrapeSync] puppeteer-priority: processing ${sources.length}/${queuedTotal} queued (cap ${maxSources})`,
+    );
+  }
 
   const results = [];
 
@@ -311,10 +330,9 @@ export const syncPriorityPuppeteerSources = async (options = {}) => {
     const result = await syncSource(source);
     results.push(result);
 
-    if (result.success && !result.skipped) {
-      source.priorityPuppeteerSync = false;
-      await source.save();
-    }
+    // Always dequeue after an attempt so failures cannot monopolize every GHA run.
+    source.priorityPuppeteerSync = false;
+    await source.save();
 
     await delay(PUPPETEER_DELAY_MS);
   }
@@ -322,6 +340,8 @@ export const syncPriorityPuppeteerSources = async (options = {}) => {
   const summary = {
     mode: "puppeteer-priority",
     totalSources: sources.length,
+    queuedTotal,
+    maxSources,
     successful: results.filter((r) => r.success && !r.skipped).length,
     skipped: results.filter((r) => r.skipped).length,
     failed: results.filter((r) => !r.success).length,

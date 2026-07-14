@@ -192,7 +192,8 @@ const run = async () => {
     `\nDone: ${knownDeactivated} known deactivated, ${apiRefreshed} API refreshed, ${upgraded} upgraded to API, ${patched} puppeteer patches, ${deactivated} deactivated, ${unchanged} unchanged, ${failed} failed\n`,
   );
   await mongoose.disconnect();
-  process.exit(failed > 0 ? 1 : 0);
+  // Soft-fail: individual company probe failures should not red the workflow.
+  process.exit(0);
 };
 
 run().catch(async (error) => {

@@ -25,13 +25,14 @@ concurrency:
 jobs:
   priority-puppeteer:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Cap keeps this job under budget; remaining queue drains across later runs.
+    timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
@@ -51,6 +52,7 @@ jobs:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           SKIP_PUPPETEER_SCRAPERS: "false"
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
+          PUPPETEER_PRIORITY_MAX: "8"
         run: node scripts/sync-puppeteer-priority.js
         continue-on-error: true
 
@@ -61,10 +63,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
@@ -83,6 +85,7 @@ jobs:
 
   resolve-bucket:
     needs: reprobe
+    if: always()
     runs-on: ubuntu-latest
     outputs:
       bucket: ${{ steps.pick.outputs.bucket }}
@@ -104,15 +107,16 @@ jobs:
 
   puppeteer-sync:
     needs: resolve-bucket
+    if: always() && needs.resolve-bucket.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 180
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
@@ -146,10 +150,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm

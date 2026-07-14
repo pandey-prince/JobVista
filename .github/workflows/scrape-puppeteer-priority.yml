@@ -12,14 +12,14 @@ concurrency:
 jobs:
   priority-puppeteer:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
@@ -39,4 +39,5 @@ jobs:
           MONGO_URI: ${{ secrets.MONGO_URI }}
           SKIP_PUPPETEER_SCRAPERS: "false"
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "false"
+          PUPPETEER_PRIORITY_MAX: "8"
         run: node scripts/sync-puppeteer-priority.js
