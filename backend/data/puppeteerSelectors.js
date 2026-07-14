@@ -43,7 +43,7 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
     },
   },
   "Dell Technologies": {
-    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs?lastSelectedFacet=TITLES&location=India&locationId=300000000471053&locationLevel=country&mode=location&selectedTitlesFacet=ENGREDEV%3BENGINEERING+SERVICES",
     selectors: {
       jobList: ".job-tile",
       title: ".job-list-item__content span",

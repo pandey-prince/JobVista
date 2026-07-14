@@ -101,7 +101,7 @@ export const INDIA_COMPANY_SOURCES = [
   { companyName: "AMD", name: "AMD Careers", careersUrl: "https://careers.amd.com" },
   { companyName: "Cisco", name: "Cisco Careers", careersUrl: "https://jobs.cisco.com" },
   { companyName: "VMware", name: "VMware Careers", careersUrl: "https://broadcom.wd1.myworkdayjobs.com/en-US/External_Career", scraperType: "workday", url: "https://broadcom.wd1.myworkdayjobs.com/en-US/External_Career", isActive: true },
-  { companyName: "Dell Technologies", name: "Dell Careers", careersUrl: "https://jobs.dell.com" },
+  { companyName: "Dell Technologies", name: "Dell Careers", careersUrl: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs?lastSelectedFacet=TITLES&location=India&locationId=300000000471053&locationLevel=country&mode=location&selectedTitlesFacet=ENGREDEV%3BENGINEERING+SERVICES" },
   { companyName: "HP", name: "HP Careers", careersUrl: "https://jobs.hp.com" },
   { companyName: "LinkedIn", name: "LinkedIn Careers", careersUrl: "https://careers.linkedin.com", ...greenhouse("linkedin") },
   { companyName: "Uber", name: "Uber Careers", careersUrl: "https://www.uber.com/us/en/careers" },

@@ -120,7 +120,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Dell Technologies": {
-    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    url: "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs?lastSelectedFacet=TITLES&location=India&locationId=300000000471053&locationLevel=country&mode=location&selectedTitlesFacet=ENGREDEV%3BENGINEERING+SERVICES",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
