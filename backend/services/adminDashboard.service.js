@@ -234,6 +234,24 @@ const attachJobCounts = async (sources) => {
   });
 };
 
+const summarizeActiveJobs = async () => {
+  const [totalActiveJobsInDb, bySource] = await Promise.all([
+    ScrapedJob.countDocuments({ status: "active" }),
+    ScrapedJob.aggregate([
+      { $match: { status: "active" } },
+      { $group: { _id: "$source", n: { $sum: 1 } } },
+    ]),
+  ]);
+
+  // Global “visible” exact IT+India filter would require loading every job.
+  // Use active inventory for summary cards; per-row Visible stays exact for the page.
+  return {
+    totalActiveJobsInDb,
+    totalVisibleJobsOnSite: totalActiveJobsInDb,
+    companiesWithVisibleJobs: bySource.filter((row) => row.n > 0).length,
+  };
+};
+
 export const getAdminDashboard = async (query = {}) => {
   const paginationQuery = parsePagination(query, {
     defaultPage: 1,
@@ -248,7 +266,13 @@ export const getAdminDashboard = async (query = {}) => {
     activeOnly: query.activeOnly,
   });
 
-  const allSources = await JobSource.find(sourceQuery).sort({ companyName: 1 });
+  const allSources = await JobSource.find(sourceQuery)
+    .select(
+      "name companyName url scraperType isActive isPublic lastScrapeStatus lastScrapeError lastScrapedAt jobsFoundCount priorityPuppeteerSync sourceOrigin regions",
+    )
+    .sort({ companyName: 1 })
+    .lean();
+
   const sortBy = query.sortBy || "companyName";
   const needsAttentionOnly =
     query.needsAttention === "true" ||
@@ -257,7 +281,6 @@ export const getAdminDashboard = async (query = {}) => {
   const needsJobCountsForSort =
     sortBy === "visibleJobs" || sortBy === "activeJobsInDb";
 
-  // Health/summary use JobSource fields only (no job document load).
   const healthRows = allSources.map(mapSourceBaseRow);
   const sourcesNeedingAttention = healthRows.filter(matchesNeedsAttention).length;
 
@@ -265,8 +288,8 @@ export const getAdminDashboard = async (query = {}) => {
     ? healthRows.filter(matchesNeedsAttention)
     : healthRows;
 
-  // Only load job docs for all sources when sorting by job counts.
   if (needsJobCountsForSort) {
+    // Rare path: only when user sorts by job counts.
     workingRows = sortSources(await attachJobCounts(allSources), sortBy);
     if (needsAttentionOnly) {
       workingRows = workingRows.filter(matchesNeedsAttention);
@@ -288,14 +311,7 @@ export const getAdminDashboard = async (query = {}) => {
     pageSources = pageSlice.map((row) => byId.get(String(row._id)) || row);
   }
 
-  const [totalActiveJobsInDb, lightJobs] = await Promise.all([
-    ScrapedJob.countDocuments({ status: "active" }),
-    ScrapedJob.find({ status: "active" }).select(JOB_COUNT_SELECT).lean(),
-  ]);
-  const totalVisibleJobsOnSite = countVisibleJobs(lightJobs);
-  const companiesWithVisibleJobs = new Set(
-    lightJobs.filter((job) => countVisibleJobs([job]) > 0).map((job) => String(job.source)),
-  ).size;
+  const jobSummary = await summarizeActiveJobs();
 
   const summary = {
     totalSources: allSources.length,
@@ -305,9 +321,7 @@ export const getAdminDashboard = async (query = {}) => {
     sourcesNeverSynced: allSources.filter((source) => source.lastScrapeStatus === "never")
       .length,
     sourcesNeedingAttention,
-    totalActiveJobsInDb,
-    totalVisibleJobsOnSite,
-    companiesWithVisibleJobs,
+    ...jobSummary,
     lastSyncAt: allSources.reduce((latest, source) => {
       if (!source.lastScrapedAt) return latest;
       if (!latest || source.lastScrapedAt > latest) return source.lastScrapedAt;
@@ -327,6 +341,31 @@ export const getAdminDashboard = async (query = {}) => {
 };
 
 export const getAdminSourcesList = async () => {
-  const sources = await JobSource.find().sort({ companyName: 1 });
-  return attachJobCounts(sources);
+  // Paginate-friendly list without hydrating every job for every source:
+  // return health rows + active counts via aggregation only.
+  const sources = await JobSource.find()
+    .select(
+      "name companyName url scraperType isActive isPublic lastScrapeStatus lastScrapeError lastScrapedAt jobsFoundCount priorityPuppeteerSync sourceOrigin regions",
+    )
+    .sort({ companyName: 1 })
+    .lean();
+
+  const counts = await ScrapedJob.aggregate([
+    { $match: { status: "active" } },
+    { $group: { _id: "$source", activeJobsInDb: { $sum: 1 } } },
+  ]);
+  const countBySource = new Map(
+    counts.map((row) => [String(row._id), row.activeJobsInDb]),
+  );
+
+  return sources.map((source) => {
+    const base = mapSourceBaseRow(source);
+    const activeJobsInDb = countBySource.get(String(source._id)) || 0;
+    return {
+      ...base,
+      activeJobsInDb,
+      // Exact visible filter needs titles; approximate with in-DB count for this list.
+      visibleJobsOnSite: activeJobsInDb,
+    };
+  });
 };
