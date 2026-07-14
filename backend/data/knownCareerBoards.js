@@ -4,7 +4,7 @@
  */
 export const KNOWN_CAREER_BOARDS = {
   "HCL Technologies": {
-    url: "https://careers.hcltech.com/services/rss/job/?locale=en_US",
+    url: "https://careers.hcltech.com/search/?q=software+engineer&locationsearch=&searchResultView=LIST&markerViewed=&carouselIndex=&facetFilters=%7B%22custCountryRegion%22%3A%5B%22India%22%5D%7D&pageNumber=0&sortBy=",
     scraperType: "successfactors-rss",
     isActive: true,
   },
@@ -230,7 +230,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Urban Company": {
-    url: "https://careers.urbancompany.com/",
+    url: "https://careers.urbancompany.com/jobs?department=Engineering%20%26%20Data",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -280,7 +280,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Tech Mahindra": {
-    url: "https://careers.techmahindra.com/",
+    url: "https://careers.techmahindra.com/CurrentOpportunity.aspx",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -295,7 +295,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Persistent Systems": {
-    url: "https://www.persistent.com/careers/",
+    url: "https://careers.persistent.com/explore-opportunities",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -325,12 +325,12 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Sonata Software": {
-    url: "https://www.sonata-software.com/careers",
+    url: "https://sonataone.darwinbox.in/ms/candidatev2/main/careers/allJobs",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
   "Happiest Minds": {
-    url: "https://www.happiestminds.com/careers/",
+    url: "https://jobs.happiestminds.com/happiestminds",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -350,7 +350,7 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: false,
   },
   "Kotak Mahindra Bank": {
-    url: "https://www.kotak.bank.in/en/about-us/careers.html",
+    url: "https://www.kotak.bank.in/en/about-us/careers/tech-jobs.html",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
@@ -370,12 +370,12 @@ export const KNOWN_CAREER_BOARDS = {
     isActive: true,
   },
   "Mahindra & Mahindra": {
-    url: "https://www.mahindra.com/career",
+    url: "https://jobs.mahindracareers.com/search/?createNewAlert=false&q=&locationsearch=IN&optionsFacetsDD_shifttype=&optionsFacetsDD_facility=Information+Technology&optionsFacetsDD_customfield1=",
     scraperType: "auto-puppeteer",
     isActive: true,
   },
   "Bajaj Finserv": {
-    url: "https://www.bajajfinserv.in/careers",
+    url: "https://bflcareers.peoplestrong.com/job/joblist",
     scraperType: "auto-puppeteer",
     isActive: false,
   },

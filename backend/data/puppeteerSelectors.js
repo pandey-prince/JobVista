@@ -214,7 +214,7 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
     },
   },
   "Bajaj Finserv": {
-    url: "https://www.bajajfinserv.in/careers",
+    url: "https://bflcareers.peoplestrong.com/job/joblist",
     selectors: {
       jobList: "a[href*='career'], a[href*='job'], .job-card a, table a",
       title: "",
@@ -274,7 +274,7 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
     },
   },
   "Kotak Mahindra Bank": {
-    url: "https://www.kotak.bank.in/en/about-us/careers.html",
+    url: "https://www.kotak.bank.in/en/about-us/careers/tech-jobs.html",
     selectors: {
       jobList: "a[href*='job'], a[href*='career'], a[href*='icims'], a[href*='workday']",
       title: "",

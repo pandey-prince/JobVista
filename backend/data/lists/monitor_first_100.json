@@ -1,0 +1,295 @@
+[
+  {
+    "companyName": "TCS",
+    "careerUrl": "https://ibegin.tcsapps.com/candidate/jobs/search"
+  },
+  {
+    "companyName": "Infosys",
+    "careerUrl": "https://career.infosys.com/jobs?companyhiringtype=IL&countrycode=IN"
+  },
+  {
+    "companyName": "Wipro",
+    "careerUrl": "https://careers.wipro.com/search?searchResultView=LIST&locationsearch=India&pageNumber=0&facetFilters=%7B%22custRMKMappingPicklist%22%3A%5B%22Engineering%22%5D%2C%22jobLocationCountry%22%3A%5B%22India%22%5D%7D&sortBy=&markerViewed=&carouselIndex="
+  },
+  {
+    "companyName": "HCL Technologies",
+    "careerUrl": "https://careers.hcltech.com/search/?q=software+engineer&locationsearch=&searchResultView=LIST&markerViewed=&carouselIndex=&facetFilters=%7B%22custCountryRegion%22%3A%5B%22India%22%5D%7D&pageNumber=0&sortBy="
+  },
+  {
+    "companyName": "Tech Mahindra",
+    "careerUrl": "https://careers.techmahindra.com/CurrentOpportunity.aspx"
+  },
+  {
+    "companyName": "LTIMindtree",
+    "careerUrl": "https://ltimindtree.ripplehire.com/candidate/?token=xviyQvbnyYZdGtozXoNm&lang=en&source=CAREERSITE#list/geo=India"
+  },
+  {
+    "companyName": "Mphasis",
+    "careerUrl": "https://mphasis.ripplehire.com/candidate/?token=ty4DfyWddnOrtpclQeia&source=CAREERSITE#list/function=IT%20Application%20Services&geo=IND"
+  },
+  {
+    "companyName": "Persistent Systems",
+    "careerUrl": "https://careers.persistent.com/explore-opportunities"
+  },
+  {
+    "companyName": "Coforge",
+    "careerUrl": "https://careers.coforge.com/coforge/"
+  },
+  {
+    "companyName": "Hexaware",
+    "careerUrl": "https://jobs.hexaware.com/#en/sites/CX_1/jobs?location=India&locationId=300000000446279&locationLevel=country&mode=location"
+  },
+
+  {
+    "companyName": "Zensar",
+    "careerUrl": "https://fa-etvl-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs?keyword=Software+Engineer&lastSelectedFacet=LOCATIONS&mode=location&selectedLocationsFacet=300000000435151"
+  },
+  {
+    "companyName": "Birlasoft",
+    "careerUrl": "https://jobs.birlasoft.com/search/?createNewAlert=false&q=software+engineer&optionsFacetsDD_country=IN&optionsFacetsDD_department="
+  },
+  {
+    "companyName": "Sonata Software",
+    "careerUrl": "https://sonataone.darwinbox.in/ms/candidatev2/main/careers/allJobs"
+  },
+  {
+    "companyName": "Happiest Minds",
+    "careerUrl": "https://jobs.happiestminds.com/happiestminds/"
+  },
+  {
+    "companyName": "Flipkart",
+    "careerUrl": "https://flipkart.turbohire.co/dashboardv2?orgId=4d757ba0-3d57-448a-b82c-238ed87ac90f&type=0"
+  },
+  {
+    "companyName": "Swiggy",
+    "careerUrl": "https://careers.swiggy.com/#/careers?src=careers&career_page_category=Technology"
+  },
+
+  {
+    "companyName": "Razorpay",
+    "careerUrl": "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited?departments%5B%5D=4024806005"
+  },
+  {
+    "companyName": "PhonePe",
+    "careerUrl": "https://job-boards.greenhouse.io/phonepe"
+  },
+  {
+    "companyName": "Paytm",
+    "careerUrl": "https://jobs.lever.co/paytm"
+  },
+
+  {
+    "companyName": "CRED",
+    "careerUrl": "https://jobs.lever.co/cred"
+  },
+  {
+    "companyName": "Meesho",
+    "careerUrl": "https://jobs.lever.co/meesho?department=Tech"
+  },
+  {
+    "companyName": "Zerodha",
+    "careerUrl": "https://zerodha.com/careers"
+  },
+  {
+    "companyName": "Freshworks",
+    "careerUrl": "https://careers.smartrecruiters.com/Freshworks"
+  },
+  {
+    "companyName": "Zoho",
+    "careerUrl": "https://www.zoho.com/careers/"
+  },
+  {
+    "companyName": "Postman",
+    "careerUrl": "https://job-boards.greenhouse.io/postman?offices%5B%5D=4033388003&departments%5B%5D=4125444003&departments%5B%5D=4060249003&departments%5B%5D=4057268003&departments%5B%5D=4093109003"
+  },
+  {
+    "companyName": "BrowserStack",
+    "careerUrl": "https://browserstack.wd3.myworkdayjobs.com/en-US/External?locations=07564020a4451005a3027f2ca2d60000"
+  },
+  {
+    "companyName": "Chargebee",
+    "careerUrl": "https://www.linkedin.com/company/chargebee/jobs/?originalSubdomain=in"
+  },
+
+  {
+    "companyName": "Nykaa",
+    "careerUrl": "https://www.nykaa.com/careers"
+  },
+  {
+    "companyName": "Policybazaar",
+    "careerUrl": "https://www.policybazaar.com/careers"
+  },
+  {
+    "companyName": "Delhivery",
+    "careerUrl": "https://delhivery.darwinbox.in/ms/candidatev2/main/careers/allJobs"
+  },
+  {
+    "companyName": "Oyo",
+    "careerUrl": "https://www.linkedin.com/company/oyo-rooms/jobs/"
+  },
+  {
+    "companyName": "Urban Company",
+    "careerUrl": "https://careers.urbancompany.com/jobs?department=Engineering%20%26%20Data"
+  },
+
+  {
+    "companyName": "InMobi",
+    "careerUrl": "https://job-boards.greenhouse.io/inmobi?offices%5B%5D=84644"
+  },
+
+  {
+    "companyName": "Lenskart",
+    "careerUrl": "https://www.lenskart.com/careers-at-lenskart"
+  },
+  {
+    "companyName": "Google",
+    "careerUrl": "https://www.google.com/about/careers/applications/jobs/results/?q=(%22Software%20Engineer%22%20OR%20%22Software%20Developer%22%20OR%20%22Full%20Stack%20Engineer%22)%20AND%20(%22Distributed%20Systems%22%20OR%20%22Microservices%22%20OR%20%22API%20Design%22%20OR%20%22Cloud%20Architecture%22%20OR%20%22Frontend%22%20OR%20%22Backend%22%20OR%20%22DevOps%22%20OR%20%22CI%2FCD%22%20OR%20%22Scalability%22%20OR%20%22System%20Design%22%20OR%20AI)&e=72477625&target_level=EARLY&target_level=ADVANCED&target_level=MID&location=India&company=GFiber&company=Verily%20Life%20Sciences&company=Wing&company=Waymo&company=DeepMind&company=YouTube&company=Google&employment_type=INTERN&employment_type=FULL_TIME"
+  },
+  {
+    "companyName": "Microsoft",
+    "careerUrl": "https://apply.careers.microsoft.com/careers?start=0&location=India&pid=1970393556911730&sort_by=distance&filter_include_remote=1&filter_profession=software+engineering"
+  },
+  {
+    "companyName": "Amazon",
+    "careerUrl": "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=relevant&category%5B%5D=operations-it-support-engineering&category%5B%5D=software-development&category%5B%5D=solutions-architect&country%5B%5D=IND&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=&base_query=&city=&country=&region=&county=&query_options=&"
+  },
+  {
+    "companyName": "Apple",
+    "careerUrl": "https://jobs.apple.com/en-in/search?location=india-INDC"
+  },
+  {
+    "companyName": "Meta",
+    "careerUrl": "https://www.metacareers.com/jobsearch/?teams[0]=Artificial%20Intelligence&teams[1]=Software%20Engineering&teams[2]=Internship%20-%20Engineering%2C%20Tech%20%26%20Design&teams[3]=University%20Grad%20-%20Engineering%2C%20Tech%20%26%20Design&offices[0]=Mumbai%2C%20India&offices[1]=Gurgaon%2C%20India&offices[2]=Bangalore%2C%20India&offices[3]=Hyderabad%2C%20India&offices[4]=New%20Delhi%2C%20India"
+  },
+  {
+    "companyName": "Adobe",
+    "careerUrl": "https://careers.adobe.com/us/en/search-results"
+  },
+  {
+    "companyName": "Salesforce",
+    "careerUrl": "https://www.salesforce.com/company/careers/jobs/?country=India&team=Software+Engineering&page=1"
+  },
+  {
+    "companyName": "Oracle",
+    "careerUrl": "https://careers.oracle.com/en/sites/jobsearch/jobs?lastSelectedFacet=LOCATIONS&location=India&locationId=300000000106947&locationLevel=country&mode=location&selectedLocationsFacet=300000000106947"
+  },
+  {
+    "companyName": "SAP",
+    "careerUrl": "https://jobs.sap.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_department=&optionsFacetsDD_customfield3=&optionsFacetsDD_country=IN"
+  },
+  {
+    "companyName": "IBM",
+    "careerUrl": "https://www.ibm.com/in-en/careers/search?field_keyword_08[0]=Software%20Engineering&field_keyword_05[0]=India"
+  },
+  {
+    "companyName": "Intel",
+    "careerUrl": "https://intel.wd1.myworkdayjobs.com/External?locations=1e4a4eb3adf101f44070f976bf8184cf&jobFamilyGroup=ace7a3d23b7e01a0544279031a0ec85c"
+  },
+  {
+    "companyName": "NVIDIA",
+    "careerUrl": "https://jobs.nvidia.com/careers?query=India&start=0&location=india&pid=893394697226&sort_by=relevance&filter_include_remote=1&filter_job_category=engineering%2Cit+-+information+technology&filter_job_type=new+college+graduate%2Cregular+employee%2Cintern+%28fixed+term%29%2Cacademic+%28fixed+term%29%2Cregular+employee+%28fixed+term%29"
+  },
+  {
+    "companyName": "AMD",
+    "careerUrl": "https://careers.amd.com/careers-home/jobs?page=1&limit=100&country=India&categories=Engineering"
+  },
+  {
+    "companyName": "Cisco",
+    "careerUrl": "https://careers.cisco.com/global/en/search-results"
+  },
+  {
+    "companyName": "VMware",
+    "careerUrl": "https://broadcom.wd1.myworkdayjobs.com/en-US/External_Career?locations=2d466ab4e6e0013cf503069082349dd2&locations=0dd627624e2e0176f301cad8dcd9ab0b&locations=877d747df71910021363ea290d900000&locations=2a204116f85f01189cd964af936b70fb&locations=752a3c9efe39105be2259b2c18d3b6e4"
+  },
+  {
+    "companyName": "Dell Technologies",
+    "careerUrl": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs?lastSelectedFacet=TITLES&location=India&locationId=300000000471053&locationLevel=country&mode=location&selectedTitlesFacet=ENGREDEV%3BENGINEERING+SERVICES"
+  },
+  {
+    "companyName": "HP",
+    "careerUrl": "https://apply.hp.com/careers?start=0&location=india&pid=42077320&sort_by=distance&filter_include_remote=1&filter_job_category=engineering%2Csoftware%2Cengineering+services"
+  },
+  {
+    "companyName": "LinkedIn",
+    "careerUrl": "https://boards.greenhouse.io/linkedin"
+  },
+  {
+    "companyName": "Uber",
+    "careerUrl": "https://jobs.uber.com/en/jobs/?radius=100&team=Engineer"
+  },
+  {
+    "companyName": "Airbnb",
+    "careerUrl": "https://careers.airbnb.com/positions/?_departments=engineering&_where_you_work=india%2Cbangalore-india%2Cremote-bangalore-india"
+  },
+
+  {
+    "companyName": "Atlassian",
+    "careerUrl": "https://www.atlassian.com/company/careers/all-jobs?team=Atlassian%20Corporate%20Engineering%20%28ACE%29%2CEngineering%2CInterns&location=India&search="
+  },
+  {
+    "companyName": "ServiceNow",
+    "careerUrl": "https://careers.servicenow.com/jobs/?search=&team=Engineering%2C+Infrastructure+and+Operations&country=India&region=Haryana&region=Karnataka&region=Maharashtra&location=Bangalore&location=Gurgaon&location=Hyderabad&location=Mumbai&pagesize=20#results"
+  },
+
+  {
+    "companyName": "PayPal",
+    "careerUrl": "https://paypal.eightfold.ai/careers?domain=paypal.com&start=0&location=india&pid=274920809476&sort_by=distance&filter_include_remote=1&filter_job_category=Software+Engineering%2CData+Science%2CProduct+Management%2CMachine+Learning+Engineering"
+  },
+
+  {
+    "companyName": "Figma",
+    "careerUrl": "https://www.figma.com/careers/#job-openings"
+  },
+
+  {
+    "companyName": "Twilio",
+    "careerUrl": "https://job-boards.greenhouse.io/twilio?departments%5B%5D=637&departments%5B%5D=55275&offices%5B%5D=66765&offices%5B%5D=85541"
+  },
+
+  {
+    "companyName": "MongoDB",
+    "careerUrl": "https://www.mongodb.com/company/careers/teams/engineering"
+  },
+
+  {
+    "companyName": "GitHub",
+    "careerUrl": "https://www.github.careers/careers-home/jobs?locations=,,India&page=1"
+  },
+  {
+    "companyName": "GitLab",
+    "careerUrl": "https://boards.greenhouse.io/gitlab"
+  },
+
+  {
+    "companyName": "Citrix",
+    "careerUrl": "https://careers.cisco.com/global/en/search-results"
+  },
+
+  {
+    "companyName": "CrowdStrike",
+    "careerUrl": "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&Job_Family=1408861ee6e201b287b816f7b000020c&Job_Family=1408861ee6e201641be2c2f6b000c00b&Job_Family=1408861ee6e20197f95adbf6b000d20b&Job_Family=cb19f044639b1001f6a02595bc920000"
+  },
+  {
+    "companyName": "Okta",
+    "careerUrl": "https://www.okta.com/company/careers/job-listing/?department=4183&location=5997"
+  },
+
+  {
+    "companyName": "Zendesk",
+    "careerUrl": "https://zendesk.wd1.myworkdayjobs.com/en-US/zendesk?locationCountry=c4f78be1a8f14da0ab49ce1162348a5e&jobFamilyGroup=5c7e2781e58b013cfae0600047618a63"
+  },
+
+  {
+    "companyName": "Kotak Mahindra Bank",
+    "careerUrl": "https://www.kotak.bank.in/en/about-us/careers/tech-jobs.html"
+  },
+
+  {
+    "companyName": "Mahindra & Mahindra",
+    "careerUrl": "https://jobs.mahindracareers.com/search/?createNewAlert=false&q=&locationsearch=IN&optionsFacetsDD_shifttype=&optionsFacetsDD_facility=Information+Technology&optionsFacetsDD_customfield1="
+  },
+  {
+    "companyName": "Bajaj Finserv",
+    "careerUrl": "https://bflcareers.peoplestrong.com/job/joblist"
+  }
+]
