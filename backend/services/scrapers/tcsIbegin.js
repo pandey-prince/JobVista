@@ -3,6 +3,7 @@ import { fetchJson } from "./fetchHtml.js";
 const SEARCH_URL = "https://ibegin.tcsapps.com/candidate/api/v1/jobs/searchJ";
 const JOB_URL_BASE = "https://ibegin.tcsapps.com/candidate/jobs";
 const TECHNOLOGY_FUNCTION_ID = 2137;
+const MAX_PAGES = Number(process.env.TCS_MAX_PAGES || 50);
 
 const buildSearchBody = (pageNumber = 1) => ({
   jobCity: null,
@@ -19,29 +20,56 @@ const buildSearchBody = (pageNumber = 1) => ({
   walkin: true,
 });
 
-export const scrapeTcsIbegin = async (source) => {
-  const data = await fetchJson(`${SEARCH_URL}?at=${Date.now()}`, {
-    method: "POST",
-    body: JSON.stringify(buildSearchBody(1)),
-  });
+const mapJob = (job, companyName) => ({
+  externalId: job.id,
+  title: job.jobTitle,
+  description: [job.skills, job.functionName, `${job.experience} years experience`]
+    .filter(Boolean)
+    .join(" · "),
+  location: job.location || "India",
+  jobType: "Full-time",
+  salary: "Not disclosed",
+  requirements: job.skills ? job.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
+  applicationUrl: `${JOB_URL_BASE}/${job.id}`,
+  companyName,
+  companyLogo: "",
+});
 
-  const jobs = data?.data?.jobs;
-  if (!Array.isArray(jobs)) {
-    throw new Error("Unexpected TCS iBegin API response");
+export const scrapeTcsIbegin = async (source) => {
+  const jobs = [];
+  const seen = new Set();
+
+  for (let pageNumber = 1; pageNumber <= MAX_PAGES; pageNumber += 1) {
+    const data = await fetchJson(`${SEARCH_URL}?at=${Date.now()}`, {
+      method: "POST",
+      body: JSON.stringify(buildSearchBody(pageNumber)),
+    });
+
+    const pageJobs = data?.data?.jobs;
+    if (!Array.isArray(pageJobs)) {
+      if (pageNumber === 1) {
+        throw new Error("Unexpected TCS iBegin API response");
+      }
+      break;
+    }
+
+    if (!pageJobs.length) break;
+
+    let newOnPage = 0;
+    for (const job of pageJobs) {
+      const mapped = mapJob(job, source.companyName);
+      if (!mapped.externalId || seen.has(mapped.externalId)) continue;
+      seen.add(mapped.externalId);
+      jobs.push(mapped);
+      newOnPage += 1;
+    }
+
+    if (!newOnPage) break;
   }
 
-  return jobs.map((job) => ({
-    externalId: job.id,
-    title: job.jobTitle,
-    description: [job.skills, job.functionName, `${job.experience} years experience`]
-      .filter(Boolean)
-      .join(" · "),
-    location: job.location || "India",
-    jobType: "Full-time",
-    salary: "Not disclosed",
-    requirements: job.skills ? job.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
-    applicationUrl: `${JOB_URL_BASE}/${job.id}`,
-    companyName: source.companyName,
-    companyLogo: "",
-  }));
+  if (!jobs.length) {
+    throw new Error("No jobs found on TCS iBegin");
+  }
+
+  return jobs;
 };

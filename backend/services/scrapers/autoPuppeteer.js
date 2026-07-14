@@ -4,6 +4,21 @@ import { getPuppeteerOverride } from "../../data/puppeteerSelectors.js";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const PUPPETEER_MAX_PAGES = Number(process.env.PUPPETEER_MAX_PAGES || 10);
+
+const DEFAULT_NEXT_SELECTORS = [
+  "button[aria-label*='Next' i]",
+  "a[aria-label*='Next' i]",
+  "button[title*='Next' i]",
+  "a[title*='Next' i]",
+  "[data-ui-id*='next' i]",
+  "[data-test-id*='next' i]",
+  "button.oj-pagingcontrol-nav-next",
+  ".oj-pagingcontrol-nav-next",
+  "li.oj-enabled a.oj-pagingcontrol-nav-next",
+  "button.job-search-button",
+];
+
 const SELECTOR_PRESETS = [
   {
     jobList: "a.job-title-link",
@@ -122,53 +137,9 @@ const buildSelectorPlan = (source) => {
   };
 };
 
-const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
-  const waitMs = Number(selectors.waitMs || process.env.PUPPETEER_WAIT_MS || 6000);
-  const waitUntil = selectors.waitUntil || "domcontentloaded";
-  const timeoutMs = Number(selectors.timeoutMs || 60000);
+const extractJobsFromDom = async (page, selectors) => {
   const hrefPattern = selectors.hrefPattern || "";
   const minTitleLength = Number(selectors.minTitleLength || 3);
-
-  await page.goto(baseUrl, { waitUntil, timeout: timeoutMs });
-  await delay(waitMs);
-  await dismissCookieBanners(page);
-  if (selectors.scroll) {
-    await autoScroll(page);
-    await delay(2000);
-  }
-
-  try {
-    await page.waitForSelector(selectors.jobList, { timeout: Math.min(timeoutMs, 25000) });
-  } catch {
-    // Some boards render lazily; continue with best-effort scrape.
-  }
-
-  const iframeSrc = await page.evaluate(() => {
-    const allow = (src) => {
-      if (!src.startsWith("http")) return false;
-      if (/doubleclick|flashtalking|googletagmanager|facebook\.com/i.test(src)) {
-        return false;
-      }
-      return /icims|greenhouse|lever\.co|myworkdayjobs|ashbyhq|oraclecloud\.com\/hcmUI/i.test(
-        src,
-      );
-    };
-
-    for (const frame of document.querySelectorAll("iframe[src]")) {
-      const src = frame.getAttribute("src") || "";
-      if (allow(src)) return src;
-    }
-    return "";
-  });
-
-  if (iframeSrc && iframeSrc.startsWith("http")) {
-    await page.goto(iframeSrc, { waitUntil, timeout: timeoutMs });
-    await delay(waitMs);
-    if (selectors.scroll) {
-      await autoScroll(page);
-      await delay(1500);
-    }
-  }
 
   return page.evaluate(
     ({ jobList, title, location, link, pageUrl, hrefPattern, minTitleLength }) => {
@@ -305,6 +276,142 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
       minTitleLength,
     },
   );
+};
+
+const clickNextPage = async (page, nextButtonSelector = "") => {
+  const candidates = [
+    ...(nextButtonSelector ? [nextButtonSelector] : []),
+    ...DEFAULT_NEXT_SELECTORS,
+  ];
+
+  const clicked = await page.evaluate((selectorList) => {
+    const isVisible = (el) => {
+      if (!el) return false;
+      const style = window.getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden") return false;
+      if (el.disabled || el.getAttribute("aria-disabled") === "true") return false;
+      if (el.classList.contains("oj-disabled")) return false;
+      const rect = el.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    };
+
+    for (const selector of selectorList) {
+      try {
+        const el = document.querySelector(selector);
+        if (isVisible(el)) {
+          el.click();
+          return true;
+        }
+      } catch {
+        /* invalid selector */
+      }
+    }
+
+    const labels = ["next", "show more", "load more", "see more", "more jobs"];
+    for (const el of document.querySelectorAll("button, a, [role='button']")) {
+      const text = `${el.textContent || ""} ${el.getAttribute("aria-label") || ""}`
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+      if (!labels.some((label) => text.includes(label))) continue;
+      if (/previous|prev|back/.test(text)) continue;
+      if (!isVisible(el)) continue;
+      el.click();
+      return true;
+    }
+
+    return false;
+  }, candidates);
+
+  return Boolean(clicked);
+};
+
+const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
+  const waitMs = Number(selectors.waitMs || process.env.PUPPETEER_WAIT_MS || 6000);
+  const waitUntil = selectors.waitUntil || "domcontentloaded";
+  const timeoutMs = Number(selectors.timeoutMs || 60000);
+
+  await page.goto(baseUrl, { waitUntil, timeout: timeoutMs });
+  await delay(waitMs);
+  await dismissCookieBanners(page);
+  if (selectors.scroll) {
+    await autoScroll(page);
+    await delay(2000);
+  }
+
+  try {
+    await page.waitForSelector(selectors.jobList, { timeout: Math.min(timeoutMs, 25000) });
+  } catch {
+    // Some boards render lazily; continue with best-effort scrape.
+  }
+
+  const iframeSrc = await page.evaluate(() => {
+    const allow = (src) => {
+      if (!src.startsWith("http")) return false;
+      if (/doubleclick|flashtalking|googletagmanager|facebook\.com/i.test(src)) {
+        return false;
+      }
+      return /icims|greenhouse|lever\.co|myworkdayjobs|ashbyhq|oraclecloud\.com\/hcmUI/i.test(
+        src,
+      );
+    };
+
+    for (const frame of document.querySelectorAll("iframe[src]")) {
+      const src = frame.getAttribute("src") || "";
+      if (allow(src)) return src;
+    }
+    return "";
+  });
+
+  if (iframeSrc && iframeSrc.startsWith("http")) {
+    await page.goto(iframeSrc, { waitUntil, timeout: timeoutMs });
+    await delay(waitMs);
+    if (selectors.scroll) {
+      await autoScroll(page);
+      await delay(1500);
+    }
+  }
+
+  const collected = [];
+  const seen = new Set();
+
+  const mergeJobs = (pageJobs = []) => {
+    let added = 0;
+    for (const job of pageJobs) {
+      const key = job.externalId || job.applicationUrl;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      collected.push(job);
+      added += 1;
+    }
+    return added;
+  };
+
+  mergeJobs(await extractJobsFromDom(page, selectors));
+
+  const maxPages = Number(selectors.maxPages || PUPPETEER_MAX_PAGES);
+  for (let pageIndex = 1; pageIndex < maxPages; pageIndex += 1) {
+    const beforeCount = collected.length;
+    const clicked = await clickNextPage(page, selectors.nextButton || "");
+    if (!clicked) break;
+
+    await delay(Math.max(1500, Math.floor(waitMs / 2)));
+    if (selectors.scroll) {
+      await autoScroll(page);
+      await delay(800);
+    }
+
+    try {
+      await page.waitForSelector(selectors.jobList, { timeout: 10000 });
+    } catch {
+      /* continue best-effort */
+    }
+
+    const added = mergeJobs(await extractJobsFromDom(page, selectors));
+    if (!added || collected.length === beforeCount) break;
+  }
+
+  return collected;
 };
 
 export const scrapeAutoPuppeteer = async (source) => {

@@ -1,5 +1,8 @@
 import { fetchJson } from "./fetchHtml.js";
 
+const PAGE_SIZE = Number(process.env.WORKDAY_PAGE_SIZE || 20);
+const MAX_PAGES = Number(process.env.WORKDAY_MAX_PAGES || 50);
+
 const parseWorkdayPath = (pathname = "") => {
   const parts = pathname.split("/").filter(Boolean);
   let locale = "en-US";
@@ -49,42 +52,73 @@ const parseWorkdayConfig = (source) => {
   }
 };
 
+const mapPosting = (job, host, locale, site, companyName) => {
+  const applicationUrl = buildWorkdayApplicationUrl(host, locale, site, job.externalPath);
+  return {
+    externalId: job.externalPath || applicationUrl,
+    title: job.title,
+    description: "",
+    location: job.locationsText || "Not specified",
+    jobType: "Full-time",
+    salary: "Not disclosed",
+    requirements: [],
+    applicationUrl,
+    companyName,
+    companyLogo: "",
+  };
+};
+
 export const scrapeWorkday = async (source) => {
   const { tenant, wdServer, site, locale } = parseWorkdayConfig(source);
   const host = `https://${tenant}.${wdServer}.myworkdayjobs.com`;
   const apiUrl = `${host}/wday/cxs/${tenant}/${site}/jobs`;
+  const jobs = [];
+  const seen = new Set();
+  let offset = 0;
+  let total = null;
 
-  const data = await fetchJson(apiUrl, {
-    method: "POST",
-    headers: {
-      Referer: `${host}/${locale}/${site}`,
-    },
-    body: JSON.stringify({
-      appliedFacets: {},
-      limit: 20,
-      offset: 0,
-      searchText: "",
-    }),
-  });
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const data = await fetchJson(apiUrl, {
+      method: "POST",
+      headers: {
+        Referer: `${host}/${locale}/${site}`,
+      },
+      body: JSON.stringify({
+        appliedFacets: {},
+        limit: PAGE_SIZE,
+        offset,
+        searchText: "",
+      }),
+    });
 
-  const postings = data?.jobPostings;
-  if (!Array.isArray(postings) || !postings.length) {
+    if (typeof data?.total === "number") {
+      total = data.total;
+    }
+
+    const postings = data?.jobPostings;
+    if (!Array.isArray(postings) || !postings.length) {
+      break;
+    }
+
+    let newOnPage = 0;
+    for (const posting of postings) {
+      const mapped = mapPosting(posting, host, locale, site, source.companyName);
+      if (seen.has(mapped.externalId)) continue;
+      seen.add(mapped.externalId);
+      jobs.push(mapped);
+      newOnPage += 1;
+    }
+
+    if (!newOnPage) break;
+    offset += postings.length;
+
+    if (total !== null && offset >= total) break;
+    if (postings.length < PAGE_SIZE) break;
+  }
+
+  if (!jobs.length) {
     throw new Error("No jobs found on Workday career site");
   }
 
-  return postings.map((job) => {
-    const applicationUrl = buildWorkdayApplicationUrl(host, locale, site, job.externalPath);
-    return {
-      externalId: job.externalPath || applicationUrl,
-      title: job.title,
-      description: "",
-      location: job.locationsText || "Not specified",
-      jobType: "Full-time",
-      salary: "Not disclosed",
-      requirements: [],
-      applicationUrl,
-      companyName: source.companyName,
-      companyLogo: "",
-    };
-  });
+  return jobs;
 };

@@ -55,6 +55,9 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
       scroll: true,
       hrefPattern: "/job/",
       minTitleLength: 5,
+      nextButton:
+        "button.oj-pagingcontrol-nav-next, a.oj-pagingcontrol-nav-next, button[aria-label*='Next' i]",
+      maxPages: 10,
     },
   },
   Hexaware: {
@@ -71,6 +74,9 @@ export const PUPPETEER_SELECTOR_OVERRIDES = {
       hrefPattern: "job/",
       minTitleLength: 5,
       timeoutMs: 120000,
+      nextButton:
+        "button.oj-pagingcontrol-nav-next, a.oj-pagingcontrol-nav-next, button[aria-label*='Next' i]",
+      maxPages: 10,
     },
   },
   IBM: {
