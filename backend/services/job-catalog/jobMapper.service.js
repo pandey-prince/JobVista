@@ -83,6 +83,44 @@ const dedupeScrapedJobs = (jobs = []) => {
 
 export { dedupeScrapedJobs };
 
+const JOB_LIST_BATCH_SIZE = Math.max(
+  50,
+  Number(process.env.JOB_LIST_BATCH_SIZE || 500) || 500,
+);
+const JOB_LIST_MAX_DOCS = Math.max(
+  JOB_LIST_BATCH_SIZE,
+  Number(process.env.JOB_LIST_MAX_DOCS || 5000) || 5000,
+);
+
+const LIST_SELECT =
+  "title description location jobType salary requirements applicationUrl companyName companyLogo firstSeenAt status";
+
+/**
+ * Load all active scraped jobs in lean batches (no bulk populate).
+ * Soft-capped by JOB_LIST_MAX_DOCS so a runaway DB cannot OOM Render.
+ */
+const fetchActiveJobsBatched = async (query) => {
+  const jobs = [];
+  let skip = 0;
+
+  while (jobs.length < JOB_LIST_MAX_DOCS) {
+    const limit = Math.min(JOB_LIST_BATCH_SIZE, JOB_LIST_MAX_DOCS - jobs.length);
+    const batch = await ScrapedJob.find(query)
+      .select(LIST_SELECT)
+      .sort({ firstSeenAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    if (!batch.length) break;
+    jobs.push(...batch);
+    skip += batch.length;
+    if (batch.length < limit) break;
+  }
+
+  return jobs;
+};
+
 export const getScrapedJobsForList = async (keyword = "") => {
   const query = { status: "active" };
 
@@ -96,11 +134,7 @@ export const getScrapedJobsForList = async (keyword = "") => {
     ];
   }
 
-  const jobs = await ScrapedJob.find(query)
-    .populate("source")
-    .sort({ firstSeenAt: -1 })
-    .limit(500);
-
+  const jobs = await fetchActiveJobsBatched(query);
   return dedupeScrapedJobs(filterIndiaJobs(filterItJobs(jobs))).map(mapScrapedJobForList);
 };
 
