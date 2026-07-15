@@ -66,12 +66,15 @@ const run = async () => {
 
     for (const job of batch) {
       scanned += 1;
-      const resolved = resolveExperienceLevel(job);
+      const resolved = resolveExperienceLevel({
+        title: job.title,
+        description: job.description,
+        requirements: job.requirements,
+      });
       const current = String(job.experienceLevel || "").trim();
 
       if (!resolved) {
         stillUnknown += 1;
-        unchanged += 1;
         if (unknownSamples.length < 12) {
           unknownSamples.push({
             company: job.companyName,
@@ -79,6 +82,16 @@ const run = async () => {
             current: current || "(empty)",
           });
         }
+        if (!current) {
+          unchanged += 1;
+          continue;
+        }
+        // Clear stale/incorrect values when we can no longer resolve experience.
+        if (!dryRun) {
+          job.experienceLevel = "";
+          await job.save();
+        }
+        updated += 1;
         continue;
       }
 
