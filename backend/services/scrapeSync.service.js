@@ -101,7 +101,7 @@ export const syncSource = async (source) => {
   const newJobs = [];
 
   try {
-    const rawJobs = await runScraper(source);
+    const { jobs: rawJobs, usedSelectors } = await runScraper(source);
     const rawByExternalId = new Map(rawJobs.map((job) => [job.externalId, job]));
     const allScrapedJobs = dedupeScrapedJobs(filterIndiaJobs(filterItJobs(rawJobs)));
     const seenExternalIds = new Set(allScrapedJobs.map((job) => job.externalId));
@@ -167,6 +167,18 @@ export const syncSource = async (source) => {
     source.lastScrapeStatus = "success";
     source.lastScrapeError = "";
     source.jobsFoundCount = allScrapedJobs.length;
+
+    // Persist winning Puppeteer selectors for the next daily run (never auto-disable).
+    if (
+      usedSelectors?.jobList &&
+      (source.scraperType === "auto-puppeteer" || source.scraperType === "puppeteer")
+    ) {
+      source.selectors = {
+        ...(source.selectors?.toObject?.() || source.selectors || {}),
+        ...usedSelectors,
+      };
+    }
+
     await source.save();
 
     return {

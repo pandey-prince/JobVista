@@ -50,8 +50,14 @@ export const runScraper = async (source) => {
     throw new Error(`Unsupported scraper type: ${source.scraperType}`);
   }
 
-  const rawJobs = await scraper(source);
-  return rawJobs.map(normalizeJob).filter((job) => job.applicationUrl);
+  const result = await scraper(source);
+  const rawJobs = Array.isArray(result) ? result : result?.jobs || [];
+  const usedSelectors = Array.isArray(result) ? null : result?.usedSelectors || null;
+
+  return {
+    jobs: rawJobs.map(normalizeJob).filter((job) => job.applicationUrl),
+    usedSelectors,
+  };
 };
 
 export const extractCompanySlugFromUrl = (url = "") => {

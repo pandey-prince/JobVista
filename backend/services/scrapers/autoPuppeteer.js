@@ -7,10 +7,15 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const PUPPETEER_MAX_PAGES = Number(process.env.PUPPETEER_MAX_PAGES || 10);
 /** Hard cap for one company scrape (browser closed on timeout). */
 const PUPPETEER_SOURCE_TIMEOUT_MS = Number(
-  process.env.PUPPETEER_SOURCE_TIMEOUT_MS || 180000,
+  process.env.PUPPETEER_SOURCE_TIMEOUT_MS || 90000,
 );
 const PUPPETEER_NAV_TIMEOUT_MS = Number(
   process.env.PUPPETEER_NAV_TIMEOUT_MS || 45000,
+);
+/** When no saved/override selectors, try at most this many generic presets. */
+const PUPPETEER_MAX_GENERIC_PRESETS = Math.max(
+  1,
+  Number(process.env.PUPPETEER_MAX_GENERIC_PRESETS || 2) || 2,
 );
 
 const DEFAULT_NEXT_SELECTORS = [
@@ -132,16 +137,46 @@ const autoScroll = async (page) => {
 
 const buildSelectorPlan = (source) => {
   const override = getPuppeteerOverride(source.companyName);
-  const merged = {
-    ...(override?.selectors || {}),
-    ...(source.selectors?.jobList ? source.selectors : {}),
-  };
+  const fromOverride = override?.selectors?.jobList ? override.selectors : null;
+  const saved = source.selectors?.jobList ? source.selectors : null;
 
-  const custom = merged.jobList ? [merged] : [];
+  let presets;
+  if (fromOverride || saved) {
+    presets = [{ ...(fromOverride || {}), ...(saved || {}) }];
+  } else {
+    presets = SELECTOR_PRESETS.slice(0, PUPPETEER_MAX_GENERIC_PRESETS);
+  }
+
   return {
+    // Prefer curated override URL when present (Mongo may still hold a stale marketing page).
     url: override?.url || source.url,
-    presets: custom.length ? custom : SELECTOR_PRESETS,
+    presets,
   };
+};
+
+/** Fields safe to persist onto JobSource.selectors after a winning scrape. */
+export const pickPersistableSelectors = (selectors = {}) => {
+  const out = {};
+  for (const key of [
+    "jobList",
+    "title",
+    "description",
+    "location",
+    "link",
+    "hrefPattern",
+    "waitMs",
+    "waitUntil",
+    "minTitleLength",
+    "scroll",
+    "nextButton",
+    "maxPages",
+    "timeoutMs",
+  ]) {
+    if (selectors[key] !== undefined && selectors[key] !== null && selectors[key] !== "") {
+      out[key] = selectors[key];
+    }
+  }
+  return out;
 };
 
 const extractJobsFromDom = async (page, selectors) => {
@@ -347,8 +382,12 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
   await delay(waitMs);
   await dismissCookieBanners(page);
   if (selectors.scroll) {
-    await autoScroll(page);
-    await delay(2000);
+    try {
+      await autoScroll(page);
+      await delay(2000);
+    } catch (error) {
+      console.warn(`[AutoPuppeteer] scroll skipped: ${error.message.slice(0, 100)}`);
+    }
   }
 
   try {
@@ -378,11 +417,16 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
   });
 
   if (iframeSrc && iframeSrc.startsWith("http")) {
-    await page.goto(iframeSrc, { waitUntil, timeout: timeoutMs });
-    await delay(waitMs);
-    if (selectors.scroll) {
-      await autoScroll(page);
-      await delay(1500);
+    const alreadyOnAts = /oraclecloud\.com\/hcmUI|myworkdayjobs|greenhouse|lever\.co|icims|ashbyhq/i.test(
+      baseUrl,
+    );
+    if (!alreadyOnAts) {
+      await page.goto(iframeSrc, { waitUntil, timeout: timeoutMs });
+      await delay(waitMs);
+      if (selectors.scroll) {
+        await autoScroll(page);
+        await delay(1500);
+      }
     }
   }
 
@@ -401,7 +445,17 @@ const scrapeWithSelectors = async (page, source, selectors, baseUrl) => {
     return added;
   };
 
-  mergeJobs(await extractJobsFromDom(page, selectors));
+  mergeJobs(await extractJobsFromDom(page, selectors).catch(async (error) => {
+    if (!/Execution context was destroyed|Target closed/i.test(error.message)) {
+      throw error;
+    }
+    console.warn(
+      `[AutoPuppeteer] extract retry after navigation (${error.message.slice(0, 80)})`,
+    );
+    await delay(2500);
+    await page.waitForSelector(selectors.jobList, { timeout: 20000 }).catch(() => {});
+    return extractJobsFromDom(page, selectors);
+  }));
 
   const maxPages = Number(selectors.maxPages || PUPPETEER_MAX_PAGES);
   for (let pageIndex = 1; pageIndex < maxPages; pageIndex += 1) {
@@ -454,15 +508,18 @@ export const scrapeAutoPuppeteer = async (source) => {
           console.log(
             `[AutoPuppeteer] "${source.companyName}" scraped ${jobs.length} raw job(s)`,
           );
-          return jobs.map((job) => ({
-            ...job,
-            description: stripHtml(job.description),
-            jobType: "Full-time",
-            salary: "Not disclosed",
-            requirements: [],
-            companyName: source.companyName,
-            companyLogo: "",
-          }));
+          return {
+            jobs: jobs.map((job) => ({
+              ...job,
+              description: stripHtml(job.description),
+              jobType: "Full-time",
+              salary: "Not disclosed",
+              requirements: [],
+              companyName: source.companyName,
+              companyLogo: "",
+            })),
+            usedSelectors: pickPersistableSelectors(selectors),
+          };
         }
       }
 

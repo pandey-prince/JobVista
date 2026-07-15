@@ -44,7 +44,7 @@ const run = async () => {
       const source = sources.find((s) => s.scraperType === type);
       if (!source) continue;
       try {
-        const jobs = await runScraper(source);
+        const { jobs } = await runScraper(source);
         pass(`${type} scraper`, `${jobs.length} jobs from ${source.companyName}`);
       } catch (error) {
         fail(`${type} scraper`, error.message);

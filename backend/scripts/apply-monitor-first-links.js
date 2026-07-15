@@ -494,7 +494,7 @@ const smokeDetectAndScrape = async (rows) => {
       continue;
     }
     try {
-      const raw = await runScraper({
+      const { jobs: raw } = await runScraper({
         companyName: name,
         url: entry.url,
         scraperType: entry.scraperType,

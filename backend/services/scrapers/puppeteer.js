@@ -4,7 +4,7 @@ import { stripHtml } from "./normalize.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PUPPETEER_SOURCE_TIMEOUT_MS = Number(
-  process.env.PUPPETEER_SOURCE_TIMEOUT_MS || 180000,
+  process.env.PUPPETEER_SOURCE_TIMEOUT_MS || 90000,
 );
 const PUPPETEER_NAV_TIMEOUT_MS = Number(
   process.env.PUPPETEER_NAV_TIMEOUT_MS || 45000,
@@ -105,15 +105,24 @@ export const scrapePuppeteer = async (source) => {
         `[Puppeteer] "${source.companyName}" scraped ${jobs.length} raw job(s)`,
       );
 
-      return jobs.map((job) => ({
-        ...job,
-        description: stripHtml(job.description),
-        jobType: "Full-time",
-        salary: "Not disclosed",
-        requirements: [],
-        companyName: source.companyName,
-        companyLogo: "",
-      }));
+      return {
+        jobs: jobs.map((job) => ({
+          ...job,
+          description: stripHtml(job.description),
+          jobType: "Full-time",
+          salary: "Not disclosed",
+          requirements: [],
+          companyName: source.companyName,
+          companyLogo: "",
+        })),
+        usedSelectors: {
+          jobList: selectors.jobList,
+          title: selectors.title || "",
+          description: selectors.description || "",
+          location: selectors.location || "",
+          link: selectors.link || "",
+        },
+      };
     })();
 
     const timedOut = new Promise((_, reject) => {
