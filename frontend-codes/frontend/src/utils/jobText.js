@@ -54,7 +54,9 @@ export const extractExperienceFromTitle = (title = "") => {
   const singleMatch = title.match(/(\d+\+?\s*years?)/i);
   if (singleMatch) return singleMatch[1];
 
-  if (/fresher|graduate|intern/i.test(title)) return "Fresher / Intern";
+  if (/\b(fresher|freshers|graduate|graduates|intern(?:ship)?s?)\b/i.test(title)) {
+    return "Fresher / Intern";
+  }
 
   return null;
 };
