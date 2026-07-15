@@ -14,7 +14,7 @@ import { getMatchScore } from "../controllers/matchScore.controller.js";
 const router = express.Router();
 
 router.route("/post").post(isAuthenticated, requireRole("recruiter"), postJob);
-router.route("/get").get(getAllJobs);
+router.route("/get").get(optionalAuth, getAllJobs);
 router.route("/recommended").get(optionalAuth, getRecommendedJobs);
 router.route("/getadminjobs").get(isAuthenticated, requireRole("recruiter"), getAdminJobs);
 router.route("/get/:id").get(getJobById);

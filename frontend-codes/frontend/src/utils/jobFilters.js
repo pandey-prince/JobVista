@@ -6,14 +6,14 @@ export const emptyJobFilters = {
   workModes: [],
   postedWithin: [],
   companies: [],
-  sortBy: "newest",
+  sortBy: "fresher",
 };
 
 export const filtersToQueryParams = (filters = emptyJobFilters) => {
   const params = {};
   Object.entries(filters).forEach(([key, values]) => {
     if (key === "sortBy") {
-      if (values && values !== "newest") params.sortBy = values;
+      if (values && values !== "fresher") params.sortBy = values;
       return;
     }
     if (values?.length) params[key] = values.join(",");

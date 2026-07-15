@@ -21,6 +21,19 @@ const usePaginatedJobs = ({
     setRefetchKey((key) => key + 1);
   }, []);
 
+  const removeJobById = useCallback((jobId) => {
+    const key = String(jobId);
+    setJobs((prev) => prev.filter((job) => String(job._id) !== key));
+    setPagination((prev) =>
+      prev
+        ? {
+            ...prev,
+            total: Math.max(0, (prev.total || 0) - 1),
+          }
+        : prev,
+    );
+  }, []);
+
   useEffect(() => {
     if (!enabled) return undefined;
 
@@ -57,7 +70,7 @@ const usePaginatedJobs = ({
     };
   }, [page, limit, keyword, filterKey, enabled, refetchKey]);
 
-  return { jobs, pagination, loading, error, refetch };
+  return { jobs, pagination, loading, error, refetch, removeJobById };
 };
 
 export default usePaginatedJobs;

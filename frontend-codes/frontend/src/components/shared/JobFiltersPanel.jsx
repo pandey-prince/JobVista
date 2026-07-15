@@ -13,7 +13,7 @@ import { emptyJobFilters } from "@/utils/jobFilters";
 
 const countActiveFilters = (filters) =>
   Object.entries(filters).reduce((count, [key, values]) => {
-    if (key === "sortBy") return count + (values && values !== "newest" ? 1 : 0);
+    if (key === "sortBy") return count + (values && values !== "fresher" ? 1 : 0);
     return count + (values?.length || 0);
   }, 0);
 

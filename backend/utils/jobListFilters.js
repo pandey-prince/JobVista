@@ -7,6 +7,8 @@ const splitCsv = (value) => {
     .filter(Boolean);
 };
 
+const SORT_OPTIONS = new Set(["fresher", "newest", "company"]);
+
 export const parseJobListFilters = (query = {}) => ({
   locations: splitCsv(query.locations),
   roles: splitCsv(query.roles),
@@ -15,7 +17,7 @@ export const parseJobListFilters = (query = {}) => ({
   workModes: splitCsv(query.workModes),
   postedWithin: splitCsv(query.postedWithin),
   companies: splitCsv(query.companies),
-  sortBy: query.sortBy === "company" ? "company" : "newest",
+  sortBy: SORT_OPTIONS.has(query.sortBy) ? query.sortBy : "fresher",
 });
 
 const LOCATION_ALIASES = {
@@ -194,7 +196,21 @@ export const filterJobList = (jobs = [], keyword = "", filters = {}) => {
   });
 };
 
-export const sortJobList = (jobs = [], sortBy = "newest") => {
+/** Entry-level / fresher roles for fresher-first sort (not full description). */
+export const isEntryLevelJob = (job = {}) => {
+  const exp = String(job?.experienceLevel || "");
+  if (exp === "0" || /\bfresher\b|\bintern\b/i.test(exp)) return true;
+
+  const years = parseExperienceYears(exp);
+  if (years !== null && years <= 1) return true;
+
+  const focused = `${job?.title || ""} ${job?.jobType || ""}`;
+  return /\b(fresher|freshers|entry[- ]?level|new[- ]?grad|internship|intern)\b/i.test(
+    focused,
+  );
+};
+
+export const sortJobList = (jobs = [], sortBy = "fresher") => {
   const sorted = [...jobs];
 
   if (sortBy === "company") {
@@ -202,6 +218,16 @@ export const sortJobList = (jobs = [], sortBy = "newest") => {
       const companyA = String(a.company?.name || "").toLowerCase();
       const companyB = String(b.company?.name || "").toLowerCase();
       if (companyA !== companyB) return companyA.localeCompare(companyB);
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
+    return sorted;
+  }
+
+  if (sortBy === "fresher") {
+    sorted.sort((a, b) => {
+      const aEntry = isEntryLevelJob(a) ? 0 : 1;
+      const bEntry = isEntryLevelJob(b) ? 0 : 1;
+      if (aEntry !== bEntry) return aEntry - bEntry;
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
     return sorted;

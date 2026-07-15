@@ -12,6 +12,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  EyeOff,
   IndianRupee,
   Loader2,
   MapPin,
@@ -23,6 +24,7 @@ import LoadingState from "@/components/shared/LoadingState";
 import MatchScorePanel from "@/features/job-detail/MatchScorePanel";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
+import useDismissedJobs from "@/hooks/useDismissedJobs";
 import usePageTitle from "@/hooks/usePageTitle";
 import { useJobMateContext } from "@/context/JobMateContext";
 import { cleanJobText, toDescriptionParagraphs } from "@/utils/jobText";
@@ -48,6 +50,7 @@ const JobDescription = () => {
   const [matchScore, setMatchScore] = useState(null);
   const [matchLoading, setMatchLoading] = useState(false);
   const { isSaved, toggleSaveJob } = useSavedJobs();
+  const { dismissJob } = useDismissedJobs();
   const { setJobContext } = useJobMateContext();
 
   const params = useParams();
@@ -315,6 +318,16 @@ const JobDescription = () => {
               >
                 <Bookmark className={`mr-2 h-4 w-4 ${isSaved(jobId) ? "fill-current" : ""}`} />
                 {isSaved(jobId) ? "Saved" : "Save job"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  const ok = await dismissJob(singleJob);
+                  if (ok) navigate("/jobs");
+                }}
+              >
+                <EyeOff className="mr-2 h-4 w-4" />
+                Not interested
               </Button>
 
             {isScrapedJob || isExternalJob ? (

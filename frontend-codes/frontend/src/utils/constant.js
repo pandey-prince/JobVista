@@ -61,6 +61,11 @@ export const SAVED_JOBS_API_END_POINT = resolveApiEndpoint(
   "saved-jobs",
 );
 
+export const DISMISSED_JOBS_API_END_POINT = resolveApiEndpoint(
+  import.meta.env.VITE_DISMISSED_JOBS_API_END_POINT,
+  "dismissed-jobs",
+);
+
 export const ALERTS_API_END_POINT = resolveApiEndpoint(
   import.meta.env.VITE_ALERTS_API_END_POINT,
   "alerts",

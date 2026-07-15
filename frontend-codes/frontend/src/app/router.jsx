@@ -11,6 +11,7 @@ import CompanyJobsPage from "@/components/CompanyJobsPage";
 import MonitoredCompaniesPage from "@/components/MonitoredCompaniesPage";
 import CompanyLists from "@/components/CompanyLists";
 import SavedJobs from "@/components/SavedJobs";
+import HiddenJobs from "@/components/HiddenJobs";
 import JobAlerts from "@/components/JobAlerts";
 import AuthRoute from "@/components/shared/AuthRoute";
 import AdminLogin from "@/components/admin/AdminLogin";
@@ -46,6 +47,14 @@ export const appRouter = createBrowserRouter([
         element: (
           <AuthRoute roles={["student"]}>
             <SavedJobs />
+          </AuthRoute>
+        ),
+      },
+      {
+        path: "/hidden-jobs",
+        element: (
+          <AuthRoute roles={["student"]}>
+            <HiddenJobs />
           </AuthRoute>
         ),
       },

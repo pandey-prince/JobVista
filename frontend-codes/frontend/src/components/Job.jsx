@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from './ui/button'
-import { Bookmark } from 'lucide-react'
+import { Bookmark, EyeOff } from 'lucide-react'
 import { Badge } from './ui/badge'
 import CompanyLogo from './CompanyLogo'
 import JobFreshnessBadges from './shared/JobFreshnessBadges'
@@ -9,32 +9,48 @@ import JobQuickView from '@/features/job-detail/JobQuickView'
 import { getJobBadges } from '@/utils/jobBadges'
 import { cleanJobText } from '@/utils/jobText'
 import useSavedJobs from '@/hooks/useSavedJobs'
+import useDismissedJobs from '@/hooks/useDismissedJobs'
 import { companyJobsPath } from '@/utils/companySlug'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 
-const Job = ({job}) => {
+const Job = ({job, onDismissed}) => {
     const [quickViewOpen, setQuickViewOpen] = useState(false);
     const { user } = useSelector((store) => store.auth);
     const navigate = useNavigate();
     const { isSaved, toggleSaveJob } = useSavedJobs();
+    const { dismissJob } = useDismissedJobs();
     const badges = getJobBadges(job);
     const saved = isSaved(job?._id);
+
+    const requireAuth = (actionLabel) => {
+        toast.message(`Sign up to ${actionLabel}`, {
+            description: "Create a free account to bookmark roles, hide jobs, and get alerts.",
+            action: {
+                label: "Sign up",
+                onClick: () => navigate("/signup"),
+            },
+        });
+    };
 
     const handleSave = async (e) => {
         e.stopPropagation();
         if (!user) {
-            toast.message("Sign up to save jobs", {
-                description: "Create a free account to bookmark roles and get alerts.",
-                action: {
-                    label: "Sign up",
-                    onClick: () => navigate("/signup"),
-                },
-            });
+            requireAuth("save jobs");
             return;
         }
         await toggleSaveJob(job);
+    }
+
+    const handleNotInterested = async (e) => {
+        e.stopPropagation();
+        if (!user) {
+            requireAuth("hide jobs");
+            return;
+        }
+        const ok = await dismissJob(job);
+        if (ok) onDismissed?.(String(job._id));
     }
 
     const salaryText = typeof job?.salary === "number" ? `${job.salary}LPA` : job?.salary;
@@ -53,15 +69,27 @@ const Job = ({job}) => {
         >
             <div className='flex items-center justify-between gap-3'>
                 <p className='text-sm font-medium text-muted-foreground'>{badges.freshnessLabel}</p>
-                <Button
-                    variant="outline"
-                    className={`rounded-full shrink-0 ${saved ? "border-brand text-brand" : ""}`}
-                    size="icon"
-                    aria-label={saved ? "Unsave job" : "Save job"}
-                    onClick={handleSave}
-                >
-                    <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        className="rounded-full shrink-0"
+                        size="icon"
+                        aria-label="Not interested"
+                        title="Not interested"
+                        onClick={handleNotInterested}
+                    >
+                        <EyeOff className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className={`rounded-full shrink-0 ${saved ? "border-brand text-brand" : ""}`}
+                        size="icon"
+                        aria-label={saved ? "Unsave job" : "Save job"}
+                        onClick={handleSave}
+                    >
+                        <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
+                    </Button>
+                </div>
             </div>
 
             <div className='mt-3 flex items-center gap-3'>
@@ -96,7 +124,7 @@ const Job = ({job}) => {
                 <Badge className='font-semibold text-accent-amber' variant="ghost">{salaryText}</Badge>
             </div>
 
-            <div className='mt-4 flex items-center gap-3'>
+            <div className='mt-4 flex items-center gap-2'>
                 <Button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -117,9 +145,22 @@ const Job = ({job}) => {
                     {saved ? "Saved" : "Save"}
                 </Button>
             </div>
+            <Button
+                type="button"
+                variant="ghost"
+                className="mt-2 w-full text-muted-foreground hover:text-foreground"
+                onClick={handleNotInterested}
+            >
+                Not interested
+            </Button>
         </div>
 
-        <JobQuickView job={job} open={quickViewOpen} onOpenChange={setQuickViewOpen} />
+        <JobQuickView
+          job={job}
+          open={quickViewOpen}
+          onOpenChange={setQuickViewOpen}
+          onDismissed={onDismissed}
+        />
         </>
     )
 }

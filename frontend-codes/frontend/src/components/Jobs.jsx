@@ -20,7 +20,7 @@ const JOBS_PER_PAGE = 30;
 
 const countActiveFilters = (filters) =>
   Object.entries(filters).reduce((count, [key, values]) => {
-    if (key === "sortBy") return count + (values && values !== "newest" ? 1 : 0);
+    if (key === "sortBy") return count + (values && values !== "fresher" ? 1 : 0);
     return count + (values?.length || 0);
   }, 0);
 
@@ -35,7 +35,7 @@ const Jobs = () => {
   const [page, setPage] = useState(1);
 
   const { stats } = useGetPublicStats();
-  const { jobs, pagination, loading, error, refetch } = usePaginatedJobs({
+  const { jobs, pagination, loading, error, refetch, removeJobById } = usePaginatedJobs({
     page,
     limit: JOBS_PER_PAGE,
     keyword: searchedQuery,
@@ -95,7 +95,7 @@ const Jobs = () => {
         {!user ? (
           <div className="mb-5 flex flex-col gap-3 rounded-lg border border-brand/25 bg-brand-muted/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-foreground">
-              Create a free account to save jobs and get email alerts when new roles match.
+              Create a free account to save jobs, hide roles you skip, and get email alerts.
             </p>
             <Button asChild variant="brand" size="sm" className="shrink-0">
               <Link to="/signup">Create free account</Link>
@@ -210,7 +210,7 @@ const Jobs = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <Job job={job} />
+                    <Job job={job} onDismissed={removeJobById} />
                   </motion.div>
                 ))}
               </JobMasonryGrid>

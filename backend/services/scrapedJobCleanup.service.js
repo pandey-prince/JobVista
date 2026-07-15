@@ -1,5 +1,6 @@
 import { ScrapedJob } from "../models/scrapedJob.model.js";
 import { SavedJob } from "../models/savedJob.model.js";
+import { DismissedJob } from "../models/dismissedJob.model.js";
 import { TrackedApplication } from "../models/trackedApplication.model.js";
 import { MatchScoreCache } from "../models/matchScoreCache.model.js";
 
@@ -8,14 +9,16 @@ export const getScrapedJobKey = (scrapedJobId) => `scraped-${scrapedJobId}`;
 export const cascadeDeleteScrapedJobReferences = async (scrapedJobId) => {
   const jobKey = getScrapedJobKey(scrapedJobId);
 
-  const [saved, tracked, scores] = await Promise.all([
+  const [saved, dismissed, tracked, scores] = await Promise.all([
     SavedJob.deleteMany({ jobKey }),
+    DismissedJob.deleteMany({ jobKey }),
     TrackedApplication.deleteMany({ jobKey }),
     MatchScoreCache.deleteMany({ jobKey }),
   ]);
 
   return {
     savedJobs: saved.deletedCount || 0,
+    dismissedJobs: dismissed.deletedCount || 0,
     trackedApplications: tracked.deletedCount || 0,
     matchScores: scores.deletedCount || 0,
   };

@@ -7,6 +7,7 @@ import {
 import { parseJobListFilters, filterJobList, sortJobList } from "../utils/jobListFilters.js";
 import { recommendJobs } from "../utils/jobRecommendation.js";
 import { User } from "../models/user.model.js";
+import { DismissedJob } from "../models/dismissedJob.model.js";
 import {
   parsePagination,
   paginateArray,
@@ -82,11 +83,18 @@ export const getAllJobs = async (req, res) => {
     });
 
     const scrapedJobs = await getScrapedJobsForList(keyword);
-    const filteredJobs = sortJobList(
-      filterJobList(scrapedJobs, keyword, filters),
-      filters.sortBy,
-    );
-    const { data: jobsPage, pagination } = paginateArray(filteredJobs, paginationQuery);
+    let filteredJobs = filterJobList(scrapedJobs, keyword, filters);
+
+    if (req.id) {
+      const dismissed = await DismissedJob.find({ user: req.id }).select("jobKey").lean();
+      if (dismissed.length) {
+        const dismissedKeys = new Set(dismissed.map((entry) => entry.jobKey));
+        filteredJobs = filteredJobs.filter((job) => !dismissedKeys.has(String(job._id)));
+      }
+    }
+
+    const sortedJobs = sortJobList(filteredJobs, filters.sortBy);
+    const { data: jobsPage, pagination } = paginateArray(sortedJobs, paginationQuery);
 
     res.status(200).json({
       jobs: jobsPage,

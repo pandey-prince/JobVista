@@ -47,6 +47,7 @@ const Navbar = () => {
     ...(user
       ? [
           { label: "Saved", to: "/saved-jobs" },
+          { label: "Hidden", to: "/hidden-jobs" },
           { label: "Alerts", to: "/alerts" },
           { label: "My Companies", to: "/my-companies" },
         ]

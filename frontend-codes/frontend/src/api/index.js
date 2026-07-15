@@ -2,6 +2,7 @@ import apiClient from "./client";
 import {
   USER_API_END_POINT,
   SAVED_JOBS_API_END_POINT,
+  DISMISSED_JOBS_API_END_POINT,
   ALERTS_API_END_POINT,
   TRACKED_APPLICATIONS_API_END_POINT,
   JOB_API_END_POINT,
@@ -33,6 +34,14 @@ export const savedJobsApi = {
   save: (payload) => apiClient.post(`${SAVED_JOBS_API_END_POINT}/`, payload),
   remove: (jobKey) =>
     apiClient.delete(`${SAVED_JOBS_API_END_POINT}/${encodeURIComponent(jobKey)}`),
+};
+
+export const dismissedJobsApi = {
+  list: () => apiClient.get(`${DISMISSED_JOBS_API_END_POINT}/`),
+  keys: () => apiClient.get(`${DISMISSED_JOBS_API_END_POINT}/keys`),
+  dismiss: (payload) => apiClient.post(`${DISMISSED_JOBS_API_END_POINT}/`, payload),
+  remove: (jobKey) =>
+    apiClient.delete(`${DISMISSED_JOBS_API_END_POINT}/${encodeURIComponent(jobKey)}`),
 };
 
 export const alertsApi = {

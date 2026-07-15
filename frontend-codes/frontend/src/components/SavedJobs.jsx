@@ -32,7 +32,12 @@ const SavedJobs = () => {
     <div>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <h1 className="text-3xl font-bold">Saved Jobs</h1>
-        <p className="mt-2 text-muted-foreground">Roles you bookmarked to apply later.</p>
+        <p className="mt-2 text-muted-foreground">
+          Roles you bookmarked to apply later.{" "}
+          <Link to="/hidden-jobs" className="text-brand hover:underline">
+            View hidden jobs
+          </Link>
+        </p>
 
         {loading ? (
           <LoadingState

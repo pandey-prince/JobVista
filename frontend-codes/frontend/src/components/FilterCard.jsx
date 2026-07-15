@@ -65,7 +65,7 @@ const filterData = [
 
 const countActiveFilters = (filters) =>
   Object.entries(filters).reduce((count, [key, values]) => {
-    if (key === "sortBy") return count + (values && values !== "newest" ? 1 : 0);
+    if (key === "sortBy") return count + (values && values !== "fresher" ? 1 : 0);
     return count + (values?.length || 0);
   }, 0);
 
@@ -137,11 +137,12 @@ const FilterCard = ({ selectedFilters, onFilterChange, onClear, hideHeaderAction
 
       <div className="mt-4">
         <h2 className="text-base font-bold">Sort by</h2>
-        <Select value={selectedFilters.sortBy || "newest"} onValueChange={handleSortChange}>
+        <Select value={selectedFilters.sortBy || "fresher"} onValueChange={handleSortChange}>
           <SelectTrigger className="mt-2" aria-label="Sort jobs">
             <SelectValue placeholder="Sort jobs" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="fresher">Freshers first</SelectItem>
             <SelectItem value="newest">Newest first</SelectItem>
             <SelectItem value="company">Company A–Z</SelectItem>
           </SelectContent>

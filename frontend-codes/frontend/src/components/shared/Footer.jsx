@@ -18,6 +18,7 @@ const footerLinks = {
   ],
   candidatesStudent: [
     { label: "Saved jobs", to: "/saved-jobs" },
+    { label: "Hidden jobs", to: "/hidden-jobs" },
     { label: "Job alerts", to: "/alerts" },
     { label: "Your profile", to: "/profile" },
     { label: "My companies", to: "/my-companies" },

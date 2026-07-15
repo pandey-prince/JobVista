@@ -15,6 +15,7 @@ import {
   Bookmark,
   BriefcaseBusiness,
   CalendarDays,
+  EyeOff,
   ExternalLink,
   IndianRupee,
   Loader2,
@@ -26,6 +27,7 @@ import CompanyLogo from "@/components/CompanyLogo";
 import JobFreshnessBadges from "@/components/shared/JobFreshnessBadges";
 import { getJobBadges } from "@/utils/jobBadges";
 import useSavedJobs from "@/hooks/useSavedJobs";
+import useDismissedJobs from "@/hooks/useDismissedJobs";
 import { jobsApi } from "@/api";
 import { toast } from "sonner";
 import {
@@ -35,10 +37,11 @@ import {
   toDescriptionParagraphs,
 } from "@/utils/jobText";
 
-const JobQuickView = ({ job, open, onOpenChange }) => {
+const JobQuickView = ({ job, open, onOpenChange, onDismissed }) => {
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
   const { isSaved, toggleSaveJob } = useSavedJobs();
+  const { dismissJob } = useDismissedJobs();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -118,7 +121,35 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
   };
 
   const handleSave = async () => {
+    if (!user) {
+      toast.message("Sign up to save jobs", {
+        description: "Create a free account to bookmark roles and get alerts.",
+        action: {
+          label: "Sign up",
+          onClick: () => navigate("/signup"),
+        },
+      });
+      return;
+    }
     await toggleSaveJob(displayJob);
+  };
+
+  const handleNotInterested = async () => {
+    if (!user) {
+      toast.message("Sign up to hide jobs", {
+        description: "Create a free account to hide roles you are not interested in.",
+        action: {
+          label: "Sign up",
+          onClick: () => navigate("/signup"),
+        },
+      });
+      return;
+    }
+    const ok = await dismissJob(displayJob);
+    if (ok) {
+      onOpenChange(false);
+      onDismissed?.(String(displayJob._id));
+    }
   };
 
   const openFullDetails = () => {
@@ -239,6 +270,10 @@ const JobQuickView = ({ job, open, onOpenChange }) => {
             >
               <Bookmark className={`mr-2 h-4 w-4 ${saved ? "fill-current" : ""}`} />
               {saved ? "Saved" : "Save job"}
+            </Button>
+            <Button variant="outline" onClick={handleNotInterested}>
+              <EyeOff className="mr-2 h-4 w-4" />
+              Not interested
             </Button>
             <Button variant="ghost" onClick={openFullDetails}>
               <ExternalLink className="mr-2 h-4 w-4" />
