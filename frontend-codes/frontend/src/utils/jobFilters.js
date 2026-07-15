@@ -45,9 +45,14 @@ const ROLE_KEYWORDS = {  "Software Engineer": ["software engineer", "sde", "soft
 };
 
 const EXPERIENCE_RULES = {
-  Fresher: (text, job) =>
-    /\b(fresher|freshers|entry level|new grad|graduate|0\s*-\s*1|0\s*to\s*1|0\s*years?)\b/i.test(text) ||
-    String(job?.experienceLevel || "") === "0",
+  Fresher: (text, job) => {
+    const exp = String(job?.experienceLevel || "");
+    if (exp === "0" || /\bfresher\b|\bintern\b/i.test(exp)) return true;
+    const focused = `${job?.title || ""} ${job?.jobType || ""} ${exp}`.toLowerCase();
+    return /\b(fresher|freshers|entry level|new grad|graduate|0\s*-\s*1|0\s*to\s*1|0\s*years?)\b/i.test(
+      focused,
+    );
+  },
   "0-1 year": (text, job) => {
     const exp = parseExperienceYears(job?.experienceLevel);
     return exp !== null && exp <= 1;
@@ -65,7 +70,8 @@ const EXPERIENCE_RULES = {
     return exp !== null && exp >= 5;
   },
   Internship: (text, job) =>
-    /\b(internship|intern)\b/i.test(text) || /\bintern\b/i.test(String(job?.jobType || "")),
+    /\b(internship|intern)\b/i.test(`${job?.title || ""} ${job?.jobType || ""}`) ||
+    /\bintern\b/i.test(String(job?.jobType || "")),
 };
 
 const WORK_MODE_RULES = {

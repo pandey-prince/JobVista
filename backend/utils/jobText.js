@@ -114,10 +114,18 @@ export const extractExperienceFromText = (text = "") => {
   const singleMatch = body.match(/(\d+(?:\.\d+)?\+?)\s*(?:years?|yrs?)(?:\s+of\s+experience)?/i);
   if (singleMatch) return normalizeExperienceValue(`${singleMatch[1]} years`) || null;
 
-  if (/\b(fresher|freshers|entry[- ]?level|new[- ]?grad|graduate)\b/i.test(body)) {
+  if (/\b(fresher|freshers|entry[- ]?level|new[- ]?grad)\b/i.test(body)) {
     return "Fresher / Intern";
   }
-  if (/\b(internship|intern)\b/i.test(body)) {
+  // Prefer "internship"; avoid benefits boilerplate like "Not applicable for Intern or Contract".
+  if (/\binternship\b/i.test(body)) {
+    return "Fresher / Intern";
+  }
+  if (
+    /\binterns?\b/i.test(body) &&
+    !/\bnot applicable for intern/i.test(body) &&
+    !/\bintern or contract\b/i.test(body)
+  ) {
     return "Fresher / Intern";
   }
 
