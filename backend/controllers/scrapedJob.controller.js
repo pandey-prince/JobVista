@@ -19,7 +19,11 @@ import {
   mapScrapedJobForList,
 } from "../services/job-catalog/index.js";
 import { attachBadgesToJob } from "../utils/jobBadges.js";
-import { cleanJobText, extractExperienceFromTitle } from "../utils/jobText.js";
+import {
+  cleanJobText,
+  extractExperienceFromTitle,
+  resolveExperienceLevel,
+} from "../utils/jobText.js";
 import { toPublicApplicationUrl } from "../utils/applicationUrl.js";
 
 export const listScrapedJobs = async (req, res) => {
@@ -58,7 +62,11 @@ export const getScrapedJobById = async (req, res) => {
           title: job.title,
           description: cleanJobText(job.description),
           requirements: (job.requirements || []).map((item) => cleanJobText(String(item))),
-          experienceLevel: extractExperienceFromTitle(job.title) || "Not specified",
+          experienceLevel:
+            job.experienceLevel ||
+            resolveExperienceLevel(job) ||
+            extractExperienceFromTitle(job.title) ||
+            "Not specified",
           salary: job.salary,
           location: String(job.location || "").trim() || "Not specified",
           jobType: job.jobType,

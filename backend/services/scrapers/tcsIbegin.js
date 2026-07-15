@@ -29,6 +29,10 @@ const mapJob = (job, companyName) => ({
   location: job.location || "India",
   jobType: "Full-time",
   salary: "Not disclosed",
+  experienceLevel:
+    job.experience !== null && job.experience !== undefined && job.experience !== ""
+      ? String(job.experience)
+      : "",
   requirements: job.skills ? job.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
   applicationUrl: `${JOB_URL_BASE}/${job.id}`,
   companyName,

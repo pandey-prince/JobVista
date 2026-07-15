@@ -31,6 +31,11 @@ const scrapedJobSchema = new mongoose.Schema(
       type: String,
       default: "Not disclosed",
     },
+    experienceLevel: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     requirements: [
       {
         type: String,

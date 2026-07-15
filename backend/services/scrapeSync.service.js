@@ -119,6 +119,7 @@ export const syncSource = async (source) => {
         existing.location = job.location;
         existing.jobType = job.jobType;
         existing.salary = job.salary;
+        existing.experienceLevel = job.experienceLevel || "";
         existing.requirements = job.requirements;
         existing.applicationUrl = job.applicationUrl;
         existing.companyName = job.companyName;
