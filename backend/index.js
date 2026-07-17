@@ -25,10 +25,14 @@ import { seedDefaultJobSources } from "./utils/seedJobSources.js";
 import { User } from "./models/user.model.js";
 import { isEmailConfigured } from "./services/email.service.js";
 import { ensureAdminFromEnv } from "./utils/ensureAdmin.js";
+import { apiLimiter } from "./middlewares/rateLimiter.js";
 dotenv.config({});
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Render / reverse proxies: use client IP for rate limiting
+app.set("trust proxy", 1);
 
 //middleware
 app.use(express.json());
@@ -81,6 +85,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use("/api/v1", apiLimiter);
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);

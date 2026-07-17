@@ -74,3 +74,4 @@ backend/uploads/*
 # If you want to ignore lock files (not recommended):
 # package-lock.json
 # yarn.lock
+.env*
