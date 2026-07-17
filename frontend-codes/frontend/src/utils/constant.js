@@ -1,19 +1,41 @@
-const PRODUCTION_API = "https://jobvista-ym67.onrender.com/api/v1";
 const DEV_API = "http://localhost:8000/api/v1";
-const API_ROOT = import.meta.env.PROD ? PRODUCTION_API : DEV_API;
 
 /**
- * Only accept real absolute API URLs from Vercel env.
- * Placeholder values like "...admin" must NOT win — they become relative
- * paths on joblelo.online and the SPA returns HTML, which the admin UI
- * surfaces as "Unable to load admin dashboard".
+ * API base URL comes only from env (never hardcode a production host in source).
+ * Prefer VITE_API_BASE_URL; in local `vite` dev, fall back to localhost.
+ */
+const getApiRoot = () => {
+  const fromEnv = String(import.meta.env.VITE_API_BASE_URL || "").trim();
+  if (/^https?:\/\//i.test(fromEnv)) {
+    return fromEnv.replace(/\/$/, "");
+  }
+  if (import.meta.env.DEV) {
+    return DEV_API;
+  }
+  return "";
+};
+
+/**
+ * Only accept real absolute API URLs from env.
+ * Placeholder / missing values must NOT invent a public backend host.
  */
 const resolveApiEndpoint = (envValue, fallbackPath) => {
   const trimmed = typeof envValue === "string" ? envValue.trim() : "";
   if (/^https?:\/\//i.test(trimmed)) {
     return trimmed.replace(/\/$/, "");
   }
-  return `${API_ROOT}/${fallbackPath}`;
+
+  const root = getApiRoot();
+  if (!root) {
+    console.error(
+      `[config] Missing API env for "${fallbackPath}". Set VITE_${fallbackPath
+        .toUpperCase()
+        .replace(/-/g, "_")}_API_END_POINT or VITE_API_BASE_URL.`,
+    );
+    return "";
+  }
+
+  return `${root}/${fallbackPath}`;
 };
 
 export const USER_API_END_POINT = resolveApiEndpoint(
