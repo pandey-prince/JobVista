@@ -55,7 +55,7 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
       - key: API_BASE_URL
-        value: https://jobvista-ahek.onrender.com
+        sync: false
       - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM

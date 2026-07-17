@@ -9,7 +9,7 @@ A job portal for **job seekers** — IT roles in India from company career pages
 | Service | URL |
 |---------|-----|
 | Frontend | https://www.joblelo.online |
-| Backend API | https://jobvista-ahek.onrender.com |
+| Backend API | Render (configure via env — not committed) |
 
 ## Tech stack
 
