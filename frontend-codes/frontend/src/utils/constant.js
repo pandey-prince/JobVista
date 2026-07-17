@@ -1,4 +1,4 @@
-const PRODUCTION_API = "https://jobvista-ahek.onrender.com/api/v1";
+const PRODUCTION_API = "https://jobvista-ym67.onrender.com/api/v1";
 const DEV_API = "http://localhost:8000/api/v1";
 const API_ROOT = import.meta.env.PROD ? PRODUCTION_API : DEV_API;
 
