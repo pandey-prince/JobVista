@@ -112,6 +112,15 @@ app.get("/home", (req, res) => {
     },
   });
 });
+
+app.get("/health", (_req, res) => {
+  return res.status(200).json({
+    status: "ok",
+    success: true,
+    uptime: process.uptime(),
+  });
+});
+
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, async () => {
   await connectDB();
