@@ -179,7 +179,20 @@ const MonitoredCompaniesPage = () => {
         </div>
       ) : (
         <>
-          <JobMasonryGrid className="mt-8" maxColumns={3} layout="full">
+          <JobMasonryGrid
+            className="mt-8"
+            maxColumns={3}
+            layout="full"
+            getItemWeight={(index) => {
+              const source = sources[index];
+              if (!source) return 1;
+              const jobs = Array.isArray(source.jobs) ? source.jobs : [];
+              const count = source.activeJobCount || jobs.length;
+              const previewCount = Math.min(PREVIEW_JOBS, jobs.length);
+              // Header + each preview row + optional "+N more" + footer
+              return 5 + previewCount * 2 + (count > previewCount ? 1 : 0);
+            }}
+          >
             {sources.map((source) => {
               const name = source.companyName || source.name || "Company";
               const jobsPath = source.slug

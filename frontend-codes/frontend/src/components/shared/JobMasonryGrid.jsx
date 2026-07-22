@@ -17,11 +17,17 @@ const getColumnCount = (layout = "sidebar") => {
   return 1;
 };
 
+/**
+ * Packs children into columns by always appending to the shortest column
+ * (by weight), so the bottom edge stays more even than round-robin.
+ */
 const JobMasonryGrid = ({
   children,
   className = "",
   maxColumns = 3,
   layout = "sidebar",
+  /** Optional: (index) => number — taller cards should return a larger weight */
+  getItemWeight,
 }) => {
   const [columnCount, setColumnCount] = useState(() =>
     Math.min(getColumnCount(layout), maxColumns),
@@ -40,11 +46,25 @@ const JobMasonryGrid = ({
 
   const columns = useMemo(() => {
     const cols = Array.from({ length: columnCount }, () => []);
+    const heights = Array.from({ length: columnCount }, () => 0);
+
     items.forEach((child, index) => {
-      cols[index % columnCount].push(child);
+      let shortest = 0;
+      for (let i = 1; i < columnCount; i += 1) {
+        if (heights[i] < heights[shortest]) shortest = i;
+      }
+
+      const weight =
+        typeof getItemWeight === "function"
+          ? Math.max(1, Number(getItemWeight(index)) || 1)
+          : 1;
+
+      cols[shortest].push(child);
+      heights[shortest] += weight;
     });
+
     return cols;
-  }, [items, columnCount]);
+  }, [items, columnCount, getItemWeight]);
 
   return (
     <div className={`flex w-full min-w-0 items-start gap-4 ${className}`}>
