@@ -4,7 +4,7 @@ import { runScraper } from "./scrapers/index.js";
 import { filterItJobs, isItJob } from "../utils/itJobFilter.js";
 import { filterIndiaJobs, isIndiaJob } from "../utils/indiaJobFilter.js";
 import { processWatchlistAlerts } from "./watchlistAlert.service.js";
-import { hardDeleteScrapedJob } from "./scrapedJobCleanup.service.js";
+import { hardDeleteScrapedJob, hardDeleteScrapedJobsByQuery } from "./scrapedJobCleanup.service.js";
 import { checkActiveJobLinks } from "./linkCheck.service.js";
 import { dedupeScrapedJobs } from "./job-catalog/index.js";
 
@@ -195,16 +195,44 @@ export const syncSource = async (source) => {
       newJobs,
     };
   } catch (error) {
+    const message = error.message || "Unknown scrape error";
+    const boardGone = /\b(404|410)\b/.test(message);
+
     source.lastScrapedAt = now;
+    source.lastScrapeError = message;
+
+    // Career board deleted/moved — clear ghost listings so the site matches reality
+    if (boardGone) {
+      removedJobsCount = await hardDeleteScrapedJobsByQuery(
+        { source: source._id, status: "active" },
+        "board_gone",
+      );
+      source.lastScrapeStatus = "success";
+      source.jobsFoundCount = 0;
+      source.lastScrapeError = `${message}; cleared ${removedJobsCount} stale jobs`;
+      await source.save();
+
+      return {
+        sourceId: source._id,
+        sourceName: source.name,
+        success: true,
+        jobsFound: 0,
+        newJobsCount: 0,
+        updatedJobsCount: 0,
+        removedJobsCount,
+        duplicateSkippedCount: 0,
+        boardGone: true,
+      };
+    }
+
     source.lastScrapeStatus = "error";
-    source.lastScrapeError = error.message || "Unknown scrape error";
     await source.save();
 
     return {
       sourceId: source._id,
       sourceName: source.name,
       success: false,
-      error: error.message,
+      error: message,
       newJobsCount,
       updatedJobsCount,
       removedJobsCount,

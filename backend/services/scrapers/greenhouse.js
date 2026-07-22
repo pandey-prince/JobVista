@@ -21,6 +21,9 @@ export const scrapeGreenhouse = async (source) => {
   );
 
   if (!response.ok) {
+    if (response.status === 404 || response.status === 410) {
+      return [];
+    }
     throw new Error(`Greenhouse API returned ${response.status}`);
   }
 

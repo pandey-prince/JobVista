@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import CompanyLogo from "./CompanyLogo";
+import Job from "./Job";
 import Pagination from "@/components/shared/Pagination";
 import LoadingState from "@/components/shared/LoadingState";
 import { careerSourceApi } from "@/api";
 import { companyJobsPath } from "@/utils/companySlug";
 import { buildCompaniesFromJobFeed } from "@/utils/companyDirectory";
 import usePageTitle from "@/hooks/usePageTitle";
-import { ExternalLink, MapPin, RefreshCw, Search } from "lucide-react";
+import { ExternalLink, RefreshCw, Search } from "lucide-react";
 
 const PAGE_SIZE = 12;
 
@@ -176,7 +177,7 @@ const MonitoredCompaniesPage = () => {
         </div>
       ) : (
         <>
-          <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
             {sources.map((source) => {
               const name = source.companyName || source.name || "Company";
               const jobsPath = source.slug
@@ -213,25 +214,11 @@ const MonitoredCompaniesPage = () => {
                     ) : null}
                   </div>
 
-                  <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto border-t border-border pt-4">
+                  <div className="mt-4 max-h-[36rem] space-y-4 overflow-y-auto border-t border-border pt-4 pr-1">
                     {jobs.map((job) => (
-                      <li key={job._id}>
-                        <Link
-                          to={jobsPath}
-                          className="block rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-brand/25 hover:bg-brand-muted/40"
-                        >
-                          <p className="font-medium leading-snug text-foreground">{job.title}</p>
-                          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3 shrink-0" />
-                            <span className="truncate">
-                              {job.location || "Not specified"}
-                              {job.experienceLevel ? ` · ${job.experienceLevel}` : ""}
-                            </span>
-                          </p>
-                        </Link>
-                      </li>
+                      <Job key={job._id} job={job} />
                     ))}
-                  </ul>
+                  </div>
 
                   <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
                     <Button asChild variant="brand" size="sm" className="rounded-full">

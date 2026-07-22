@@ -20,6 +20,11 @@ export const scrapeLever = async (source) => {
     `https://api.lever.co/v0/postings/${companySlug}?mode=json`
   );
 
+  // Board removed / company closed careers — treat as empty so sync deletes stale jobs
+  if (response.status === 404 || response.status === 410) {
+    return [];
+  }
+
   if (!response.ok) {
     throw new Error(`Lever API returned ${response.status}`);
   }
