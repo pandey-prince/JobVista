@@ -53,7 +53,7 @@ export const scrapeSmartdreamers = async (source) => {
   }
 
   if (!jobs.length) {
-    throw new Error("No jobs found on SmartDreamers career page");
+    return [];
   }
 
   return jobs;

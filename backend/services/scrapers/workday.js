@@ -117,7 +117,7 @@ export const scrapeWorkday = async (source) => {
   }
 
   if (!jobs.length) {
-    throw new Error("No jobs found on Workday career site");
+    return [];
   }
 
   return jobs;

@@ -196,13 +196,18 @@ export const syncSource = async (source) => {
     };
   } catch (error) {
     const message = error.message || "Unknown scrape error";
-    const boardGone = /\b(404|410)\b/.test(message);
+    // Empty/gone boards should clear listings; timeouts/5xx keep last good jobs
+    const emptyBoard =
+      /\b(404|410)\b/.test(message) ||
+      /no jobs found|could not find job listings|couldn't find anything|document not found|board_gone/i.test(
+        message,
+      );
 
     source.lastScrapedAt = now;
     source.lastScrapeError = message;
 
-    // Career board deleted/moved — clear ghost listings so the site matches reality
-    if (boardGone) {
+    // Career board empty/deleted — clear ghost listings so the site matches reality
+    if (emptyBoard) {
       removedJobsCount = await hardDeleteScrapedJobsByQuery(
         { source: source._id, status: "active" },
         "board_gone",

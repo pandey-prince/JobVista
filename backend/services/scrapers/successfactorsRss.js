@@ -53,7 +53,7 @@ export const scrapeSuccessfactorsRss = async (source) => {
 
   const items = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
   if (!items.length) {
-    throw new Error(`No jobs found in SuccessFactors RSS feed (${rssUrl})`);
+    return [];
   }
 
   return items.map((item) => {

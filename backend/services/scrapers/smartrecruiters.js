@@ -92,7 +92,7 @@ export const scrapeSmartrecruiters = async (source) => {
   }
 
   if (!jobs.length) {
-    throw new Error("No jobs found on SmartRecruiters");
+    return [];
   }
 
   return jobs;

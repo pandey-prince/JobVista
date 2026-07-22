@@ -72,7 +72,7 @@ export const scrapeTcsIbegin = async (source) => {
   }
 
   if (!jobs.length) {
-    throw new Error("No jobs found on TCS iBegin");
+    return [];
   }
 
   return jobs;

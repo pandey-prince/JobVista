@@ -523,7 +523,11 @@ export const scrapeAutoPuppeteer = async (source) => {
         }
       }
 
-      throw new Error("Auto Puppeteer could not find job listings on career page");
+      // Empty board (or no matching selectors) — return [] so sync clears stale jobs
+      console.log(
+        `[AutoPuppeteer] "${source.companyName}" found 0 jobs after ${presets.length} preset(s)`,
+      );
+      return { jobs: [], usedSelectors: null };
     })();
 
     const timedOut = new Promise((_, reject) => {

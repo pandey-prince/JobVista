@@ -20,6 +20,10 @@ export const scrapeAshby = async (source) => {
     `https://api.ashbyhq.com/posting-api/job-board/${boardName}`
   );
 
+  if (response.status === 404 || response.status === 410) {
+    return [];
+  }
+
   if (!response.ok) {
     throw new Error(`Ashby API returned ${response.status}`);
   }

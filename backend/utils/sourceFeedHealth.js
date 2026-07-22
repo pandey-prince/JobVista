@@ -10,7 +10,9 @@ export const SOURCE_ERROR_HIDE_HOURS = Math.max(
 
 export const isBoardGoneScrapeError = (message = "") =>
   /\b(404|410)\b/.test(String(message)) ||
-  /document not found|board_gone|couldn't find anything/i.test(String(message));
+  /document not found|board_gone|couldn't find anything|no jobs found|could not find job listings/i.test(
+    String(message),
+  );
 
 export const shouldHideSourceFromPublicFeed = (source) => {
   if (!source || source.lastScrapeStatus !== "error") return false;
