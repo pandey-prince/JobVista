@@ -13,11 +13,22 @@ import usePageTitle from "@/hooks/usePageTitle";
 import { ExternalLink, MapPin, RefreshCw, Search } from "lucide-react";
 
 const PAGE_SIZE = 12;
-/** Titles shown on the card — no inner scrollbar; rest via “View all” */
-const PREVIEW_JOBS = 4;
+/** Show this many rows before the list scrolls; keeps card height stable in masonry */
+const VISIBLE_BEFORE_SCROLL = 4;
+/** Cap DOM nodes for huge companies (e.g. Cisco 100+) — rest via “View all” */
+const MAX_JOBS_IN_CARD = 40;
 
 const responseHasJobLists = (sources = []) =>
   sources.some((source) => Array.isArray(source.jobs) && source.jobs.length > 0);
+
+const companyCardWeight = (source) => {
+  if (!source) return 1;
+  const jobs = Array.isArray(source.jobs) ? source.jobs : [];
+  const listed = Math.min(jobs.length, MAX_JOBS_IN_CARD);
+  const visibleRows = Math.min(VISIBLE_BEFORE_SCROLL, listed);
+  // Header + capped visible rows (+ scroll chrome) + footer — scroll doesn't grow the card
+  return 5 + visibleRows * 2 + (listed > VISIBLE_BEFORE_SCROLL ? 1 : 0);
+};
 
 const MonitoredCompaniesPage = () => {
   usePageTitle("Companies with open roles");
@@ -183,15 +194,7 @@ const MonitoredCompaniesPage = () => {
             className="mt-8"
             maxColumns={3}
             layout="full"
-            getItemWeight={(index) => {
-              const source = sources[index];
-              if (!source) return 1;
-              const jobs = Array.isArray(source.jobs) ? source.jobs : [];
-              const count = source.activeJobCount || jobs.length;
-              const previewCount = Math.min(PREVIEW_JOBS, jobs.length);
-              // Header + each preview row + optional "+N more" + footer
-              return 5 + previewCount * 2 + (count > previewCount ? 1 : 0);
-            }}
+            getItemWeight={(index) => companyCardWeight(sources[index])}
           >
             {sources.map((source) => {
               const name = source.companyName || source.name || "Company";
@@ -200,8 +203,9 @@ const MonitoredCompaniesPage = () => {
                 : companyJobsPath(name);
               const jobs = Array.isArray(source.jobs) ? source.jobs : [];
               const count = source.activeJobCount || jobs.length;
-              const preview = jobs.slice(0, PREVIEW_JOBS);
-              const hiddenCount = Math.max(0, count - preview.length);
+              const listedJobs = jobs.slice(0, MAX_JOBS_IN_CARD);
+              const scrollable = listedJobs.length > VISIBLE_BEFORE_SCROLL;
+              const notInCard = Math.max(0, count - listedJobs.length);
 
               return (
                 <article
@@ -231,8 +235,14 @@ const MonitoredCompaniesPage = () => {
                     ) : null}
                   </div>
 
-                  <ul className="mt-4 space-y-1 border-t border-border pt-3">
-                    {preview.map((job) => (
+                  <ul
+                    className={
+                      scrollable
+                        ? "mt-4 max-h-56 space-y-1 overflow-y-auto overscroll-contain border-t border-border pt-3 pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.4)_transparent]"
+                        : "mt-4 space-y-1 border-t border-border pt-3"
+                    }
+                  >
+                    {listedJobs.map((job) => (
                       <li key={job._id}>
                         <Link
                           to={jobsPath}
@@ -253,9 +263,9 @@ const MonitoredCompaniesPage = () => {
                     ))}
                   </ul>
 
-                  {hiddenCount > 0 ? (
+                  {notInCard > 0 ? (
                     <p className="mt-1 px-1 text-xs text-muted-foreground">
-                      +{hiddenCount} more
+                      +{notInCard} more on company page
                     </p>
                   ) : null}
 
