@@ -3,19 +3,26 @@ import { Link } from "react-router-dom";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import CompanyLogo from "./CompanyLogo";
-import Job from "./Job";
 import Pagination from "@/components/shared/Pagination";
 import LoadingState from "@/components/shared/LoadingState";
 import { careerSourceApi } from "@/api";
 import { companyJobsPath } from "@/utils/companySlug";
 import { buildCompaniesFromJobFeed } from "@/utils/companyDirectory";
 import usePageTitle from "@/hooks/usePageTitle";
-import { ExternalLink, RefreshCw, Search } from "lucide-react";
+import { ExternalLink, MapPin, RefreshCw, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
 
 const responseHasJobLists = (sources = []) =>
   sources.some((source) => Array.isArray(source.jobs) && source.jobs.length > 0);
+
+/** Compact bento spans so cards with more roles read larger without nested Job widgets */
+const bentoSpanClass = (jobCount) => {
+  if (jobCount >= 8) return "sm:col-span-2 sm:row-span-2";
+  if (jobCount >= 4) return "sm:col-span-2";
+  return "sm:col-span-1";
+};
 
 const MonitoredCompaniesPage = () => {
   usePageTitle("Companies with open roles");
@@ -177,7 +184,7 @@ const MonitoredCompaniesPage = () => {
         </div>
       ) : (
         <>
-          <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="mt-8 grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {sources.map((source) => {
               const name = source.companyName || source.name || "Company";
               const jobsPath = source.slug
@@ -189,11 +196,14 @@ const MonitoredCompaniesPage = () => {
               return (
                 <article
                   key={source._id || source.slug || name}
-                  className="flex min-w-0 flex-col rounded-xl border border-border bg-card p-5 shadow-sm"
+                  className={cn(
+                    "flex min-w-0 flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-brand/35",
+                    bentoSpanClass(count),
+                  )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <CompanyLogo company={{ name }} className="h-12 w-12 shrink-0" />
+                      <CompanyLogo company={{ name }} className="h-11 w-11 shrink-0" />
                       <div className="min-w-0">
                         <h2 className="truncate text-lg font-semibold">{name}</h2>
                         <p className="text-sm font-medium text-brand">
@@ -214,13 +224,29 @@ const MonitoredCompaniesPage = () => {
                     ) : null}
                   </div>
 
-                  <div className="mt-4 max-h-[36rem] space-y-4 overflow-y-auto border-t border-border pt-4 pr-1">
+                  <ul className="mt-4 max-h-56 flex-1 space-y-2 overflow-y-auto border-t border-border pt-3">
                     {jobs.map((job) => (
-                      <Job key={job._id} job={job} />
+                      <li key={job._id}>
+                        <Link
+                          to={jobsPath}
+                          className="block rounded-lg px-1 py-1.5 transition-colors hover:bg-brand-muted/50"
+                        >
+                          <p className="text-sm font-medium leading-snug text-foreground">
+                            {job.title}
+                          </p>
+                          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            <span className="truncate">
+                              {job.location || "Not specified"}
+                              {job.experienceLevel ? ` · ${job.experienceLevel}` : ""}
+                            </span>
+                          </p>
+                        </Link>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
 
-                  <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
+                  <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
                     <Button asChild variant="brand" size="sm" className="rounded-full">
                       <Link to={jobsPath}>View all jobs</Link>
                     </Button>
