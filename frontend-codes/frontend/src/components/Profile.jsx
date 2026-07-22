@@ -31,7 +31,7 @@ const Profile = () => {
                             <div className='flex flex-wrap items-center gap-2'>
                                 <h1 className='text-xl font-medium'>{user?.fullname}</h1>
                                 {isProfileIncomplete(user) ? (
-                                    <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                                    <Badge variant="outline" className="border-brand/40 bg-brand-muted text-brand">
                                         Profile incomplete
                                     </Badge>
                                 ) : (
@@ -94,9 +94,9 @@ const Profile = () => {
                     </div>
                 </div>
                 <div className='my-5 grid gap-4 md:grid-cols-3'>
-                    {user?.profile?.portfolio && <a className='flex items-center gap-2 break-all text-blue-500 hover:underline' href={user.profile.portfolio} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> Portfolio</a>}
-                    {user?.profile?.linkedin && <a className='flex items-center gap-2 break-all text-blue-500 hover:underline' href={user.profile.linkedin} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> LinkedIn</a>}
-                    {user?.profile?.github && <a className='flex items-center gap-2 break-all text-blue-500 hover:underline' href={user.profile.github} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> GitHub</a>}
+                    {user?.profile?.portfolio && <a className='flex items-center gap-2 break-all text-brand hover:underline' href={user.profile.portfolio} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> Portfolio</a>}
+                    {user?.profile?.linkedin && <a className='flex items-center gap-2 break-all text-brand hover:underline' href={user.profile.linkedin} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> LinkedIn</a>}
+                    {user?.profile?.github && <a className='flex items-center gap-2 break-all text-brand hover:underline' href={user.profile.github} target='blank'><LinkIcon className='h-4 w-4 shrink-0' /> GitHub</a>}
                 </div>
                 <div className='my-5'>
                     <h1 className='flex items-center gap-2 font-semibold'><Briefcase /> Experience</h1>
@@ -119,7 +119,7 @@ const Profile = () => {
                 <div className='grid w-full max-w-sm items-center gap-1.5'>
                     <h2 className="text-md font-bold">Resume</h2>
                     {
-                        user?.profile?.resume ? <a target='blank' rel="noopener noreferrer" href={user?.profile?.resume} className='w-full cursor-pointer break-all text-blue-500 hover:underline'>{user?.profile?.resumeOriginalName || "View Resume"}</a> : <span className="text-muted-foreground">NA</span>
+                        user?.profile?.resume ? <a target='blank' rel="noopener noreferrer" href={user?.profile?.resume} className='w-full cursor-pointer break-all text-brand hover:underline'>{user?.profile?.resumeOriginalName || "View Resume"}</a> : <span className="text-muted-foreground">NA</span>
                     }
                 </div>
             </div>

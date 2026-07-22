@@ -96,7 +96,7 @@ const Footer = () => {
           <div className="sm:col-span-2">
             <Link to="/" className="inline-block">
               <h2 className="text-2xl font-bold">
-                Job<span className="text-accent-orange">LeLo</span>
+                Job<span className="text-brand">LeLo</span>
               </h2>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">

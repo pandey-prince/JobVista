@@ -79,8 +79,8 @@ const Navbar = () => {
           }}
           className="cursor-pointer"
         >
-          <h1 className="text-xl font-bold sm:text-2xl">
-            Job<span className="text-accent-orange">LeLo</span>
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">
+            Job<span className="text-brand">LeLo</span>
           </h1>
         </div>
 

@@ -297,13 +297,13 @@ const JobDescription = () => {
                   </a>
                 )}
                 <div className="flex flex-wrap gap-2 mt-4">
-                  <Badge className="text-blue-700 font-bold" variant="ghost">
+                  <Badge className="text-foreground font-bold" variant="ghost">
                     {singleJob.position || 1} Positions
                   </Badge>
-                  <Badge className="text-accent-amber font-bold" variant="ghost">
+                  <Badge className="text-brand font-bold" variant="ghost">
                     {salaryText}
                   </Badge>
-                  <Badge className="text-green-700 font-bold" variant="ghost">
+                  <Badge className="text-brand font-bold" variant="ghost">
                     {badges.freshnessLabel}
                   </Badge>
                 </div>
@@ -336,7 +336,7 @@ const JobDescription = () => {
                   <Button
                     onClick={applyOnCompanySite}
                     disabled={!singleJob?.applicationLink}
-                    className="w-full rounded-lg min-w-36 bg-accent-amber text-white hover:bg-accent-amber/90 disabled:opacity-60"
+                    className="w-full rounded-lg min-w-36 bg-brand text-brand-foreground hover:bg-brand/90 disabled:opacity-60"
                   >
                     Apply on company site
                   </Button>
@@ -377,7 +377,7 @@ const JobDescription = () => {
                 onClick={applyJobHandler}
                 disabled={isApplied || applying}
                 className={`rounded-lg min-w-36 ${
-                  isApplied ? "bg-muted-foreground cursor-not-allowed" : "bg-accent-amber text-white hover:bg-accent-amber/90"
+                  isApplied ? "bg-muted-foreground cursor-not-allowed" : "bg-brand text-brand-foreground hover:bg-brand/90"
                 }`}
               >
                 {applying && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
@@ -409,7 +409,7 @@ const JobDescription = () => {
                 <div className="grid sm:grid-cols-2 gap-3 mt-4">
                   {requirements.map((item, index) => (
                     <div key={`${item}-${index}`} className="flex gap-2 text-sm text-foreground/80">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-brand mt-0.5 shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}

@@ -282,7 +282,7 @@ const JobQuickView = ({ job, open, onOpenChange, onDismissed }) => {
           </div>
           <Button
             onClick={handleApply}
-            className="w-full bg-accent-amber text-white hover:bg-accent-amber/90 sm:w-auto"
+            className="w-full bg-brand text-brand-foreground hover:bg-brand/90 sm:w-auto"
           >
             {isExternalFeed || isScrapedJob ? "Apply on company site" : "Apply now"}
           </Button>

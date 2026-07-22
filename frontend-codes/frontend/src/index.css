@@ -37,8 +37,9 @@
       --brand: 161 94% 30%;
       --brand-foreground: 0 0% 100%;
       --brand-muted: 152 81% 96%;
-      --accent-amber: 38 92% 50%;
-      --accent-orange: 38 92% 50%;
+      /* Legacy accent tokens map to brand — keep the UI to black + green */
+      --accent-amber: 161 94% 30%;
+      --accent-orange: 161 94% 30%;
     }
 
     .dark {
@@ -82,5 +83,6 @@
     }
     body {
       @apply bg-background text-foreground;
+      overflow-x: hidden;
     }
   }

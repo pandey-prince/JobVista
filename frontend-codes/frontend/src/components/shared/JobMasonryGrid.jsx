@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 
 const getColumnCount = () => {
   if (typeof window === "undefined") return 1;
-  if (window.matchMedia("(min-width: 1024px)").matches) return 3;
+  // 3 columns only on wide screens — with the filters sidebar, lg is too tight
+  if (window.matchMedia("(min-width: 1280px)").matches) return 3;
   if (window.matchMedia("(min-width: 768px)").matches) return 2;
   return 1;
 };
@@ -30,7 +31,7 @@ const JobMasonryGrid = ({ children, className = "", maxColumns = 3 }) => {
   }, [items, columnCount]);
 
   return (
-    <div className={`flex items-start gap-4 ${className}`}>
+    <div className={`flex w-full min-w-0 items-start gap-4 ${className}`}>
       {columns.map((column, index) => (
         <div key={index} className="flex min-w-0 flex-1 flex-col gap-4">
           {column}

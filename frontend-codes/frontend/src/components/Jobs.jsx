@@ -91,7 +91,7 @@ const Jobs = () => {
 
   return (
     <div>
-      <div className="mx-auto mt-5 max-w-7xl px-4 sm:px-6">
+      <div className="mx-auto mt-5 max-w-7xl overflow-x-hidden px-4 sm:px-6">
         {!user ? (
           <div className="mb-5 flex flex-col gap-3 rounded-lg border border-brand/25 bg-brand-muted/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-foreground">
@@ -143,7 +143,7 @@ const Jobs = () => {
             </div>
           ) : null}
         </div>
-        <div className="flex flex-col gap-5 lg:flex-row">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
           <div className="w-full lg:w-72 lg:shrink-0">
             <JobFiltersPanel
               selectedFilters={selectedFilters}
@@ -158,10 +158,10 @@ const Jobs = () => {
               message="Finding fresh IT jobs"
               description="Pulling the latest roles from company career pages."
               skeletonCount={6}
-              className="flex-1"
+              className="min-w-0 flex-1"
             />
           ) : error ? (
-            <div className="flex-1 rounded-md border border-dashed border-destructive/40 bg-card p-10 text-center">
+            <div className="min-w-0 flex-1 rounded-md border border-dashed border-destructive/40 bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">Could not load jobs</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 The job feed is temporarily unavailable. Please try again in a moment.
@@ -172,7 +172,7 @@ const Jobs = () => {
               </Button>
             </div>
           ) : jobs.length === 0 ? (
-            <div className="flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
+            <div className="min-w-0 flex-1 rounded-md border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-lg font-semibold">{emptyState.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{emptyState.description}</p>
               {stats.totalJobs > 0 ? (
@@ -200,12 +200,12 @@ const Jobs = () => {
               )}
             </div>
           ) : (
-            <div className="flex-1 pb-5">
+            <div className="min-w-0 flex-1 pb-5">
               <JobMasonryGrid>
                 {jobs.map((job) => (
                   <motion.div
                     key={job._id}
-                    className="w-full"
+                    className="w-full min-w-0"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}

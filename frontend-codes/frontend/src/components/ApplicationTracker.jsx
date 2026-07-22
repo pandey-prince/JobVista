@@ -5,11 +5,11 @@ import LoadingState from "@/components/shared/LoadingState";
 import useTrackedApplications from "@/features/application-tracker/useTrackedApplications";
 
 const STAGE_COLORS = {
-  applied: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
-  shortlisted: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
-  interview: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-200",
-  offer: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
-  rejected: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
+  applied: "bg-muted text-foreground",
+  shortlisted: "bg-brand-muted text-brand",
+  interview: "bg-brand-muted text-brand",
+  offer: "bg-brand text-brand-foreground",
+  rejected: "bg-muted text-muted-foreground",
 };
 
 const ApplicationTracker = () => {

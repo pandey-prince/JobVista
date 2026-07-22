@@ -117,7 +117,7 @@ const OnboardingChecklist = ({
             >
               <div className="mt-0.5 shrink-0">
                 {step.complete ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <CheckCircle2 className="h-5 w-5 text-brand" />
                 ) : (
                   <Circle className="h-5 w-5 text-muted-foreground" />
                 )}

@@ -10,7 +10,6 @@ const isPostedWithin24Hours = (job) => {
 
 export default function useHomeJobSections() {
   const [newTodayJobs, setNewTodayJobs] = useState([]);
-  const [latestJobs, setLatestJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,16 +23,12 @@ export default function useHomeJobSections() {
 
         const jobs = res.data.jobs || [];
         const today = jobs.filter(isPostedWithin24Hours).slice(0, 6);
-        const todayIds = new Set(today.map((job) => job._id));
-        const latest = jobs.filter((job) => !todayIds.has(job._id)).slice(0, 6);
 
         setNewTodayJobs(today);
-        setLatestJobs(latest);
       } catch (error) {
         console.error("Failed to load home job sections", error);
         if (!cancelled) {
           setNewTodayJobs([]);
-          setLatestJobs([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -47,5 +42,5 @@ export default function useHomeJobSections() {
     };
   }, []);
 
-  return { newTodayJobs, latestJobs, loading };
+  return { newTodayJobs, loading };
 }

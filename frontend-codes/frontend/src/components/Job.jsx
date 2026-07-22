@@ -64,7 +64,7 @@ const Job = ({job, onDismissed}) => {
     return (
         <>
         <div
-            className='group flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:border-brand/35 hover:shadow-lg hover:shadow-brand/10'
+            className='group flex min-w-0 flex-col rounded-xl border border-border bg-card p-5 shadow-sm cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:border-brand/35 hover:shadow-lg hover:shadow-brand/10'
             onClick={() => setQuickViewOpen(true)}
         >
             <div className='flex items-center justify-between gap-3'>
@@ -119,9 +119,9 @@ const Job = ({job, onDismissed}) => {
             </div>
 
             <div className='mt-4 flex flex-wrap items-center gap-2'>
-                <Badge className='font-semibold text-blue-700' variant="ghost">{job?.position} Positions</Badge>
-                <Badge className='font-semibold text-accent-orange' variant="ghost">{job?.jobType}</Badge>
-                <Badge className='font-semibold text-accent-amber' variant="ghost">{salaryText}</Badge>
+                <Badge className='font-semibold text-foreground' variant="ghost">{job?.position} Positions</Badge>
+                <Badge className='font-semibold text-brand' variant="ghost">{job?.jobType}</Badge>
+                <Badge className='font-semibold text-brand' variant="ghost">{salaryText}</Badge>
             </div>
 
             <div className='mt-4 flex items-center gap-2'>
@@ -140,7 +140,7 @@ const Job = ({job, onDismissed}) => {
                         e.stopPropagation();
                         handleSave(e);
                     }}
-                    className="flex-1 bg-accent-amber text-white hover:bg-accent-amber/90"
+                    className="flex-1 bg-brand text-brand-foreground hover:bg-brand/90"
                 >
                     {saved ? "Saved" : "Save"}
                 </Button>

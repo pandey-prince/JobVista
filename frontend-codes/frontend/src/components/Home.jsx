@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import HeroSection from './HeroSection'
-import CategoryCarousel from './CategoryCarousel'
 import HowItWorks from './HowItWorks'
 import MonitoredCompaniesPreview from './MonitoredCompaniesPreview'
-import LatestJobs from './LatestJobs'
 import NewTodayJobs from './NewTodayJobs'
 import RecommendedJobs from './RecommendedJobs'
 import useHomeJobSections from '@/hooks/useHomeJobSections'
@@ -18,7 +16,6 @@ const Home = () => {
   const { isComplete, loading } = useOnboardingProgress(user)
   const {
     newTodayJobs,
-    latestJobs,
     loading: homeJobsLoading,
   } = useHomeJobSections()
   const [bannerDismissed, setBannerDismissed] = useState(() =>
@@ -54,8 +51,6 @@ const Home = () => {
       <RecommendedJobs />
       <HowItWorks />
       <MonitoredCompaniesPreview />
-      <CategoryCarousel />
-      <LatestJobs jobs={latestJobs} loading={homeJobsLoading} />
     </div>
   )
 }

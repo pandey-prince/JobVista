@@ -146,7 +146,7 @@ const Login = () => {
 
               <span className="mt-4 block text-sm">
                 Don&apos;t have an account?{" "}
-                <Link to="/signup" className="text-blue-600">
+                <Link to="/signup" className="text-brand">
                   Signup
                 </Link>
               </span>

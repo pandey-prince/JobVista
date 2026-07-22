@@ -1,21 +1,22 @@
+const BRAND_BADGE =
+  "bg-brand-muted text-brand border-brand/30 dark:border-brand/40";
+
 const SOURCE_STYLES = {
   career_page: {
     label: "Career page",
-    className:
-      "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800",
+    className: BRAND_BADGE,
   },
   recruiter: {
     label: "JobLeLo",
-    className:
-      "bg-brand-muted text-brand border-brand/30 dark:border-brand/40",
+    className: BRAND_BADGE,
   },
   remotive: {
     label: "Remotive",
-    className: "bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950 dark:text-sky-200 dark:border-sky-800",
+    className: BRAND_BADGE,
   },
   arbeitnow: {
     label: "Arbeitnow",
-    className: "bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950 dark:text-sky-200 dark:border-sky-800",
+    className: BRAND_BADGE,
   },
 };
 
