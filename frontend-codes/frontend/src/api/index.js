@@ -77,9 +77,14 @@ export const applicationsApi = {
 };
 
 export const careerSourceApi = {
-  listPublic: ({ page = 1, limit = 20, search = "" } = {}) =>
+  listPublic: ({ page = 1, limit = 20, search = "", withJobs = false } = {}) =>
     apiClient.get(`${CAREER_SOURCE_API_END_POINT}/`, {
-      params: { page, limit, search },
+      params: {
+        page,
+        limit,
+        search,
+        ...(withJobs ? { withJobs: true } : {}),
+      },
     }),
   getCompanyJobs: (slug, { page = 1, limit = 12, keyword = "" } = {}) =>
     apiClient.get(`${CAREER_SOURCE_API_END_POINT}/${encodeURIComponent(slug)}/jobs`, {

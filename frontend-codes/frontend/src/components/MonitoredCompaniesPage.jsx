@@ -1,57 +1,114 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table";
+import CompanyLogo from "./CompanyLogo";
 import Pagination from "@/components/shared/Pagination";
-import monitoredCompanies from "@/data/monitoredCompanies.json";
-import { ExternalLink, Search } from "lucide-react";
+import LoadingState from "@/components/shared/LoadingState";
+import { careerSourceApi } from "@/api";
+import { companyJobsPath } from "@/utils/companySlug";
+import { buildCompaniesFromJobFeed } from "@/utils/companyDirectory";
+import usePageTitle from "@/hooks/usePageTitle";
+import { ExternalLink, MapPin, RefreshCw, Search } from "lucide-react";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 12;
+
+const responseHasJobLists = (sources = []) =>
+  sources.some((source) => Array.isArray(source.jobs) && source.jobs.length > 0);
 
 const MonitoredCompaniesPage = () => {
+  usePageTitle("Companies with open roles");
+
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [sources, setSources] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retryKey, setRetryKey] = useState(0);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return monitoredCompanies;
-    return monitoredCompanies.filter((company) => {
-      const name = String(company.companyName || "").toLowerCase();
-      const regions = (company.regions || []).join(" ").toLowerCase();
-      return name.includes(q) || regions.includes(q);
-    });
-  }, [search]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  useEffect(() => {
+    let cancelled = false;
 
-  const onSearchChange = (value) => {
-    setSearch(value);
-    setPage(1);
-  };
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        let nextSources = [];
+        let nextPagination = null;
+
+        try {
+          const res = await careerSourceApi.listPublic({
+            page,
+            limit: PAGE_SIZE,
+            search,
+            withJobs: true,
+          });
+
+          if (res.data?.success && responseHasJobLists(res.data.sources || [])) {
+            nextSources = (res.data.sources || []).filter(
+              (source) => (source.activeJobCount || source.jobs?.length || 0) > 0,
+            );
+            nextPagination = res.data.pagination || null;
+          }
+        } catch {
+          // Fall through to jobs-feed grouping
+        }
+
+        if (!nextSources.length) {
+          const fallback = await buildCompaniesFromJobFeed({
+            search,
+            page,
+            limit: PAGE_SIZE,
+          });
+          nextSources = fallback.sources;
+          nextPagination = fallback.pagination;
+        }
+
+        if (cancelled) return;
+        setSources(nextSources);
+        setPagination(nextPagination);
+      } catch (err) {
+        if (cancelled) return;
+        setSources([]);
+        setPagination(null);
+        setError(err.response?.data?.message || err.message || "Unable to load companies");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [page, search, retryKey]);
+
+  const total = pagination?.total ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-10 sm:px-6">
       <div className="max-w-3xl">
         <span className="rounded-full bg-brand-muted px-4 py-2 text-sm font-medium text-brand">
-          Career boards we monitor
+          Live openings
         </span>
         <h1 className="mt-4 text-3xl font-bold sm:text-4xl">
           Companies on <span className="text-brand">JobLeLo</span>
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Search {monitoredCompanies.length} career sites we watch for IT openings in India.
-          Open a name to visit that company&apos;s own careers page.
+          Each card shows a company with open roles and the jobs we currently track for them.
+          Companies with no openings are hidden.
         </p>
       </div>
 
@@ -59,85 +116,144 @@ const MonitoredCompaniesPage = () => {
         <div className="relative max-w-md flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search company or region..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search companies..."
             className="pl-9"
-            aria-label="Search monitored companies"
+            aria-label="Search companies with open roles"
           />
         </div>
         <p className="text-sm text-muted-foreground">
-          Showing {pageRows.length} of {filtered.length}
-          {search.trim() ? " match" : " companies"}
+          {loading
+            ? "Loading..."
+            : `Showing ${sources.length} of ${total}${search ? " match" : " companies"}`}
         </p>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Company</TableHead>
-              <TableHead>Regions</TableHead>
-              <TableHead className="w-[120px]">Careers site</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pageRows.map((company) => (
-              <TableRow key={`${company.companyName}-${company.url}`}>
-                <TableCell>
-                  <a
-                    href={company.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-brand hover:underline"
-                  >
-                    {company.companyName}
-                  </a>
-                </TableCell>
-                <TableCell>
-                  {(company.regions || []).length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {company.regions.map((region) => (
-                        <Badge key={region} variant="outline">
-                          {region}
-                        </Badge>
-                      ))}
+      {loading ? (
+        <div className="mt-8">
+          <LoadingState
+            variant="cards"
+            message="Loading companies"
+            description="Grouping live openings by company."
+            skeletonCount={4}
+          />
+        </div>
+      ) : error ? (
+        <div className="mt-8 rounded-md border border-dashed border-destructive/40 bg-card p-10 text-center">
+          <h2 className="text-lg font-semibold">Could not load companies</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-4 gap-2"
+            onClick={() => setRetryKey((key) => key + 1)}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      ) : sources.length === 0 ? (
+        <div className="mt-8 rounded-md border border-dashed border-border bg-card p-10 text-center">
+          <h2 className="text-lg font-semibold">
+            {search ? "No companies match your search" : "No companies with open roles yet"}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {search
+              ? `Try another name, or clear “${search}”.`
+              : "Check back after the next career-page sync."}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            {search ? (
+              <Button type="button" variant="outline" onClick={() => setSearchInput("")}>
+                Clear search
+              </Button>
+            ) : null}
+            <Button asChild variant="outline">
+              <Link to="/jobs">Browse all jobs</Link>
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {sources.map((source) => {
+              const name = source.companyName || source.name || "Company";
+              const jobsPath = source.slug
+                ? `/companies/${source.slug}`
+                : companyJobsPath(name);
+              const jobs = Array.isArray(source.jobs) ? source.jobs : [];
+              const count = source.activeJobCount || jobs.length;
+
+              return (
+                <article
+                  key={source._id || source.slug || name}
+                  className="flex min-w-0 flex-col rounded-xl border border-border bg-card p-5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <CompanyLogo company={{ name }} className="h-12 w-12 shrink-0" />
+                      <div className="min-w-0">
+                        <h2 className="truncate text-lg font-semibold">{name}</h2>
+                        <p className="text-sm font-medium text-brand">
+                          {count} open {count === 1 ? "role" : "roles"}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <a
-                    href={company.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-brand hover:underline"
-                  >
-                    Open
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                    {source.url ? (
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground hover:text-brand"
+                      >
+                        Careers
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : null}
+                  </div>
 
-      {filtered.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          No companies match &ldquo;{search.trim()}&rdquo;.
-        </p>
-      ) : null}
+                  <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto border-t border-border pt-4">
+                    {jobs.map((job) => (
+                      <li key={job._id}>
+                        <Link
+                          to={jobsPath}
+                          className="block rounded-lg border border-transparent px-2 py-2 transition-colors hover:border-brand/25 hover:bg-brand-muted/40"
+                        >
+                          <p className="font-medium leading-snug text-foreground">{job.title}</p>
+                          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            <span className="truncate">
+                              {job.location || "Not specified"}
+                              {job.experienceLevel ? ` · ${job.experienceLevel}` : ""}
+                            </span>
+                          </p>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
 
-      <div className="mt-6">
-        <Pagination
-          page={safePage}
-          totalPages={totalPages}
-          total={filtered.length}
-          onPageChange={setPage}
-        />
-      </div>
+                  <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
+                    <Button asChild variant="brand" size="sm" className="rounded-full">
+                      <Link to={jobsPath}>View all jobs</Link>
+                    </Button>
+                    <span className="text-xs text-muted-foreground">{jobs.length} listed</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="mt-8">
+            <Pagination
+              page={pagination?.page || page}
+              totalPages={totalPages}
+              total={total}
+              onPageChange={setPage}
+            />
+          </div>
+        </>
+      )}
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Button asChild variant="outline">

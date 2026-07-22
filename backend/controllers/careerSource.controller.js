@@ -10,7 +10,7 @@ import {
   detectScraperType,
   extractCompanySlugFromUrl,
 } from "../services/scrapers/index.js";
-import { mapScrapedJobForList, dedupeScrapedJobs } from "../services/job-catalog/index.js";
+import { mapScrapedJobForList, dedupeScrapedJobs, getScrapedJobsForList } from "../services/job-catalog/index.js";
 import { filterItJobs } from "../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../utils/indiaJobFilter.js";
 import {
@@ -18,8 +18,17 @@ import {
   buildPaginationMeta,
   paginateArray,
 } from "../utils/pagination.js";
-import { companyNameMatchesSlug } from "../utils/companySlug.js";
+import { companyNameMatchesSlug, slugifyCompanyName } from "../utils/companySlug.js";
 import { parseJobListFilters, filterJobList, sortJobList } from "../utils/jobListFilters.js";
+
+const parseTruthyQuery = (value) => {
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+};
+
+const companyGroupKey = (name = "") => String(name).trim().toLowerCase();
 
 export const getCompanySourceJobs = async (req, res) => {
   try {
@@ -88,10 +97,88 @@ export const getCompanySourceJobs = async (req, res) => {
 export const listPublicSources = async (req, res) => {
   try {
     const search = String(req.query.search || req.query.keyword || "").trim();
+    const withJobs = parseTruthyQuery(req.query.withJobs);
     const { page, limit, skip } = parsePagination(req.query, {
       defaultLimit: 20,
       maxLimit: 50,
     });
+
+    if (withJobs) {
+      // Build from the same job catalog the Jobs page uses so counts always match live openings.
+      const catalogJobs = await getScrapedJobsForList(search);
+      const groups = new Map();
+
+      for (const job of catalogJobs) {
+        const companyName = String(job?.company?.name || "").trim();
+        if (!companyName) continue;
+        const key = companyGroupKey(companyName);
+        if (!groups.has(key)) {
+          groups.set(key, {
+            companyName,
+            slug: slugifyCompanyName(companyName),
+            jobs: [],
+          });
+        }
+        groups.get(key).jobs.push(job);
+      }
+
+      let companies = Array.from(groups.values())
+        .map((group) => ({
+          ...group,
+          activeJobCount: group.jobs.length,
+        }))
+        .filter((group) => group.activeJobCount > 0)
+        .sort((a, b) => a.companyName.localeCompare(b.companyName));
+
+      if (search) {
+        const needle = search.toLowerCase();
+        companies = companies.filter((company) =>
+          company.companyName.toLowerCase().includes(needle),
+        );
+      }
+
+      // Attach careers URL from JobSource when available
+      const sourceDocs = await JobSource.find({
+        isPublic: true,
+        isActive: true,
+      })
+        .select("companyName name url lastScrapedAt lastScrapeStatus")
+        .lean();
+
+      const sourceBySlug = new Map();
+      for (const source of sourceDocs) {
+        const name = source.companyName || source.name || "";
+        const slug = slugifyCompanyName(name);
+        if (slug) sourceBySlug.set(slug, source);
+      }
+
+      companies = companies.map((company) => {
+        const source = sourceBySlug.get(company.slug);
+        return {
+          _id: source?._id || company.slug,
+          companyName: company.companyName,
+          name: source?.name || company.companyName,
+          url: source?.url || "",
+          lastScrapedAt: source?.lastScrapedAt || null,
+          lastScrapeStatus: source?.lastScrapeStatus || "",
+          slug: company.slug,
+          activeJobCount: company.activeJobCount,
+          jobs: company.jobs,
+        };
+      });
+
+      const { data: sources, pagination } = paginateArray(companies, {
+        page,
+        limit,
+        skip,
+      });
+
+      return res.status(200).json({
+        success: true,
+        sources,
+        pagination,
+      });
+    }
 
     const query = { isPublic: true };
     if (search) {
