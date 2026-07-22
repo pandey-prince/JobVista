@@ -1,8 +1,11 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Bot, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
+import { Bot, Linkedin, Mail, MapPin, MessageCircle, Twitter } from "lucide-react";
 import { Button } from "../ui/button";
+
+/** X profile for product feedback / DMs */
+const X_FEEDBACK_URL = "https://x.com/dev___guy";
 
 const footerLinks = {
   platform: [
@@ -115,7 +118,17 @@ const Footer = () => {
               </li>
             </ul>
 
-            <div className="mt-6 flex items-center gap-3 pb-10">
+            <div className="mt-6 flex flex-wrap items-center gap-3 pb-10">
+              <Button asChild variant="brand" size="sm" className="rounded-full gap-1.5">
+                <a
+                  href={X_FEEDBACK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Give feedback
+                </a>
+              </Button>
               <a
                 href="mailto:support@joblelo.online"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
@@ -133,7 +146,7 @@ const Footer = () => {
                 <Linkedin className="h-4 w-4" />
               </a>
               <a
-                href="https://twitter.com"
+                href={X_FEEDBACK_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
