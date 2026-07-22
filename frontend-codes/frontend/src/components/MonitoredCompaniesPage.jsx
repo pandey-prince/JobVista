@@ -10,19 +10,13 @@ import { companyJobsPath } from "@/utils/companySlug";
 import { buildCompaniesFromJobFeed } from "@/utils/companyDirectory";
 import usePageTitle from "@/hooks/usePageTitle";
 import { ExternalLink, MapPin, RefreshCw, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
+/** Titles shown on the card — no inner scrollbar; rest via “View all” */
+const PREVIEW_JOBS = 4;
 
 const responseHasJobLists = (sources = []) =>
   sources.some((source) => Array.isArray(source.jobs) && source.jobs.length > 0);
-
-/** Compact bento spans so cards with more roles read larger without nested Job widgets */
-const bentoSpanClass = (jobCount) => {
-  if (jobCount >= 8) return "sm:col-span-2 sm:row-span-2";
-  if (jobCount >= 4) return "sm:col-span-2";
-  return "sm:col-span-1";
-};
 
 const MonitoredCompaniesPage = () => {
   usePageTitle("Companies with open roles");
@@ -184,7 +178,7 @@ const MonitoredCompaniesPage = () => {
         </div>
       ) : (
         <>
-          <div className="mt-8 grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sources.map((source) => {
               const name = source.companyName || source.name || "Company";
               const jobsPath = source.slug
@@ -192,14 +186,13 @@ const MonitoredCompaniesPage = () => {
                 : companyJobsPath(name);
               const jobs = Array.isArray(source.jobs) ? source.jobs : [];
               const count = source.activeJobCount || jobs.length;
+              const preview = jobs.slice(0, PREVIEW_JOBS);
+              const hiddenCount = Math.max(0, count - preview.length);
 
               return (
                 <article
                   key={source._id || source.slug || name}
-                  className={cn(
-                    "flex min-w-0 flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-brand/35",
-                    bentoSpanClass(count),
-                  )}
+                  className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-brand/35"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
@@ -224,8 +217,8 @@ const MonitoredCompaniesPage = () => {
                     ) : null}
                   </div>
 
-                  <ul className="mt-4 max-h-56 flex-1 space-y-2 overflow-y-auto border-t border-border pt-3">
-                    {jobs.map((job) => (
+                  <ul className="mt-4 space-y-1 border-t border-border pt-3">
+                    {preview.map((job) => (
                       <li key={job._id}>
                         <Link
                           to={jobsPath}
@@ -246,11 +239,16 @@ const MonitoredCompaniesPage = () => {
                     ))}
                   </ul>
 
-                  <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
+                  {hiddenCount > 0 ? (
+                    <p className="mt-1 px-1 text-xs text-muted-foreground">
+                      +{hiddenCount} more
+                    </p>
+                  ) : null}
+
+                  <div className="mt-4 border-t border-border pt-3">
                     <Button asChild variant="brand" size="sm" className="rounded-full">
                       <Link to={jobsPath}>View all jobs</Link>
                     </Button>
-                    <span className="text-xs text-muted-foreground">{jobs.length} listed</span>
                   </div>
                 </article>
               );
