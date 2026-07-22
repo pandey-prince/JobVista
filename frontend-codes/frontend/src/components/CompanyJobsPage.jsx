@@ -148,11 +148,34 @@ const CompanyJobsPage = () => {
                   </span>
                 ) : null}
                 {source?.lastScrapeStatus ? (
-                  <span className="rounded-full bg-brand-muted px-2 py-0.5 font-medium text-brand">
+                  <span
+                    className={`rounded-full px-2 py-0.5 font-medium ${
+                      source.lastScrapeStatus === "error"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-brand-muted text-brand"
+                    }`}
+                  >
                     {source.lastScrapeStatus}
                   </span>
                 ) : null}
               </div>
+              {source?.listingsMayBeOutdated ? (
+                <div className="mt-4 max-w-2xl rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                  <p className="font-medium">
+                    {source.boardGone
+                      ? "This careers page looks offline or removed."
+                      : "Listings may be outdated."}
+                  </p>
+                  <p className="mt-1 text-xs opacity-90">
+                    {source.lastScrapeError
+                      ? `Last scrape error: ${source.lastScrapeError}`
+                      : "The latest sync failed, so roles shown here might no longer be open."}
+                    {source.hiddenFromPublicFeed
+                      ? " These roles are hidden from the main Jobs feed until sync succeeds again."
+                      : null}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
           {source?.url ? (

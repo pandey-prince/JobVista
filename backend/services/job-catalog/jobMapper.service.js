@@ -1,4 +1,5 @@
 import { ScrapedJob } from "../../models/scrapedJob.model.js";
+import { JobSource } from "../../models/jobSource.model.js";
 import { filterItJobs } from "../../utils/itJobFilter.js";
 import { filterIndiaJobs } from "../../utils/indiaJobFilter.js";
 import {
@@ -9,6 +10,7 @@ import {
 import { normalizeJobLocation } from "../../utils/jobLocation.js";
 import { attachBadgesToJob } from "../../utils/jobBadges.js";
 import { toPublicApplicationUrl } from "../../utils/applicationUrl.js";
+import { getPublicFeedHiddenSourceIds } from "../../utils/sourceFeedHealth.js";
 
 const normalizeDedupeText = (value = "") =>
   String(value)
@@ -101,7 +103,7 @@ const JOB_LIST_MAX_DOCS = Math.max(
 );
 
 const LIST_SELECT =
-  "title description location jobType salary requirements applicationUrl companyName companyLogo firstSeenAt status";
+  "title description location jobType salary requirements applicationUrl companyName companyLogo firstSeenAt status source";
 
 /**
  * Load all active scraped jobs in lean batches (no bulk populate).
@@ -142,8 +144,17 @@ export const getScrapedJobsForList = async (keyword = "") => {
     ];
   }
 
-  const jobs = await fetchActiveJobsBatched(query);
-  return dedupeScrapedJobs(filterIndiaJobs(filterItJobs(jobs))).map(mapScrapedJobForList);
+  const [jobs, hiddenSourceIds] = await Promise.all([
+    fetchActiveJobsBatched(query),
+    getPublicFeedHiddenSourceIds(JobSource),
+  ]);
+
+  const hidden = new Set(hiddenSourceIds);
+  const visible = hidden.size
+    ? jobs.filter((job) => !hidden.has(String(job.source)))
+    : jobs;
+
+  return dedupeScrapedJobs(filterIndiaJobs(filterItJobs(visible))).map(mapScrapedJobForList);
 };
 
 export const sortJobsByDate = (jobs = []) =>

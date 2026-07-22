@@ -20,6 +20,11 @@ import {
 } from "../utils/pagination.js";
 import { companyNameMatchesSlug, slugifyCompanyName } from "../utils/companySlug.js";
 import { parseJobListFilters, filterJobList, sortJobList } from "../utils/jobListFilters.js";
+import {
+  isBoardGoneScrapeError,
+  shouldHideSourceFromPublicFeed,
+  SOURCE_ERROR_HIDE_HOURS,
+} from "../utils/sourceFeedHealth.js";
 
 const parseTruthyQuery = (value) => {
   const normalized = String(value ?? "")
@@ -75,6 +80,9 @@ export const getCompanySourceJobs = async (req, res) => {
     const filteredJobs = sortJobList(filterJobList(mappedJobs, keyword, filters), filters.sortBy);
     const { data: jobs, pagination } = paginateArray(filteredJobs, paginationQuery);
 
+    const listingsMayBeOutdated = source.lastScrapeStatus === "error";
+    const hiddenFromPublicFeed = shouldHideSourceFromPublicFeed(source);
+
     res.status(200).json({
       success: true,
       source: {
@@ -84,7 +92,12 @@ export const getCompanySourceJobs = async (req, res) => {
         url: source.url,
         lastScrapedAt: source.lastScrapedAt,
         lastScrapeStatus: source.lastScrapeStatus,
+        lastScrapeError: source.lastScrapeError || "",
         jobsFoundCount: source.jobsFoundCount,
+        listingsMayBeOutdated,
+        hiddenFromPublicFeed,
+        sourceErrorHideHours: SOURCE_ERROR_HIDE_HOURS,
+        boardGone: isBoardGoneScrapeError(source.lastScrapeError),
       },
       jobs,
       pagination,
