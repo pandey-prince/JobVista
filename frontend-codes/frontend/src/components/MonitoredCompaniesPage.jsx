@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import CompanyLogo from "./CompanyLogo";
 import Pagination from "@/components/shared/Pagination";
 import LoadingState from "@/components/shared/LoadingState";
+import JobMasonryGrid from "@/components/shared/JobMasonryGrid";
 import { careerSourceApi } from "@/api";
 import { companyJobsPath } from "@/utils/companySlug";
 import { buildCompaniesFromJobFeed } from "@/utils/companyDirectory";
@@ -178,7 +179,7 @@ const MonitoredCompaniesPage = () => {
         </div>
       ) : (
         <>
-          <div className="mt-8 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <JobMasonryGrid className="mt-8" maxColumns={3} layout="full">
             {sources.map((source) => {
               const name = source.companyName || source.name || "Company";
               const jobsPath = source.slug
@@ -253,7 +254,7 @@ const MonitoredCompaniesPage = () => {
                 </article>
               );
             })}
-          </div>
+          </JobMasonryGrid>
 
           <div className="mt-8">
             <Pagination
