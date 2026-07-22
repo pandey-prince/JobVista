@@ -1,26 +1,42 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const getColumnCount = () => {
+/** @param {"sidebar" | "full"} layout */
+const getColumnCount = (layout = "sidebar") => {
   if (typeof window === "undefined") return 1;
-  // 3 columns only on wide screens — with the filters sidebar, lg is too tight
+
+  if (layout === "full") {
+    // Full-width pages (e.g. /companies) — 3 cols from lg
+    if (window.matchMedia("(min-width: 1024px)").matches) return 3;
+    if (window.matchMedia("(min-width: 640px)").matches) return 2;
+    return 1;
+  }
+
+  // Jobs page with filters sidebar — 3 cols only on wide screens
   if (window.matchMedia("(min-width: 1280px)").matches) return 3;
   if (window.matchMedia("(min-width: 768px)").matches) return 2;
   return 1;
 };
 
-const JobMasonryGrid = ({ children, className = "", maxColumns = 3 }) => {
-  const [columnCount, setColumnCount] = useState(getColumnCount);
+const JobMasonryGrid = ({
+  children,
+  className = "",
+  maxColumns = 3,
+  layout = "sidebar",
+}) => {
+  const [columnCount, setColumnCount] = useState(() =>
+    Math.min(getColumnCount(layout), maxColumns),
+  );
   const items = React.Children.toArray(children);
 
   useEffect(() => {
     const updateColumns = () => {
-      setColumnCount(Math.min(getColumnCount(), maxColumns));
+      setColumnCount(Math.min(getColumnCount(layout), maxColumns));
     };
 
     updateColumns();
     window.addEventListener("resize", updateColumns);
     return () => window.removeEventListener("resize", updateColumns);
-  }, [maxColumns]);
+  }, [maxColumns, layout]);
 
   const columns = useMemo(() => {
     const cols = Array.from({ length: columnCount }, () => []);
