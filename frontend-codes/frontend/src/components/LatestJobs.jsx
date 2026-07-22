@@ -7,12 +7,12 @@ const LatestJobs = ({ jobs = [], loading = false }) => {
 
   return (
     <div className="max-w-7xl mx-auto my-20 px-4 sm:px-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col items-center gap-2 text-center">
         <div>
           <h2 className="text-3xl font-bold sm:text-4xl">
             <span className="text-brand">Fresh</span> IT job openings
           </h2>
-          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
             New India IT roles from company career pages — with freshness badges on every card.
           </p>
         </div>

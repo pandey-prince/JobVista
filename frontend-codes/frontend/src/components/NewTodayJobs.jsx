@@ -3,23 +3,21 @@ import { Link } from "react-router-dom";
 import LatestJobCards from "./LatestJobCards";
 import LoadingState, { JobGridSkeleton } from "@/components/shared/LoadingState";
 import { Button } from "./ui/button";
-import { Sparkles } from "lucide-react";
 
 const NewTodayJobs = ({ jobs = [], loading = false }) => {
   if (!loading && jobs.length === 0) return null;
 
   return (
     <section className="mx-auto my-16 max-w-7xl px-4 sm:px-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col items-center gap-3 text-center">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-brand-muted px-3 py-1 text-xs font-medium text-brand">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="mb-2 inline-flex items-center rounded-full bg-brand-muted px-3 py-1 text-xs font-medium text-brand">
             Posted in the last 24 hours
           </div>
           <h2 className="text-3xl font-bold sm:text-4xl">
             New <span className="text-brand">today</span>
           </h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
             Fresh roles that landed on company career pages in the past day — before they spread elsewhere.
           </p>
         </div>

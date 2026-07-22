@@ -29,7 +29,19 @@ const textareaClassName =
 const FieldError = ({ message }) =>
   message ? <p className="mt-1 text-sm text-destructive">{message}</p> : null;
 
-const ChipInput = ({ id, label, hint, values, onChange, error, placeholder }) => {
+const FieldLabel = ({ htmlFor, children, required, optional }) => (
+  <Label htmlFor={htmlFor} className="inline-flex items-center gap-1">
+    {children}
+    {required ? (
+      <span className="text-destructive" aria-hidden="true">
+        *
+      </span>
+    ) : null}
+    {optional ? <span className="font-normal text-muted-foreground">(optional)</span> : null}
+  </Label>
+);
+
+const ChipInput = ({ id, label, hint, values, onChange, error, placeholder, optional }) => {
   const [draft, setDraft] = useState("");
   const inputId = id || `chip-input-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
@@ -50,7 +62,9 @@ const ChipInput = ({ id, label, hint, values, onChange, error, placeholder }) =>
   return (
     <div className="space-y-2">
       <div>
-        <Label htmlFor={inputId}>{label}</Label>
+        <FieldLabel htmlFor={inputId} optional={optional}>
+          {label}
+        </FieldLabel>
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </div>
       <div className="flex gap-2">
@@ -103,17 +117,22 @@ const WorkItemCard = ({ title, item, index, prefix, onChange, onRemove, errors }
     </div>
     <div className="grid gap-3 sm:grid-cols-2">
       <div>
-        <Label htmlFor={`${prefix}-${index}-title`}>Title</Label>
+        <FieldLabel htmlFor={`${prefix}-${index}-title`} required>
+          Title
+        </FieldLabel>
         <Input
           id={`${prefix}-${index}-title`}
           value={item.title}
           onChange={(e) => onChange(index, "title", e.target.value)}
           placeholder="Software Engineer Intern"
+          aria-required={true}
         />
         <FieldError message={errors[`${prefix}.${index}.title`]} />
       </div>
       <div>
-        <Label htmlFor={`${prefix}-${index}-company`}>Company</Label>
+        <FieldLabel htmlFor={`${prefix}-${index}-company`} optional>
+          Company
+        </FieldLabel>
         <Input
           id={`${prefix}-${index}-company`}
           value={item.company}
@@ -122,7 +141,9 @@ const WorkItemCard = ({ title, item, index, prefix, onChange, onRemove, errors }
         />
       </div>
       <div className="sm:col-span-2">
-        <Label htmlFor={`${prefix}-${index}-duration`}>Duration</Label>
+        <FieldLabel htmlFor={`${prefix}-${index}-duration`} optional>
+          Duration
+        </FieldLabel>
         <Input
           id={`${prefix}-${index}-duration`}
           value={item.duration}
@@ -131,7 +152,9 @@ const WorkItemCard = ({ title, item, index, prefix, onChange, onRemove, errors }
         />
       </div>
       <div className="sm:col-span-2">
-        <Label htmlFor={`${prefix}-${index}-description`}>Description</Label>
+        <FieldLabel htmlFor={`${prefix}-${index}-description`} optional>
+          Description
+        </FieldLabel>
         <textarea
           id={`${prefix}-${index}-description`}
           value={item.description}
@@ -155,17 +178,22 @@ const ProjectItemCard = ({ item, index, onChange, onRemove, errors }) => (
     </div>
     <div className="grid gap-3">
       <div>
-        <Label htmlFor={`project-${index}-title`}>Project name</Label>
+        <FieldLabel htmlFor={`project-${index}-title`} required>
+          Project name
+        </FieldLabel>
         <Input
           id={`project-${index}-title`}
           value={item.title}
           onChange={(e) => onChange(index, "title", e.target.value)}
           placeholder="e.g. Razorpay"
+          aria-required={true}
         />
         <FieldError message={errors[`projects.${index}.title`]} />
       </div>
       <div>
-        <Label htmlFor={`project-${index}-link`}>Link</Label>
+        <FieldLabel htmlFor={`project-${index}-link`} optional>
+          Link
+        </FieldLabel>
         <Input
           id={`project-${index}-link`}
           value={item.link}
@@ -175,7 +203,9 @@ const ProjectItemCard = ({ item, index, onChange, onRemove, errors }) => (
         <FieldError message={errors[`projects.${index}.link`]} />
       </div>
       <div>
-        <Label htmlFor={`project-${index}-description`}>Description</Label>
+        <FieldLabel htmlFor={`project-${index}-description`} optional>
+          Description
+        </FieldLabel>
         <textarea
           id={`project-${index}-description`}
           value={item.description}
@@ -300,13 +330,22 @@ const ProfileForm = ({
       case "basics":
         return (
           <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">
+              <span className="text-destructive" aria-hidden="true">
+                *
+              </span>{" "}
+              Required
+            </p>
             <div>
-              <Label htmlFor="fullname">Full name</Label>
+              <FieldLabel htmlFor="fullname" required>
+                Full name
+              </FieldLabel>
               <Input
                 id="fullname"
                 value={input.fullname}
                 onChange={(e) => updateField("fullname", e.target.value)}
                 placeholder="Your full name"
+                aria-required={true}
               />
               <FieldError message={errors.fullname} />
             </div>
@@ -316,18 +355,23 @@ const ProfileForm = ({
               <p className="mt-1 text-xs text-muted-foreground">Email cannot be changed here.</p>
             </div>
             <div>
-              <Label htmlFor="phoneNumber">Phone number</Label>
+              <FieldLabel htmlFor="phoneNumber" required>
+                Phone number
+              </FieldLabel>
               <Input
                 id="phoneNumber"
                 value={input.phoneNumber}
                 onChange={(e) => updateField("phoneNumber", e.target.value)}
                 placeholder="10-digit mobile number"
                 inputMode="numeric"
+                aria-required={true}
               />
               <FieldError message={errors.phoneNumber} />
             </div>
             <div>
-              <Label htmlFor="location">Location</Label>
+              <FieldLabel htmlFor="location" optional>
+                Location
+              </FieldLabel>
               <Input
                 id="location"
                 value={input.location}
@@ -336,7 +380,9 @@ const ProfileForm = ({
               />
             </div>
             <div>
-              <Label htmlFor="bio">Bio</Label>
+              <FieldLabel htmlFor="bio" optional>
+                Bio
+              </FieldLabel>
               <textarea
                 id="bio"
                 value={input.bio}
@@ -354,7 +400,9 @@ const ProfileForm = ({
             <p className="text-sm text-muted-foreground">{currentStep.hint}</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <Label htmlFor="college">College</Label>
+                <FieldLabel htmlFor="college" optional>
+                  College
+                </FieldLabel>
                 <Input
                   id="college"
                   value={input.college}
@@ -363,7 +411,9 @@ const ProfileForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="degree">Degree</Label>
+                <FieldLabel htmlFor="degree" optional>
+                  Degree
+                </FieldLabel>
                 <Input
                   id="degree"
                   value={input.degree}
@@ -372,7 +422,9 @@ const ProfileForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="branch">Branch</Label>
+                <FieldLabel htmlFor="branch" optional>
+                  Branch
+                </FieldLabel>
                 <Input
                   id="branch"
                   value={input.branch}
@@ -381,7 +433,9 @@ const ProfileForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="graduationYear">Graduation year</Label>
+                <FieldLabel htmlFor="graduationYear" optional>
+                  Graduation year
+                </FieldLabel>
                 <Input
                   id="graduationYear"
                   value={input.graduationYear}
@@ -392,7 +446,9 @@ const ProfileForm = ({
                 <FieldError message={errors.graduationYear} />
               </div>
               <div>
-                <Label htmlFor="cgpa">CGPA</Label>
+                <FieldLabel htmlFor="cgpa" optional>
+                  CGPA
+                </FieldLabel>
                 <Input
                   id="cgpa"
                   value={input.cgpa}
@@ -417,6 +473,7 @@ const ProfileForm = ({
               onChange={(skills) => updateField("skills", skills)}
               error={errors.skills}
               placeholder="React, Node.js, MongoDB"
+              optional
             />
             <ChipInput
               id="profile-preferred-roles"
@@ -425,9 +482,12 @@ const ProfileForm = ({
               onChange={(preferredJobRoles) => updateField("preferredJobRoles", preferredJobRoles)}
               error={errors.preferredJobRoles}
               placeholder="Frontend Developer, SDE Intern"
+              optional
             />
             <div>
-              <Label htmlFor="experienceLevel">Experience level</Label>
+              <FieldLabel htmlFor="experienceLevel" optional>
+                Experience level
+              </FieldLabel>
               <Select
                 value={input.experienceLevel || undefined}
                 onValueChange={(value) => updateField("experienceLevel", value)}
@@ -534,7 +594,9 @@ const ProfileForm = ({
             </div>
             <div className="grid gap-4 sm:grid-cols-1">
               <div>
-                <Label htmlFor="portfolio">Portfolio</Label>
+                <FieldLabel htmlFor="portfolio" optional>
+                  Portfolio
+                </FieldLabel>
                 <Input
                   id="portfolio"
                   value={input.portfolio}
@@ -544,7 +606,9 @@ const ProfileForm = ({
                 <FieldError message={errors.portfolio} />
               </div>
               <div>
-                <Label htmlFor="linkedin">LinkedIn</Label>
+                <FieldLabel htmlFor="linkedin" optional>
+                  LinkedIn
+                </FieldLabel>
                 <Input
                   id="linkedin"
                   value={input.linkedin}
@@ -554,7 +618,9 @@ const ProfileForm = ({
                 <FieldError message={errors.linkedin} />
               </div>
               <div>
-                <Label htmlFor="github">GitHub</Label>
+                <FieldLabel htmlFor="github" optional>
+                  GitHub
+                </FieldLabel>
                 <Input
                   id="github"
                   value={input.github}
